@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"bufio"
@@ -15,31 +15,10 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"plugin_demo/kind"
 	"strings"
 	"time"
 )
-
-type GitDiff struct {
-	Action          string `yaml:"action" json:"action" bson:"action" validate:""`
-	FileName        string `yaml:"fileName" json:"fileName" bson:"fileName" validate:""`
-	Stats           string `yaml:"stats" json:"stats" bson:"stats" validate:""`
-	ModifyLineCount int    `yaml:"modifyLineCount" json:"modifyLineCount" bson:"modifyLineCount" validate:""`
-}
-
-type Commit struct {
-	ProjectName          string    `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	RunName              string    `yaml:"runName" json:"runName" bson:"runName" validate:""`
-	BranchName           string    `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
-	Commit               string    `yaml:"commit" json:"commit" bson:"commit" validate:""`
-	FullMessage          string    `yaml:"fullMessage" json:"fullMessage" bson:"fullMessage" validate:""`
-	CommitTime           time.Time `yaml:"commitTime" json:"commitTime" bson:"commitTime" validate:""`
-	CommitterName        string    `yaml:"committerName" json:"committerName" bson:"committerName" validate:""`
-	CommitterEmail       string    `yaml:"committerEmail" json:"committerEmail" bson:"committerEmail" validate:""`
-	Message              string    `yaml:"message" json:"message" bson:"message" validate:""`
-	Diffs                []GitDiff `yaml:"diffs" json:"diffs" bson:"diffs" validate:""`
-	ModifyLineCountTotal int       `yaml:"modifyLineCountTotal" json:"modifyLineCountTotal" bson:"modifyLineCountTotal" validate:""`
-	CreateTime           time.Time `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
-}
 
 type Git struct {
 }
@@ -134,9 +113,9 @@ func printStat(fileStats []object.FileStat) string {
 	return finalOutput
 }
 
-func gitGetDiff(repo *git.Repository, previousCommit string) ([]Commit, error) {
+func gitGetDiff(repo *git.Repository, previousCommit string) ([]kind.Commit, error) {
 	var err error
-	var gcs []Commit
+	var gcs []kind.Commit
 	commits, err := repo.Log(&git.LogOptions{
 		All: true,
 	})
@@ -177,7 +156,7 @@ func gitGetDiff(repo *git.Repository, previousCommit string) ([]Commit, error) {
 			return gcs, err
 		}
 
-		var gds []GitDiff
+		var gds []kind.GitDiff
 		modifyLineCountTotal := 0
 		for _, c := range changes {
 			action, err := c.Action()
@@ -207,7 +186,7 @@ func gitGetDiff(repo *git.Repository, previousCommit string) ([]Commit, error) {
 				}
 				strPatch = printStat(patch.Stats())
 			}
-			gd := GitDiff{
+			gd := kind.GitDiff{
 				Action:          strAction,
 				FileName:        fileName,
 				Stats:           strPatch,
@@ -216,7 +195,7 @@ func gitGetDiff(repo *git.Repository, previousCommit string) ([]Commit, error) {
 			modifyLineCountTotal = modifyLineCountTotal + modifyLineCount
 			gds = append(gds, gd)
 		}
-		gc := Commit{
+		gc := kind.Commit{
 			Commit:               commit.Hash.String(),
 			FullMessage:          commit.String(),
 			CommitTime:           commit.Committer.When,
@@ -299,11 +278,11 @@ func gitCheckout(repo *git.Repository, branch string, branchHead plumbing.Hash, 
 }
 
 // GitPull: clone repository from git and check out to branch
-func (g Git) GitPull(dir, url, branch, username, password string, timeoutSeconds int, previousCommit string) ([]Commit, string, string, error) {
+func (g Git) GitPull(dir, url, branch, username, password string, timeoutSeconds int, previousCommit string) ([]kind.Commit, string, string, error) {
 	errInfo := fmt.Sprintf("git clone %s error", url)
 	var err error
 	var latestCommit, tagName string
-	gcs := []Commit{}
+	gcs := []kind.Commit{}
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
 		_ = os.RemoveAll(dir)
@@ -404,11 +383,3 @@ func (g Git) GitPull(dir, url, branch, username, password string, timeoutSeconds
 	}
 	return gcs, latestCommit, tagName, err
 }
-
-func init() {
-	fmt.Println("git plugin init")
-}
-
-var GitPlugin Git
-
-// go build -o plugin.so -buildmode=plugin git.go
