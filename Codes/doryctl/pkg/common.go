@@ -17,11 +17,11 @@ import (
 
 func ExtractEmbedFile(f embed.FS, rootDir string, targetDir string) error {
 	return fs.WalkDir(f, rootDir, func(path string, d fs.DirEntry, err error) error {
+		rootDir = strings.TrimSuffix(rootDir, "/")
 		if err != nil {
 			return err
 		}
-		if path != "." {
-			rootDir = strings.TrimSuffix(rootDir, "/")
+		if path != "." && path != rootDir {
 			pathTarget := fmt.Sprintf("%s/%s", targetDir, strings.TrimPrefix(path, fmt.Sprintf("%s/", rootDir)))
 			fmt.Println("###", path, "#", pathTarget)
 			if d.IsDir() {
