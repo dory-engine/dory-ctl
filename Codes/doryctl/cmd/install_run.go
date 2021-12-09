@@ -192,14 +192,19 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
 		LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
 
-		//// install harbor
-		//LogInfo("install harbor begin")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("sh harbor_install.sh"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
+		// install harbor
+		LogInfo("install harbor begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose stop && docker-compose rm -f"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
