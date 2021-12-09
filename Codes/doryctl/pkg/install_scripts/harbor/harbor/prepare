@@ -51,6 +51,15 @@ secret_dir=${data_path}/secret
 config_dir=$harbor_prepare_path/common/config
 
 # Run prepare script
+echo "
+docker run --rm -v $input_dir:/input \
+                    -v $data_path:/data \
+                    -v $harbor_prepare_path:/compose_location \
+                    -v $config_dir:/config \
+                    -v /:/hostfs \
+                    --privileged \
+                    goharbor/prepare:v2.4.0 prepare $@
+"
 docker run --rm -v $input_dir:/input \
                     -v $data_path:/data \
                     -v $harbor_prepare_path:/compose_location \
