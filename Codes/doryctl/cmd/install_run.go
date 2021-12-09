@@ -250,11 +250,10 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 		// create harbor project public, hub, gcr, quay
 		LogInfo("create harbor project public, hub, gcr, quay begin")
-		harborCreateProjectCmd := fmt.Sprintf(`\
-			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "xxx", "public": true}' && \
-			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "xxx", "public": true}' && \
-			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "xxx", "public": true}' && \
-		`, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName)
+		harborCreateProjectCmd := fmt.Sprintf(`curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "public", "public": true}' && \
+			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "hub", "public": true}' && \
+			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "gcr", "public": true}' && \
+			curl -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "quay", "public": true}'`, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName)
 		_, _, err = pkg.CommandExec(harborCreateProjectCmd, harborDir)
 		if err != nil {
 			err = fmt.Errorf("create harbor project public, hub, gcr, quay error: %s", err.Error())
