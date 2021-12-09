@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
+	"strings"
 )
 
 type OptionsInstallRun struct {
@@ -204,7 +205,17 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
 		}
+		bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
+		fmt.Println(strHarborComposeYaml)
+
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
+
+		//////////////////////////////////////////////////
 
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
