@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
+	"time"
 )
 
 type OptionsInstallRun struct {
@@ -357,6 +358,22 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 		LogSuccess(fmt.Sprintf("create directory and chown %s success", doryDir))
+
+		// run all dory services
+		LogInfo("run all dory services begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
+		if err != nil {
+			err = fmt.Errorf("run all dory services error: %s", err.Error())
+			return err
+		}
+		LogInfo("waiting all dory services boot up for 10 seconds")
+		time.Sleep(time.Second * 10)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
+		if err != nil {
+			err = fmt.Errorf("run all dory services error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
 
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)
