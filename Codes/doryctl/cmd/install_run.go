@@ -331,6 +331,20 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		LogSuccess(fmt.Sprintf("create docker config files %s success", dockerDir))
 
+		// get nexus init data
+		nexusDir := fmt.Sprintf("%s/nexus", doryDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), nexusDir)
+		if err != nil {
+			err = fmt.Errorf("get nexus init data error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker cp nexus-data-init:/nexus-data/nexus ."), nexusDir)
+		if err != nil {
+			err = fmt.Errorf("get nexus init data error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("get nexus init data %s success", nexusDir))
+
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)
 		fmt.Println("install with kubernetes")
