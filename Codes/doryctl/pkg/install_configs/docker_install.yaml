@@ -4,14 +4,68 @@ rootDir: "/tmp"
 doryDir: "dory"
 # harbor组件存放的子目录（相对根目录）
 harborDir: "harbor"
+# 本机的ip地址，请勿使用127.0.0.1这种本机地址
+hostIP: "10.2.0.10"
 # dory组件设置
 dory:
+  # gitea代码仓库设置
+  gitea:
+    # 镜像名
+    image: gitea/gitea:1.15.6
+    # 数据库镜像名
+    imageDB: mysql:8.0.20
+    # 暴露的服务端口
+    port: 10001
+    # 数据库密码，为空表示自动随机生成
+    dbPassword: ""
+  # nexus制品与依赖仓库设置
+  nexus:
+    # 镜像名
+    image: sonatype/nexus3:3.37.0
+    # web服务暴露的服务端口
+    port: 10003
+    # dockerhub镜像代理暴露的服务端口
+    portHub: 10004
+    # gcr镜像代理暴露的服务端口
+    portGcr: 10005
+    # quay镜像代理暴露的服务端口
+    portQuay: 10006
+  # openldap账号中心设置
+  openldap:
+    # 镜像名
+    image: osixia/openldap:develop-dev
+    # ldapadmin镜像名
+    imageAdmin: osixia/phpldapadmin:stable-amd64
+    # 管理界面暴露的服务端口
+    port: 10007
+    # 管理员密码，为空表示自动随机生成
+    adminPassword: ""
+    # 账号中心域设置
+    domain: "dory.local"
+    # 账号中心baseDN设置
+    baseDN: "dc=dory,dc=local"
+  # redis缓存设置
+  redis:
+    # 镜像名
+    image: redis:6.2.6-alpine3.15
+    # 访问密码，为空表示自动随机生成
+    password: ""
+  # mongo数据库设置
+  mongo:
+    # 镜像名
+    image: mongo:4.4.10-focal
+    # 访问密码，为空表示自动随机生成
+    password: ""
   # docker executor部署设置
   docker:
+    # 镜像名
+    image: docker:20.10.11-dind
     # docker executor在docker-compose中部署的服务名
     dockerName: docker
     # docker executor在docker-compose中部署的名字空间名称，用于创建docker证书用途
     dockerNamespace: dory
+    # 启动多少个docker executor实例
+    dockerNumber: 2
 # harbor组件设置
 harbor:
   # harbor的访问域名，用于创建harbor的自签名tls证书

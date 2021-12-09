@@ -115,6 +115,24 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 
+		// create dory docker-compose.yaml
+		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
+		_ = os.MkdirAll(doryDir, 0700)
+		dockerComposeDir := "dory"
+		dockerComposeName := "docker-compose.yaml"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
+		if err != nil {
+			return err
+		}
+		strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
+		if err != nil {
+			return err
+		}
+
 		// create docker certificates
 		dockerDir := fmt.Sprintf("%s/%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir, installDockerConfig.Dory.Docker.DockerName)
 		_ = os.MkdirAll(dockerDir, 0700)
