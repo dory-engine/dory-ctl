@@ -332,7 +332,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		LogSuccess(fmt.Sprintf("create docker config files %s success", dockerDir))
 
 		// get nexus init data
-		_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), nexusDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), doryDir)
 		if err != nil {
 			err = fmt.Errorf("get nexus init data error: %s", err.Error())
 			return err
