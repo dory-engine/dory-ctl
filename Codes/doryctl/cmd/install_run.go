@@ -211,8 +211,16 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 		strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-		fmt.Println(strHarborComposeYaml)
-
+		err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
 		//////////////////////////////////////////////////
