@@ -109,6 +109,11 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 
+		err = installDockerConfig.VerifyInstallDockerConfig()
+		if err != nil {
+			return err
+		}
+
 		vals := map[string]interface{}{}
 		err = yaml.Unmarshal(bs, &vals)
 		if err != nil {
