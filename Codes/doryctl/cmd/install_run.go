@@ -201,7 +201,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
 		}
-		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose stop && docker-compose rm -f"), harborDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
 		if err != nil {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
