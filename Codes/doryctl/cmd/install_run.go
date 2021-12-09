@@ -333,6 +333,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 		// get nexus init data
 		nexusDir := fmt.Sprintf("%s/nexus", doryDir)
+		_ = os.MkdirAll(nexusDir, 0700)
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), nexusDir)
 		if err != nil {
 			err = fmt.Errorf("get nexus init data error: %s", err.Error())
