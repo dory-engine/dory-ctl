@@ -88,11 +88,18 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 	bs := []byte{}
 
+	defer func() {
+		if err != nil {
+			LogError(err.Error())
+		}
+	}()
+
 	if o.FileName == "-" {
 		bs = o.Stdin
 	} else {
 		bs, err = os.ReadFile(o.FileName)
 		if err != nil {
+			err = fmt.Errorf("install run error: %s", err.Error())
 			return err
 		}
 	}
@@ -101,16 +108,19 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		var installDockerConfig pkg.InstallDockerConfig
 		err = yaml.Unmarshal(bs, &installDockerConfig)
 		if err != nil {
+			err = fmt.Errorf("install run error: %s", err.Error())
 			return err
 		}
 		validate := validator.New()
 		err = validate.Struct(installDockerConfig)
 		if err != nil {
+			err = fmt.Errorf("install run error: %s", err.Error())
 			return err
 		}
 
 		err = installDockerConfig.VerifyInstallDockerConfig()
 		if err != nil {
+			err = fmt.Errorf("install run error: %s", err.Error())
 			return err
 		}
 		bs, _ = yaml.Marshal(installDockerConfig)
@@ -118,6 +128,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		vals := map[string]interface{}{}
 		err = yaml.Unmarshal(bs, &vals)
 		if err != nil {
+			err = fmt.Errorf("install run error: %s", err.Error())
 			return err
 		}
 
@@ -128,14 +139,17 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		harborScriptName := "harbor_certs.sh"
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
 		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
 			return err
 		}
 		strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
 		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
 			return err
 		}
 		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
 		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
 			return err
 		}
 
@@ -143,10 +157,40 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
 		if err != nil {
 			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-			LogError(err.Error())
 			return err
 		}
 		LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
+
+		// extract harbor install files
+		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), installDockerConfig.RootDir)
+		if err != nil {
+			err = fmt.Errorf("extract harbor install files error: %s", err.Error())
+			return err
+		}
+
+		harborYamlDir := "harbor/harbor"
+		harborYamlName := "harbor.yml"
+		_ = os.Rename(fmt.Sprintf("%s/harbor", installDockerConfig.RootDir), harborDir)
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborYamlDir, harborYamlName))
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+		LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
+		LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
 
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
@@ -155,14 +199,17 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		dockerComposeName := "docker-compose.yaml"
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
 		if err != nil {
+			err = fmt.Errorf("create create dory docker-compose.yaml error: %s", err.Error())
 			return err
 		}
 		strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
 		if err != nil {
+			err = fmt.Errorf("create create dory docker-compose.yaml error: %s", err.Error())
 			return err
 		}
 		err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
 		if err != nil {
+			err = fmt.Errorf("create create dory docker-compose.yaml error: %s", err.Error())
 			return err
 		}
 		LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
@@ -178,10 +225,12 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		strDockerCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
 		if err != nil {
+			err = fmt.Errorf("create docker certificates error: %s", err.Error())
 			return err
 		}
 		err = os.WriteFile(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName), []byte(strDockerCertScript), 0600)
 		if err != nil {
+			err = fmt.Errorf("create docker certificates error: %s", err.Error())
 			return err
 		}
 
@@ -189,7 +238,6 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", dockerScriptName), dockerDir)
 		if err != nil {
 			err = fmt.Errorf("create docker certificates error: %s", err.Error())
-			LogError(err.Error())
 			return err
 		}
 		LogSuccess(fmt.Sprintf("create docker certificates %s/certs success", dockerDir))
