@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
+	"strings"
 )
 
 type OptionsInstallRun struct {
@@ -194,32 +195,28 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 		// install harbor
 		LogInfo("install harbor begin")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose stop && docker-compose rm -f"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-		//err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose stop && docker-compose rm -f"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
+		err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		// update /etc/hosts
 		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
 		if err != nil {
 			// harbor domain name not exists
@@ -229,7 +226,16 @@ func (o *OptionsInstallRun) Run(args []string) error {
 				return err
 			}
 		}
-		// update /etc/hosts
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username admin --password %s %s", installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
 		//////////////////////////////////////////////////
