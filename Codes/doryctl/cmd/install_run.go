@@ -138,6 +138,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		if err != nil {
 			return err
 		}
+		LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
 
 		// create docker certificates
 		dockerDir := fmt.Sprintf("%s/%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir, installDockerConfig.Dory.Docker.DockerName)
@@ -164,7 +165,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			LogError(err.Error())
 			return err
 		}
-		LogSuccess("create docker certificates success")
+		LogSuccess(fmt.Sprintf("create docker certificates %s/certs success", dockerDir))
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)
 		fmt.Println("install with kubernetes")
