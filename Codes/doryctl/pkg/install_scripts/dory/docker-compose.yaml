@@ -96,8 +96,8 @@ services:
     volumes:
       - ./{{ $.dory.docker.dockerName }}/certs:/certs
       - /etc/docker/certs.d/harbor.new.imdory.com/:/etc/docker/certs.d/harbor.new.imdory.com
-      - ./{{ $.dory.docker.dockerName }}/etc/daemon.json:/etc/docker/daemon.json
-      - ./{{ $.dory.docker.dockerName }}/root/config.json:/root/.docker/config.json
+      - ./{{ $.dory.docker.dockerName }}/daemon.json:/etc/docker/daemon.json
+      - ./{{ $.dory.docker.dockerName }}/config.json:/root/.docker/config.json
       - ./dory-core/dory-data:/dory-core/dory-data
     environment:
       DOCKER_TLS_CERTDIR: ""

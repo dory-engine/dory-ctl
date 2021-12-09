@@ -1,0 +1,7 @@
+{
+  "insecure-registries": [
+    "{{ $.hostIP }}:{{ $.dory.nexus.portHub }}",
+    "{{ $.hostIP }}:{{ $.dory.nexus.portGcr }}",
+    "{{ $.hostIP }}:{{ $.dory.nexus.portQuay }}"
+  ]
+}
