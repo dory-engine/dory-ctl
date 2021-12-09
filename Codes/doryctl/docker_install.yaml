@@ -6,6 +6,7 @@ doryDir: "dory"
 harborDir: "harbor"
 # 本机的ip地址，请勿使用127.0.0.1这种本机地址
 hostIP: "10.2.0.10"
+# 外部查看本机的url地址，请不要包含端口
 viewURL: http://new2.imdory.com
 # dory组件部署设置
 dory:
@@ -85,21 +86,27 @@ harbor:
   dbPassword: ""
 # dorycore应用设置
 dorycore:
+  # 默认管理员设置，自动在ldap中开通账号
   adminUser:
+    # 账号名称，格式例如: dory-admin
     username: dory-admin
+    # 显示名字，格式例如: DORY-管理员
     name: DORY-管理员
+    # 邮箱
     mail: dory-admin@139.com
+    # 手机号码
     mobile: 13812341234
+  # 发送邮件设置
   mail:
-    # smtp 主机
-    host: ""
-    # smtp 端口
+    # smtp服务器地址
+    host: "smtp.139.com"
+    # smtp端口
     port: 25
-    # smtp 账号
-    username: ""
-    # smtp 密码
-    password: ""
-    # smtp 是否启用ssl
+    # smtp账号
+    username: "13812341234@139.com"
+    # smtp密码
+    password: "13812341234"
+    # smtp是否启用ssl
     ssl: false
     # 邮件发送人名字
-    from: "DORY-DEVOPS <13802881119@139.com>"
+    from: "DORY-管理员 <13812341234@139.com>"

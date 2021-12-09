@@ -34,9 +34,13 @@ app:
   # 如果不存在自动创建账号，密码位于workDir目录的admin.password
   # 如果存在自动设置管理员权限
   adminUser:
+    # 账号名称，格式例如: dory-admin
     username: {{ $.dorycore.adminUser.username }}
+    # 显示名字，格式例如: DORY-管理员
     name: {{ $.dorycore.adminUser.name }}
+    # 邮箱
     mail: {{ $.dorycore.adminUser.mail }}
+    # 手机号码
     mobile: {{ $.dorycore.adminUser.mobile }}
   # 项目的nodePort可用端口段
   nodePortRange:
@@ -77,15 +81,15 @@ app:
   # 默认环境名，添加环境的时候使用默认环境的配置参数添加环境
   defaultEnvName: test
 mail:
-  # smtp 主机
+  # smtp服务器地址
   host: {{ $.dorycore.mail.host }}
-  # smtp 端口
+  # smtp端口
   port: {{ $.dorycore.mail.port }}
-  # smtp 账号
+  # smtp账号
   username: {{ $.dorycore.mail.username }}
-  # smtp 密码
+  # smtp密码
   password: {{ $.dorycore.mail.password }}
-  # smtp 是否启用ssl
+  # smtp是否启用ssl
   ssl: {{ $.dorycore.mail.ssl }}
   # 邮件发送人名字
   from: {{ $.dorycore.mail.from }}

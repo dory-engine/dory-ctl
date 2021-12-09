@@ -15,6 +15,7 @@ type InstallDockerConfig struct {
 	DoryDir   string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
 	HarborDir string `yaml:"harborDir" json:"harborDir" bson:"harborDir" validate:"required"`
 	HostIP    string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
+	ViewURL   string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
 	Dory      struct {
 		Gitea struct {
 			Image      string `yaml:"image" json:"image" bson:"image" validate:"required"`
@@ -51,6 +52,9 @@ type InstallDockerConfig struct {
 			DockerNamespace string `yaml:"dockerNamespace" json:"dockerNamespace" bson:"dockerNamespace" validate:""`
 			DockerNumber    int    `yaml:"dockerNumber" json:"dockerNumber" bson:"dockerNumber" validate:"required"`
 		} `yaml:"docker" json:"docker" bson:"docker" validate:"required"`
+		Dorycore struct {
+			Port int `yaml:"port" json:"port" bson:"port" validate:"required"`
+		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	Harbor struct {
 		DomainName    string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
@@ -59,4 +63,20 @@ type InstallDockerConfig struct {
 		AdminPassword string `yaml:"adminPassword" json:"adminPassword" bson:"adminPassword" validate:""`
 		DbPassword    string `yaml:"dbPassword" json:"dbPassword" bson:"dbPassword" validate:""`
 	} `yaml:"harbor" json:"harbor" bson:"harbor" validate:"required"`
+	Dorycore struct {
+		AdminUser struct {
+			Username string `yaml:"username" json:"username" bson:"username" validate:"required"`
+			Name     string `yaml:"name" json:"name" bson:"name" validate:"required"`
+			Mail     string `yaml:"mail" json:"mail" bson:"mail" validate:"required"`
+			Mobile   string `yaml:"mobile" json:"mobile" bson:"mobile" validate:"required"`
+		} `yaml:"adminUser" json:"adminUser" bson:"adminUser" validate:"required"`
+		Mail struct {
+			Host     string `yaml:"host" json:"host" bson:"host" validate:"required"`
+			Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+			Username string `yaml:"username" json:"username" bson:"username" validate:"required"`
+			Password string `yaml:"password" json:"password" bson:"password" validate:"required"`
+			Ssl      bool   `yaml:"ssl" json:"ssl" bson:"ssl" validate:""`
+			From     string `yaml:"from" json:"from" bson:"from" validate:"required"`
+		} `yaml:"mail" json:"mail" bson:"mail" validate:"required"`
+	} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 }
