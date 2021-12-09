@@ -6,7 +6,8 @@ doryDir: "dory"
 harborDir: "harbor"
 # 本机的ip地址，请勿使用127.0.0.1这种本机地址
 hostIP: "10.2.0.10"
-# dory组件设置
+viewURL: http://new2.imdory.com
+# dory组件部署设置
 dory:
   # gitea代码仓库设置
   gitea:
@@ -66,6 +67,10 @@ dory:
     dockerNamespace: dory
     # 启动多少个docker executor实例
     dockerNumber: 2
+  # dorycore部署设置
+  dorycore:
+    # dashboard暴露的服务端口
+    port: 10010
 # harbor组件设置
 harbor:
   # harbor的访问域名，用于创建harbor的自签名tls证书
@@ -78,3 +83,23 @@ harbor:
   adminPassword: ""
   # harbor数据库密码，为空表示自动随机生成
   dbPassword: ""
+# dorycore应用设置
+dorycore:
+  adminUser:
+    username: dory-admin
+    name: DORY-管理员
+    mail: dory-admin@139.com
+    mobile: 13812341234
+  mail:
+    # smtp 主机
+    host: ""
+    # smtp 端口
+    port: 25
+    # smtp 账号
+    username: ""
+    # smtp 密码
+    password: ""
+    # smtp 是否启用ssl
+    ssl: false
+    # 邮件发送人名字
+    from: "DORY-DEVOPS <13802881119@139.com>"
