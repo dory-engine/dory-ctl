@@ -162,7 +162,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
 
 		// extract harbor install files
-		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), installDockerConfig.RootDir)
+		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
 		if err != nil {
 			err = fmt.Errorf("extract harbor install files error: %s", err.Error())
 			return err

@@ -21,7 +21,8 @@ func ExtractEmbedFile(f embed.FS, rootDir string, targetDir string) error {
 			return err
 		}
 		if path != "." {
-			pathTarget := fmt.Sprintf("%s/%s", targetDir, path)
+			rootDir = strings.TrimSuffix(rootDir, "/")
+			pathTarget := fmt.Sprintf("%s/%s", targetDir, strings.TrimPrefix(path, fmt.Sprintf("%s/", rootDir)))
 			if d.IsDir() {
 				_ = os.MkdirAll(pathTarget, 0700)
 			} else {
