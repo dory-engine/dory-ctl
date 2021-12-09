@@ -82,17 +82,17 @@ app:
   defaultEnvName: test
 mail:
   # smtp服务器地址
-  host: {{ $.dorycore.mail.host }}
+  host: {{ $.dorycore.mail.host | quote }}
   # smtp端口
   port: {{ $.dorycore.mail.port }}
   # smtp账号
-  username: {{ $.dorycore.mail.username }}
+  username: {{ $.dorycore.mail.username | quote }}
   # smtp密码
-  password: {{ $.dorycore.mail.password }}
+  password: {{ $.dorycore.mail.password | quote }}
   # smtp是否启用ssl
   ssl: {{ $.dorycore.mail.ssl }}
   # 邮件发送人名字
-  from: {{ $.dorycore.mail.from }}
+  from: {{ $.dorycore.mail.from | quote }}
   # 邮件超时设置，单位秒
   timeoutSeconds: 15
   # 邮件中打开的服务器地址
@@ -103,7 +103,7 @@ redis:
   # redis端口
   port: 6379
   # redis密码
-  password: {{ $.dory.redis.password }}
+  password: {{ $.dory.redis.password | quote }}
 mongodb:
   # mongo主机
   host: mongo-core-dory
@@ -112,7 +112,7 @@ mongodb:
   # mongo用户名
   username: root
   # mongo密码
-  password: {{ $.dory.mongo.password }}
+  password: {{ $.dory.mongo.password | quote }}
   # mongo数据库名称
   database: dorydb
 # docker executor 配置
@@ -140,7 +140,7 @@ docker:
   # docker executor 的数量，docker executor 部署在docker中请设置（选填）
   dockerNumber: 1
   # docker executor 的服务名，访问docker executor的方式为 xxx-0.xxx，例如docker-0.docker
-  docker: {{ $.dory.docker.dockerName }}
+  docker: {{ $.dory.docker.dockerName | quote }}
   # docker executor 的端口
   dockerPort: 2376
 # ldap账号中心配置
@@ -148,9 +148,9 @@ ldap:
   # LDAP基础域配置
   baseDN: {{ $.dory.openldap.baseDN | quote}}
   # LDAP服务器访问地址配置
-  server: 'ldap://openldap:389'
+  server: "ldap://openldap:389"
   # LDAP管理员账号全称
-  adminCN: 'cn=admin,{{ $.dory.openldap.baseDN }}'
+  adminCN: "cn=admin,{{ $.dory.openldap.baseDN }}"
   # LDAP管理员账号密码
   password: {{ $.dory.openldap.adminPassword | quote}}
 # 代码仓库配置，支持gitlab和gitea
@@ -186,11 +186,11 @@ imageRepoConfigs:
     # 镜像仓库外部查看url
     viewUrl: https://{{ $.harbor.domainName }}
     # 镜像仓库地址，使用https
-    url: {{ $.harbor.domainName }}
+    url: {{ $.harbor.domainName | quote }}
     # 镜像仓库管理员账号
     username: admin
     # 镜像仓库管理员密码
-    password: {{ $.harbor.adminPassword }}
+    password: {{ $.harbor.adminPassword | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
     apiUrl: https://{{ $.harbor.domainName }}
 # 制品仓库配置，支持nexus
@@ -204,7 +204,7 @@ artifactRepoConfigs:
     # 制品仓库地址，docker executor访问该仓库的地址（建议使用外部ip+端口）
     url: http://{{ $.hostIP }}:{{ $.dory.nexus.port }}
     # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址（建议使用外部ip）
-    host: {{ $.hostIP }}
+    host: {{ $.hostIP | quote }}
     # 制品仓库管理员账号
     username: admin
     # 制品仓库管理员密码
