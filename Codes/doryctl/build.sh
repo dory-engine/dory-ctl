@@ -2,7 +2,7 @@
 cd /root/devops-dory-ctl/Codes/doryctl
 git pull
 date && time go build
-ls -al
+ls -alh
 
 # # 复制所有到new1-dory
 # scp -r doryctl root@new1-dory:/usr/bin/

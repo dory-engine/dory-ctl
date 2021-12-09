@@ -1,5 +1,5 @@
 # 所有dory组件存放的根目录，绝对路径
-rootDir: "/tmp"
+rootDir: "/root/tmp"
 # dory组件存放的子目录（相对根目录）
 doryDir: "dory"
 # harbor组件存放的子目录（相对根目录）
