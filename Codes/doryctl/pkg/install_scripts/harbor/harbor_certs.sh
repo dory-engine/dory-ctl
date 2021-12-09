@@ -25,7 +25,7 @@ openssl x509 -req -sha512 -days 3650 -extfile v3.ext -CA ca.crt -CAkey ca.key -C
 openssl x509 -inform PEM -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt -out ${HARBOR_CONFIG_DOMAIN_NAME}.cert
 echo "[INFO] # check harbor certificates info"
 echo "[CMD] openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt"
-openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt
+# openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt
 
 echo "update docker harbor certificates"
 rm -rf /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/

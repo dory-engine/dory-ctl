@@ -27,6 +27,6 @@ EOF
 openssl x509 -req -sha512 -days 3650 -extfile v3.ext -CA ca.crt -CAkey ca.key -CAcreateserial -in tls.csr -out tls.crt
 echo "[INFO] # check docker certificates info"
 echo "[CMD] openssl x509 -noout -text -in tls.crt"
-openssl x509 -noout -text -in tls.crt
+# openssl x509 -noout -text -in tls.crt
 cd ..
 sudo chown -R 1000:1000 certs
