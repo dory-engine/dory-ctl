@@ -69,7 +69,7 @@ dory:
 # harbor组件设置
 harbor:
   # harbor的访问域名，用于创建harbor的自签名tls证书
-  domainName: registry.example.com
+  domainName: harbor2.new.imdory.com
   # harbor的tls自签名证书存放的相对路径
   certsDir: certs
   # harbor的数据存放的相对路径
