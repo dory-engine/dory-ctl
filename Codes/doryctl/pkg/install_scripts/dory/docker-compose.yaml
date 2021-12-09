@@ -89,7 +89,7 @@ services:
 
   {{- $list := (repeat $.dory.docker.dockerNumber "x " | trim | split " ") -}}
   {{- range $i, $_ := $list }}
-  {{ $.dory.docker.dockerName }}-{{ $i }}:
+  {{ $.dory.docker.dockerName }}-{{ $i | replace "_" "" }}:
     image: {{ $.dory.docker.image }}
     container_name: {{ $.dory.docker.dockerName }}-{{ $i }}
     hostname: {{ $.dory.docker.dockerName }}-{{ $i }}.{{ $.dory.docker.dockerName }}

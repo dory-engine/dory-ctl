@@ -71,9 +71,9 @@ harbor:
   # harbor的访问域名，用于创建harbor的自签名tls证书
   domainName: registry.example.com
   # harbor的tls自签名证书存放的相对路径
-  certsPath: certs
+  certsDir: certs
   # harbor的数据存放的相对路径
-  dataPath: data
+  dataDir: data
   # harbor的管理员密码，为空表示自动随机生成
   adminPassword: ""
   # harbor数据库密码，为空表示自动随机生成

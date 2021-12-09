@@ -54,8 +54,8 @@ type InstallDockerConfig struct {
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	Harbor struct {
 		DomainName    string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
-		CertsPath     string `yaml:"certsPath" json:"certsPath" bson:"certsPath" validate:"required"`
-		DataPath      string `yaml:"dataPath" json:"dataPath" bson:"dataPath" validate:"required"`
+		CertsDir      string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
+		DataDir       string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
 		AdminPassword string `yaml:"adminPassword" json:"adminPassword" bson:"adminPassword" validate:""`
 		DbPassword    string `yaml:"dbPassword" json:"dbPassword" bson:"dbPassword" validate:""`
 	} `yaml:"harbor" json:"harbor" bson:"harbor" validate:"required"`
