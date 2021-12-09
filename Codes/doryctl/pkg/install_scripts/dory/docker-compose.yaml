@@ -1,0 +1,151 @@
+version: '3'
+services:
+  gitea:
+    image: gitea/gitea:1.15.6
+    container_name: gitea
+    volumes:
+      - ./gitea:/data
+    environment:
+      USER_UID: 1000
+      USER_GID: 1000
+      GITEA__database__DB_TYPE: mysql
+      GITEA__database__HOST: gitea-mysql:3306
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: gitea
+      GITEA__database__PASSWD: StXhlIsyUt9n6AlvkY
+    ports:
+      - 10001:3000
+    restart: always
+    depends_on:
+      - gitea-mysql
+
+  gitea-mysql:
+    image: mysql:8.0.20
+    container_name: gitea-mysql
+    volumes:
+      - ./gitea-mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "TRw21vUcRIJimlFuQDJMGn"
+      MYSQL_DATABASE: "gitea"
+      MYSQL_USER: "gitea"
+      MYSQL_PASSWORD: "StXhlIsyUt9n6AlvkY"
+    command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_allowed_packet=268435456"
+    restart: always
+
+  nexus:
+    image: sonatype/nexus3:3.37.0
+    container_name: nexus
+    volumes:
+      - ./nexus:/nexus-data
+    ports:
+      - 10003:8081
+      - 10004:1443
+      - 10005:1444
+      - 10006:1445
+    restart: always
+
+  openldap:
+    image: osixia/openldap:develop-dev
+    container_name: openldap
+    volumes:
+      - ./openldap/data:/var/lib/ldap
+      - ./openldap/config:/etc/ldap/slapd.d
+    environment:
+      LDAP_ADMIN_PASSWORD: "j2hkqfFR8qobh18Rk1Bj"
+      LDAP_CONFIG_PASSWORD: "A2DU2QzZCCHaajhHqXgok"
+      LDAP_DOMAIN: "dory.local"
+      LDAP_BASE_DN: "dc=dory,dc=local"
+      LDAP_TLS_VERIFY_CLIENT: try
+    restart: always
+
+  ldapadmin:
+    image: osixia/phpldapadmin:stable-amd64
+    container_name: ldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+    ports:
+      - 10008:443
+    restart: always
+    depends_on:
+      - openldap
+
+  redis-core-dory:
+    image: redis:6.2.6-alpine3.15
+    container_name: redis-core-dory
+    volumes:
+      - ./redis-core-dory:/data
+    command: "--appendonly yes --requirepass B1miCQOz4xS1LccJLN"
+    restart: always
+
+  mongo-core-dory:
+    image: mongo:4.4.10-focal
+    container_name: mongo-core-dory
+    volumes:
+      - ./mongo-core-dory:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: "rxb5xVrW2qgwhoRDV08ccs"
+    restart: always
+
+  docker-0:
+    image: docker:20.10.11-dind
+    container_name: docker-0
+    hostname: docker-0.docker
+    volumes:
+      - ./docker/certs:/certs
+      - /etc/docker/certs.d/harbor.new.imdory.com/:/etc/docker/certs.d/harbor.new.imdory.com
+      - ./docker/etc/daemon.json:/etc/docker/daemon.json
+      - ./docker/root/config.json:/root/.docker/config.json
+      - ./dory-core/dory-data:/dory-core/dory-data
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command: "--host=tcp://0.0.0.0:2376 --tlsverify --tlscacert=/certs/ca.crt --tlscert=/certs/tls.crt --tlskey=/certs/tls.key"
+    extra_hosts:
+      - "registry.new.imdory.com:10.1.0.2"
+      - "harbor.new.imdory.com:10.2.0.10"
+    privileged: true
+    restart: always
+
+  # docker-client:
+  #   image: docker:20.10.11
+  #   container_name: docker-client
+  #   volumes:
+  #     - ./docker/certs:/certs
+  #     - /etc/docker/certs.d/harbor.new.imdory.com/:/etc/docker/certs.d/harbor.new.imdory.com
+  #     - ./docker/etc/daemon.json:/etc/docker/daemon.json
+  #     - ./docker/root/config.json:/root/.docker/config.json
+  #   command: "tail -f /dev/null"
+  #   extra_hosts:
+  #     - "registry.new.imdory.com:10.1.0.2"
+  #     - "harbor.new.imdory.com:10.2.0.10"
+  #   entrypoint: ""
+  #   restart: always
+
+  dory-core:
+    image: alpine:3.15.0
+    container_name: dory-core
+    volumes:
+      - ./dory-core:/dory-core
+      - ./docker/certs:/certs
+    command: "/dory-core/dory-core"
+    working_dir: /dory-core
+    user: "1000:1000"
+    extra_hosts:
+      - "registry.new.imdory.com:10.1.0.2"
+      - "harbor.new.imdory.com:10.2.0.10"
+    restart: always
+    depends_on:
+      - redis-core-dory
+      - mongo-core-dory
+
+  dory-dashboard:
+    image: nginx:1.21.4-alpine
+    container_name: dory-dashboard
+    volumes:
+      - ./dory-dashboard/dist:/usr/share/nginx/html
+      - ./dory-dashboard/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 10010:80
+    restart: always
+    depends_on:
+      - dory-core

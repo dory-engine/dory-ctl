@@ -6,17 +6,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type LoginOptions struct {
-	*CommonOptions
+type OptionsLogin struct {
+	*OptionsCommon
 	Username string
 	Password string
 
 	DoryConfig pkg.DoryConfig
 }
 
-func NewOptionsLogin() *LoginOptions {
-	var o LoginOptions
-	o.CommonOptions = CommonOpt
+func NewOptionsLogin() *OptionsLogin {
+	var o OptionsLogin
+	o.OptionsCommon = OptCommon
 	return &o
 }
 
@@ -53,7 +53,7 @@ func NewCmdLogin() *cobra.Command {
 	return cmd
 }
 
-func (o *LoginOptions) Complete(cmd *cobra.Command) error {
+func (o *OptionsLogin) Complete(cmd *cobra.Command) error {
 	var err error
 	conf, _, err := o.ReadConfigFile()
 	if err != nil {
@@ -63,7 +63,7 @@ func (o *LoginOptions) Complete(cmd *cobra.Command) error {
 	return err
 }
 
-func (o *LoginOptions) Validate(args []string) error {
+func (o *OptionsLogin) Validate(args []string) error {
 	var err error
 	if len(args) > 0 {
 		err = fmt.Errorf("not accept any args")
@@ -82,9 +82,8 @@ func (o *LoginOptions) Validate(args []string) error {
 }
 
 // Run executes the appropriate steps to print a model's documentation
-func (o *LoginOptions) Run(args []string) error {
+func (o *OptionsLogin) Run(args []string) error {
 	var err error
-
 	fmt.Println(o.Timeout)
 	fmt.Println(o.Insecure)
 	fmt.Println(o.ServerURL)

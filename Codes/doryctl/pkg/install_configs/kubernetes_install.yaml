@@ -1,0 +1,3 @@
+# kubernetes设置
+dockerName: docker
+dockerNamespace: dory

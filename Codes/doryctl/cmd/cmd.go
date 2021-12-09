@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dorystack/doryctl/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-type CommonOptions struct {
+type OptionsCommon struct {
 	ServerURL string
 	Insecure  bool
 	Timeout   time.Duration
@@ -22,27 +23,48 @@ type CommonOptions struct {
 	LogFile    string
 }
 
-func NewOptionsCommon() *CommonOptions {
-	var o CommonOptions
+func LogSuccess(msg string) {
+	defer color.Unset()
+	color.Set(color.FgGreen)
+	fmt.Println(fmt.Sprintf("[SUCCESS] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+}
+
+func LogInfo(msg string) {
+	defer color.Unset()
+	color.Set(color.FgBlue)
+	fmt.Println(fmt.Sprintf("[INFO]    %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+}
+
+func LogWarning(msg string) {
+	defer color.Unset()
+	color.Set(color.FgMagenta)
+	fmt.Println(fmt.Sprintf("[WARNING] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+}
+
+func LogError(msg string) {
+	defer color.Unset()
+	color.Set(color.FgRed)
+	fmt.Println(fmt.Sprintf("[ERROR]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+}
+
+func NewOptionsCommon() *OptionsCommon {
+	var o OptionsCommon
 	return &o
 }
 
-var CommonOpt = NewOptionsCommon()
+var OptCommon = NewOptionsCommon()
 
 func NewCmdRoot() *cobra.Command {
-	o := CommonOpt
-	msgUse := fmt.Sprintf("%s login [options]", pkg.BaseCmdName)
-	msgShort := fmt.Sprintf("login to DoryEngine server")
-	msgLong := fmt.Sprintf(`Must login before use other %s commands`, pkg.BaseCmdName)
-	msgExample := fmt.Sprintf(`  # Login with username and password input prompt
-  %s login --serverURL http://dory.example.com:8080 --insecure=false
+	o := OptCommon
+	msgUse := fmt.Sprintf("%s is a command line toolkit", pkg.BaseCmdName)
+	msgShort := fmt.Sprintf("command line toolkit")
+	msgLong := fmt.Sprintf(`%s is a command line toolkit to manage dory-engine`, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`  # install dory-engine on docker
+  %s install run --mode=docker -f docker_install.yaml
 
-  # Login without password input prompt
+  # login to dory-engine
   %s login --serverURL http://dory.example.com:8080 --insecure=false --username test-user
-
-  # Login without input prompt
-  %s login --serverURL http://dory.example.com:8080 --insecure=false --username test-user --password xxx
-`, pkg.BaseCmdName, pkg.BaseCmdName, pkg.BaseCmdName)
+`, pkg.BaseCmdName, pkg.BaseCmdName)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -50,6 +72,12 @@ func NewCmdRoot() *cobra.Command {
 		Short:                 msgShort,
 		Long:                  msgLong,
 		Example:               msgExample,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				os.Exit(0)
+			}
+		},
 	}
 
 	cmd.PersistentFlags().StringVarP(&o.ServerURL, "serverURL", "s", "", "DoryEngine server URL, example: http://dory.example.com:8080")
@@ -59,11 +87,12 @@ func NewCmdRoot() *cobra.Command {
 	cmd.PersistentFlags().StringVar(&o.LogLevel, "logLevel", "INFO", "show log level, options: ERROR, WARN, INFO, DEBUG")
 	cmd.PersistentFlags().StringVar(&o.LogFile, "logFile", "", "log File path (if set, save logs in this path)")
 
-	cmd.AddCommand(NewCmdLogin())
+	//cmd.AddCommand(NewCmdLogin())
+	cmd.AddCommand(NewCmdInstall())
 	return cmd
 }
 
-func (o *CommonOptions) GetConfigFile() (string, bool, error) {
+func (o *OptionsCommon) GetConfigFile() (string, bool, error) {
 	errInfo := fmt.Sprintf("get config directory error")
 	var err error
 	var configFile string
@@ -149,7 +178,7 @@ func (o *CommonOptions) GetConfigFile() (string, bool, error) {
 	return configFile, found, err
 }
 
-func (o *CommonOptions) ReadConfigFile() (pkg.DoryConfig, bool, error) {
+func (o *OptionsCommon) ReadConfigFile() (pkg.DoryConfig, bool, error) {
 	var conf pkg.DoryConfig
 	configFile, found, err := o.GetConfigFile()
 	if err != nil {
@@ -184,7 +213,7 @@ func (o *CommonOptions) ReadConfigFile() (pkg.DoryConfig, bool, error) {
 	return conf, found, err
 }
 
-func (o *CommonOptions) WriteConfigFile(conf pkg.DoryConfig) error {
+func (o *OptionsCommon) WriteConfigFile(conf pkg.DoryConfig) error {
 	viper.Set("serverURL", conf.ServerURL)
 	viper.Set("insecure", conf.Insecure)
 	viper.Set("timeout", conf.Timeout)
