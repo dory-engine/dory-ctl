@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 type OptionsInstallRun struct {
@@ -227,6 +228,13 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			}
 		}
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		LogInfo("waiting harbor boot up for 10 seconds ")
+		time.Sleep(time.Second * 10)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
 		if err != nil {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
