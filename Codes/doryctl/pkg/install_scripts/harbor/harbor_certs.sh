@@ -28,10 +28,10 @@ echo "[CMD] openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt"
 openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt
 
 echo "update docker harbor certificates"
-echo "rm -rf /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
-echo "mkdir -p /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
-echo "cp ${HARBOR_CONFIG_DOMAIN_NAME}.cert /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
-echo "cp ${HARBOR_CONFIG_DOMAIN_NAME}.key /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
-echo "cp ca.crt /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
-echo "ls -al /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/"
+rm -rf /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
+mkdir -p /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
+cp ${HARBOR_CONFIG_DOMAIN_NAME}.cert /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
+cp ${HARBOR_CONFIG_DOMAIN_NAME}.key /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
+cp ca.crt /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
+ls -al /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
 cd ..

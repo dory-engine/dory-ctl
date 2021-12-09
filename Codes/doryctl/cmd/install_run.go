@@ -121,6 +121,33 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 
+		// create harbor certificates
+		harborDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.HarborDir)
+		_ = os.MkdirAll(harborDir, 0700)
+		harborScriptDir := "harbor"
+		harborScriptName := "harbor_certs.sh"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
+		if err != nil {
+			return err
+		}
+		strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
+		if err != nil {
+			return err
+		}
+
+		LogInfo("create harbor certificates begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			LogError(err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
+
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
 		_ = os.MkdirAll(doryDir, 0700)
@@ -149,11 +176,11 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		if err != nil {
 			return err
 		}
-		strScript, err := pkg.ParseTplFromVals(vals, string(bs))
+		strDockerCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName), []byte(strScript), 0600)
+		err = os.WriteFile(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName), []byte(strDockerCertScript), 0600)
 		if err != nil {
 			return err
 		}
