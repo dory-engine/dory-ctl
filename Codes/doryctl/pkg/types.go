@@ -11,11 +11,15 @@ type DoryConfig struct {
 }
 
 type InstallDockerConfig struct {
-	RootDir string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
-	Docker  struct {
-		DockerName      string `yaml:"dockerName" json:"dockerName" bson:"dockerName" validate:"required"`
-		DockerNamespace string `yaml:"dockerNamespace" json:"dockerNamespace" bson:"dockerNamespace" validate:""`
-	} `yaml:"docker" json:"docker" bson:"docker" validate:"required"`
+	RootDir   string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
+	DoryDir   string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
+	HarborDir string `yaml:"harborDir" json:"harborDir" bson:"harborDir" validate:"required"`
+	Dory      struct {
+		Docker struct {
+			DockerName      string `yaml:"dockerName" json:"dockerName" bson:"dockerName" validate:"required"`
+			DockerNamespace string `yaml:"dockerNamespace" json:"dockerNamespace" bson:"dockerNamespace" validate:""`
+		} `yaml:"docker" json:"docker" bson:"docker" validate:"required"`
+	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	Harbor struct {
 		DomainName    string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
 		CertsPath     string `yaml:"certsPath" json:"certsPath" bson:"certsPath" validate:"required"`

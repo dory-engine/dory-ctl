@@ -1,2 +1,2 @@
-./install.sh
+sh install.sh
 docker-compose stop && docker-compose rm -f

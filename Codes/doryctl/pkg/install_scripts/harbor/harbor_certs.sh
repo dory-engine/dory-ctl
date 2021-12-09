@@ -3,8 +3,6 @@ export HARBOR_CONFIG_DOMAIN_NAME={{ $.harbor.domainName }}
 # 设置证书存放的相对路径
 export HARBOR_CONFIG_CERT_PATH={{ $.harbor.certsPath }}
 
-mkdir -p  {{ $.rootDir }}
-cd {{ $.rootDir }}
 rm -rf ${HARBOR_CONFIG_CERT_PATH}/
 mkdir -p ${HARBOR_CONFIG_CERT_PATH}/
 cd ${HARBOR_CONFIG_CERT_PATH}/

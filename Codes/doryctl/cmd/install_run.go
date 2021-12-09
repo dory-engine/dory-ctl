@@ -98,15 +98,13 @@ func (o *OptionsInstallRun) Run(args []string) error {
 	}
 
 	if o.Mode == "docker" {
-		defer os.RemoveAll(pkg.DirInstallScripts)
-
-		var idc pkg.InstallDockerConfig
-		err = yaml.Unmarshal(bs, &idc)
+		var installDockerConfig pkg.InstallDockerConfig
+		err = yaml.Unmarshal(bs, &installDockerConfig)
 		if err != nil {
 			return err
 		}
 		validate := validator.New()
-		err = validate.Struct(idc)
+		err = validate.Struct(installDockerConfig)
 		if err != nil {
 			return err
 		}
@@ -117,8 +115,12 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 
-		scriptName := fmt.Sprintf("%s/dory/docker/docker_certs.sh", pkg.DirInstallScripts)
-		bs, err = pkg.FsInstallScripts.ReadFile(scriptName)
+		// create docker certificates
+		dockerDir := fmt.Sprintf("%s/%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir, installDockerConfig.Dory.Docker.DockerName)
+		_ = os.MkdirAll(dockerDir, 0700)
+		dockerScriptDir := "dory/docker"
+		dockerScriptName := "docker_certs.sh"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerScriptDir, dockerScriptName))
 		if err != nil {
 			return err
 		}
@@ -126,15 +128,13 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		if err != nil {
 			return err
 		}
-
-		_ = os.MkdirAll(fmt.Sprintf("%s/docker", pkg.DirInstallScripts), 0700)
-		err = os.WriteFile(scriptName, []byte(strScript), 0600)
+		err = os.WriteFile(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName), []byte(strScript), 0600)
 		if err != nil {
 			return err
 		}
 
 		LogInfo("create docker certificates begin")
-		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s/dory/docker/docker_certs.sh", pkg.DirInstallScripts), ".")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", dockerScriptName), dockerDir)
 		if err != nil {
 			err = fmt.Errorf("create docker certificates error: %s", err.Error())
 			LogError(err.Error())
