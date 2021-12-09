@@ -220,12 +220,15 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		//	err = fmt.Errorf("install harbor error: %s", err.Error())
 		//	return err
 		//}
-		outEtcHosts, _, err := pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
 		if err != nil {
-			err = fmt.Errorf("install harbor error: %s", err.Error())
-			return err
+			// harbor domain name not exists
+			_, _, err = pkg.CommandExec(fmt.Sprintf("echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.Harbor.DomainName), harborDir)
+			if err != nil {
+				err = fmt.Errorf("install harbor error: %s", err.Error())
+				return err
+			}
 		}
-		fmt.Println("####", len(outEtcHosts))
 		// update /etc/hosts
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
