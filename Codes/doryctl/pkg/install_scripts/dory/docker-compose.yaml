@@ -109,31 +109,29 @@ services:
     restart: always
   {{- end }}
 
-#  dory-core:
-#    image: alpine:3.15.0
-#    container_name: dory-core
-#    volumes:
-#      - ./dory-core:/dory-core
-#      - ./docker/certs:/certs
-#    command: "/dory-core/dory-core"
-#    working_dir: /dory-core
-#    user: "1000:1000"
-#    extra_hosts:
-#      - "registry.new.imdory.com:10.1.0.2"
-#      - "harbor.new.imdory.com:10.2.0.10"
-#    restart: always
-#    depends_on:
-#      - redis-core-dory
-#      - mongo-core-dory
-#
-#  dory-dashboard:
-#    image: nginx:1.21.4-alpine
-#    container_name: dory-dashboard
-#    volumes:
-#      - ./dory-dashboard/dist:/usr/share/nginx/html
-#      - ./dory-dashboard/nginx/nginx.conf:/etc/nginx/nginx.conf
-#    ports:
-#      - 10010:80
-#    restart: always
-#    depends_on:
-#      - dory-core
+  dory-core:
+    image: dorystack/dory-core:v1.5.0-alpine3.15.0
+    container_name: dory-core
+    volumes:
+      - ./dory-core/config:/dory-core/config
+      - ./dory-core/dory-data:/dory-core/dory-data
+      - ./dory-core/tmp:/dory-core/tmp
+      - ./docker/certs:/certs
+    command: "/dory-core/dory-core"
+    working_dir: /dory-core
+    user: "1000:1000"
+    extra_hosts:
+      - "{{ $.harbor.domainName }}:{{ $.hostIP}}"
+    restart: always
+    depends_on:
+      - redis-core-dory
+      - mongo-core-dory
+
+  dory-dashboard:
+    image: dorystack/dory-dashboard:v1.5.0
+    container_name: dory-dashboard
+    ports:
+      - {{ $.dory.dorycore.port }}:80
+    restart: always
+    depends_on:
+      - dory-core
