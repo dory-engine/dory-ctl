@@ -337,12 +337,26 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			err = fmt.Errorf("get nexus init data error: %s", err.Error())
 			return err
 		}
-		_, _, err = pkg.CommandExec(fmt.Sprintf("docker cp nexus-data-init:/nexus-data/nexus ."), doryDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker cp nexus-data-init:/nexus-data/nexus . && docker rm -f nexus-data-init"), doryDir)
 		if err != nil {
 			err = fmt.Errorf("get nexus init data error: %s", err.Error())
 			return err
 		}
 		LogSuccess(fmt.Sprintf("get nexus init data %s success", doryDir))
+
+		// create directory and chown
+		_ = os.MkdirAll(fmt.Sprintf("%s/mongo-core-dory", doryDir), 0700)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/mongo-core-dory", doryDir), doryDir)
+		if err != nil {
+			err = fmt.Errorf("create directory and chown error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 200:200 %s/nexus", doryDir), doryDir)
+		if err != nil {
+			err = fmt.Errorf("create directory and chown error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("create directory and chown %s success", doryDir))
 
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)
