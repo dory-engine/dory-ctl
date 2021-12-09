@@ -89,10 +89,11 @@ services:
 
   {{- $list := (repeat $.dory.docker.dockerNumber "x " | trim | split " ") -}}
   {{- range $i, $_ := $list }}
-  {{ $.dory.docker.dockerName }}-{{ $i | replace "_" "" }}:
+  {{- $idx := $i | replace "_" "" -}}
+  {{ $.dory.docker.dockerName }}-{{ $idx }}:
     image: {{ $.dory.docker.image }}
-    container_name: {{ $.dory.docker.dockerName }}-{{ $i }}
-    hostname: {{ $.dory.docker.dockerName }}-{{ $i }}.{{ $.dory.docker.dockerName }}
+    container_name: {{ $.dory.docker.dockerName }}-{{ $idx }}
+    hostname: {{ $.dory.docker.dockerName }}-{{ $idx }}.{{ $.dory.docker.dockerName }}
     volumes:
       - ./{{ $.dory.docker.dockerName }}/certs:/certs
       - /etc/docker/certs.d/harbor.new.imdory.com/:/etc/docker/certs.d/harbor.new.imdory.com
