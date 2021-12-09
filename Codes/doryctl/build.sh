@@ -1,5 +1,5 @@
 # 执行编译
-cd /root/devops-dory-core/Codes/doryctl
+cd /root/devops-dory-ctl/Codes/doryctl
 git pull
 date && time go build
 ls -al
