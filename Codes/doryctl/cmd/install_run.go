@@ -223,7 +223,7 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
 		if err != nil {
 			// harbor domain name not exists
-			_, _, err = pkg.CommandExec(fmt.Sprintf("echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.Harbor.DomainName), harborDir)
+			_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.Harbor.DomainName), harborDir)
 			if err != nil {
 				err = fmt.Errorf("install harbor error: %s", err.Error())
 				return err
