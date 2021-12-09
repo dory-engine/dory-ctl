@@ -3,8 +3,6 @@ export DORY_DOCKER_NAME={{ $.dory.docker.dockerName }}
 # 设置docker所在的名字空间
 export DORY_DOCKER_NAMESPACE={{ $.dory.docker.dockerNamespace }}
 
-mkdir -p  {{ $.rootDir }}
-cd {{ $.rootDir }}
 sudo rm -rf certs/
 mkdir -p certs/
 cd certs/
