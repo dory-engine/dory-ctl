@@ -96,7 +96,7 @@ services:
     hostname: {{ $.dory.docker.dockerName }}-{{ $idx }}.{{ $.dory.docker.dockerName }}
     volumes:
       - ./{{ $.dory.docker.dockerName }}/certs:/certs
-      - /etc/docker/certs.d/harbor.new.imdory.com/:/etc/docker/certs.d/harbor.new.imdory.com
+      - /etc/docker/certs.d/{{ $.harbor.domainName }}/:/etc/docker/certs.d/{{ $.harbor.domainName }}
       - ./{{ $.dory.docker.dockerName }}/daemon.json:/etc/docker/daemon.json
       - ./{{ $.dory.docker.dockerName }}/config.json:/root/.docker/config.json
       - ./dory-core/dory-data:/dory-core/dory-data

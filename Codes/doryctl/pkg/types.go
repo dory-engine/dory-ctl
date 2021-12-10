@@ -10,6 +10,13 @@ type DoryConfig struct {
 	UserToken   string        `yaml:"userToken" json:"userToken" bson:"userToken" validate:""`
 }
 
+type InstallDockerImages struct {
+	InstallDockerImages []struct {
+		Source string `yaml:"source" json:"source" bson:"source" validate:"required"`
+		Target string `yaml:"target" json:"target" bson:"target" validate:"required"`
+	} `yaml:"dockerImages" json:"dockerImages" bson:"dockerImages" validate:""`
+}
+
 type InstallDockerConfig struct {
 	RootDir   string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
 	DoryDir   string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`

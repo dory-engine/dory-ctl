@@ -163,6 +163,33 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
 
+		// pull docker images
+		harborDockerImagesYaml := "docker-images.yaml"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborDockerImagesYaml))
+		if err != nil {
+			err = fmt.Errorf("pull docker images error: %s", err.Error())
+			return err
+		}
+		var dockerImages pkg.InstallDockerImages
+		err = yaml.Unmarshal(bs, &dockerImages)
+		if err != nil {
+			err = fmt.Errorf("pull docker images error: %s", err.Error())
+			return err
+		}
+		LogInfo("docker images need to pull")
+		for _, idi := range dockerImages.InstallDockerImages {
+			fmt.Println(fmt.Sprintf("%s", idi.Source))
+		}
+		LogInfo("pull docker images begin")
+		for _, idi := range dockerImages.InstallDockerImages {
+			_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
+			if err != nil {
+				err = fmt.Errorf("pull docker image %s error: %s", idi.Source, err.Error())
+				return err
+			}
+		}
+		LogSuccess(fmt.Sprintf("pull docker images success"))
+
 		// extract harbor install files
 		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
 		if err != nil {
@@ -261,11 +288,23 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
+		LogInfo("docker images push to harbor")
+		for _, idi := range dockerImages.InstallDockerImages {
+			targetImage := fmt.Sprintf("%s/%s", installDockerConfig.Harbor.DomainName, idi.Target)
+			_, _, err = pkg.CommandExec(fmt.Sprintf("docker tag %s %s && docker push %s", idi.Source, targetImage, targetImage), ".")
+			if err != nil {
+				err = fmt.Errorf("docker images push to harbor %s error: %s", idi.Source, err.Error())
+				return err
+			}
+		}
+		LogSuccess(fmt.Sprintf("docker images push to harbor success"))
+
 		//////////////////////////////////////////////////
 
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
-		_ = os.MkdirAll(doryDir, 0700)
+		_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", doryDir), 0700)
+		_ = os.MkdirAll(fmt.Sprintf("%s/tmp", doryDir), 0700)
 		dockerComposeDir := "dory"
 		dockerComposeName := "docker-compose.yaml"
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
