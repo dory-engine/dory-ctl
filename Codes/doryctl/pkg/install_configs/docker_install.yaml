@@ -110,3 +110,48 @@ dorycore:
     ssl: false
     # 邮件发送人名字
     from: "DORY-管理员 <13812341234@139.com>"
+  # kubernetes环境配置
+  kubernetes:
+    # kubernetes环境的 apiserver 地址
+    host: "10.1.0.2"
+    # kubernetes环境的 apiserver 端口
+    port: 6443
+    # kubernetes环境的 apiserver token
+    token: "xxx"
+    # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
+    # pvConfigLocal:
+    #   # 本地存储路径
+    #   localPath: "/data/k8s-vols"
+
+    # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
+    pvConfigNfs:
+      # nfs存储路径
+      nfsPath: "/data/nfs-vols/k8s-vols"
+      # nfs服务器地址
+      nfsServer: "10.2.0.10"
+
+    # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
+    # pvConfigCephfs:
+    #   # ceph存储路径
+    #   cephPath: "/k8s-deploy"
+    #   # ceph账号
+    #   cephUser: admin
+    #   # ceph秘钥
+    #   cephSecret: "xxx"
+    #   # ceph monitor地址
+    #   cephMonitors:
+    #   - "192.168.0.1:6789"
+    #   - "192.168.0.2:6789"
+    #   - "192.168.0.3:6789"
+
+    # # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
+    # pvConfigGlusterfs:
+    #   # glusterfs存储集群ip地址
+    #   endpointIPs:
+    #   - "192.168.0.1"
+    #   - "192.168.0.2"
+    #   - "192.168.0.3"
+    #   # glusterfs存储集群端口
+    #   endpointPort: 1
+    #   # glusterfs存储集群路径
+    #   path: "kube_vol"

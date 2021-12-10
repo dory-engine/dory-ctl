@@ -288,7 +288,9 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		dorycoreConfigDir := fmt.Sprintf("%s/config", dorycoreDir)
 		dorycoreScriptDir := "dory/dory-core"
 		dorycoreConfigName := "config.yaml"
+		dorycoreEnvK8sName := "env-k8s-test.yaml"
 		_ = os.MkdirAll(dorycoreConfigDir, 0700)
+		// create config.yaml
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreConfigName))
 		if err != nil {
 			return err
@@ -299,6 +301,21 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 		err = os.WriteFile(fmt.Sprintf("%s/%s", dorycoreConfigDir, dorycoreConfigName), []byte(strDorycoreConfig), 0600)
+		if err != nil {
+			err = fmt.Errorf("create dory-core config files error: %s", err.Error())
+			return err
+		}
+		// create env-k8s-test.yaml
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreEnvK8sName))
+		if err != nil {
+			return err
+		}
+		strDorycoreEnvK8s, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create dory-core config files error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", dorycoreConfigDir, dorycoreEnvK8sName), []byte(strDorycoreEnvK8s), 0600)
 		if err != nil {
 			err = fmt.Errorf("create dory-core config files error: %s", err.Error())
 			return err
@@ -387,6 +404,11 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 200:200 %s/nexus", doryDir), doryDir)
+		if err != nil {
+			err = fmt.Errorf("create directory and chown error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 1000:1000 %s/dory-core", doryDir), doryDir)
 		if err != nil {
 			err = fmt.Errorf("create directory and chown error: %s", err.Error())
 			return err

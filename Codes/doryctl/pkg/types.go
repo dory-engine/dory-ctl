@@ -78,5 +78,28 @@ type InstallDockerConfig struct {
 			Ssl      bool   `yaml:"ssl" json:"ssl" bson:"ssl" validate:""`
 			From     string `yaml:"from" json:"from" bson:"from" validate:"required"`
 		} `yaml:"mail" json:"mail" bson:"mail" validate:"required"`
+		Kubernetes struct {
+			Host          string `yaml:"host" json:"host" bson:"host" validate:"required"`
+			Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+			Token         string `yaml:"token" json:"token" bson:"token" validate:"required"`
+			PvConfigLocal struct {
+				LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
+			} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
+			PvConfigNfs struct {
+				NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:""`
+				NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:""`
+			} `yaml:"pvConfigNfs" json:"pvConfigNfs" bson:"pvConfigNfs" validate:""`
+			PvConfigCephfs struct {
+				CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:""`
+				CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:""`
+				CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
+				CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
+			} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
+			PvConfigGlusterfs struct {
+				EndpointIPs  []string `yaml:"endpointIPs" json:"endpointIPs" bson:"endpointIPs" validate:""`
+				EndpointPort int      `yaml:"endpointPort" json:"endpointPort" bson:"endpointPort" validate:""`
+				Path         string   `yaml:"path" json:"path" bson:"path" validate:""`
+			} `yaml:"pvConfigGlusterfs" json:"pvConfigGlusterfs" bson:"pvConfigGlusterfs" validate:""`
+		} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 	} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 }

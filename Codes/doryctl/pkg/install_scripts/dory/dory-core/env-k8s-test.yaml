@@ -1,0 +1,154 @@
+# kubernetes环境标识
+envName: test
+# kubernetes环境描述，用于显示在流水线上的环境名称
+envDesc: 测试环境
+# kubernetes环境的 apiserver 地址
+host: {{ $.dorycore.kubernetes.host | quote }}
+# kubernetes环境的 apiserver 端口
+port: {{ $.dorycore.kubernetes.port }}
+# kubernetes环境的 apiserver token
+token: {{ $.dorycore.kubernetes.token | quote }}
+# 用于在集群中创建项目的数据目录的pod配置
+projectDataPod:
+  # pod所在名字空间
+  namespace: dory
+  # pod
+  pod: project-data-alpine-0
+  # pod中项目共享目录的路径
+  path: /project-data
+
+# harbor配置，用于kubernetes集群拉取harbor镜像
+harborConfig:
+  hostname: {{ $.harbor.domainName | quote }}
+  # ip地址使用集群vip
+  ip: {{ $.hostIP | quote }}
+  port: 443
+  username: admin
+  password: {{ $.harbor.adminPassword | quote }}
+  email: admin@example.com
+
+# nexus配置，用于kubernetes集群拉取的debug容器yum源设置和docker proxy设置
+# 注意，需要设置kubernetes集群的insecure-registry
+nexusConfig:
+  hostname: {{ $.hostIP | quote }}
+  # ip地址使用集群vip
+  ip: {{ $.hostIP | quote }}
+  port: {{ $.dory.nexus.port }}
+  portDocker: {{ $.dory.nexus.portHub }}
+  portGcr: {{ $.dory.nexus.portGcr }}
+  portQuay: {{ $.dory.nexus.portQuay }}
+  username: public-user
+  password: public-user
+  email: public-user@139.com
+
+{{- if $.dorycore.kubernetes.pvConfigLocal.localPath }}
+# 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
+pvConfigLocal:
+  # 本地存储路径
+  localPath: {{ $.dorycore.kubernetes.pvConfigLocal.localPath | quote }}
+{{- else }}
+# # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
+# pvConfigLocal:
+#   # 本地存储路径
+#   localPath: "/data/k8s-vols"
+{{- end }}
+
+{{- if $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
+# 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
+pvConfigNfs:
+  # nfs存储路径
+  nfsPath: {{ $.dorycore.kubernetes.pvConfigNfs.nfsPath | quote }}
+  # nfs服务器地址
+  nfsServer: {{ $.dorycore.kubernetes.pvConfigNfs.nfsServer | quote }}
+{{- else }}
+# # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
+# pvConfigNfs:
+#   # nfs存储路径
+#   nfsPath: "/data/nfs-vols/k8s-vols"
+#   # nfs服务器地址
+#   nfsServer: "10.2.0.10"
+{{- end }}
+
+{{- if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+# 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
+pvConfigCephfs:
+  # ceph存储路径
+  cephPath: {{ $.dorycore.kubernetes.pvConfigCephfs.cephPath | quote }}
+  # ceph账号
+  cephUser: {{ $.dorycore.kubernetes.pvConfigCephfs.cephUser | quote }}
+  # ceph秘钥
+  cephSecret: {{ $.dorycore.kubernetes.pvConfigCephfs.cephSecret | quote }}
+  # ceph monitor地址
+  cephMonitors:
+  {{- range $_, $cephMonitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
+  - {{ $cephMonitor | quote }}
+  {{- end }}
+{{- else }}
+# # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
+# pvConfigCephfs:
+#   # ceph存储路径
+#   cephPath: "/k8s-deploy"
+#   # ceph账号
+#   cephUser: "admin"
+#   # ceph秘钥
+#   cephSecret: "XXXXX"
+#   # ceph monitor地址
+#   cephMonitors:
+#   - "192.168.0.1:6789"
+#   - "192.168.0.2:6789"
+#   - "192.168.0.3:6789"
+{{- end }}
+
+{{- if $.dorycore.kubernetes.pvConfigGlusterfs.path }}
+# 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
+pvConfigGlusterfs:
+  # glusterfs存储集群ip地址
+  endpointIPs:
+  {{- range $_, $endpointIP := $.dorycore.kubernetes.pvConfigGlusterfs.endpointIPs }}
+  - {{ $endpointIP | quote }}
+  {{- end }}
+  # glusterfs存储集群端口
+  endpointPort: {{ $.dorycore.kubernetes.pvConfigGlusterfs.endpointPort }}
+  # glusterfs存储集群路径
+  path: {{ $.dorycore.kubernetes.pvConfigGlusterfs.path | quote }}
+{{- else }}
+# # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
+# pvConfigGlusterfs:
+#   # glusterfs存储集群ip地址
+#   endpointIPs:
+#   - "192.168.0.1"
+#   - "192.168.0.2"
+#   - "192.168.0.3"
+#   # glusterfs存储集群端口
+#   endpointPort: 1
+#   # glusterfs存储集群路径
+#   path: "kube_vol"
+{{- end }}
+
+# 项目的deployment选择部署在什么标签的节点上，格式为（labelName: labelValue）
+projectNodeSelector: {}
+
+# kuberentes项目namespace的资源默认限制设置，默认开通项目namespace会按照这个配置设置资源配额
+limitConfig:
+  # 默认每个Pod的资源配额限制
+  containerLimit:
+    # 默认每个Pod的请求内存资源设置（100Mi表示100M内存，1Gi表示1G内存）
+    memoryRequest: 20Mi
+    # 默认每个Pod的请求cpu资源设置（100m表示0.1，表示0.1个CPU）
+    cpuRequest: 10m
+    # 默认每个Pod的最大内存资源设置（100Mi表示100M内存，1Gi表示1G内存）
+    memoryLimit: 50Mi
+    # 默认每个Pod的最大cpu资源设置（100m表示0.1，表示0.1个CPU）
+    cpuLimit: 50m
+  # 整个项目的容器云资源配额限制
+  namespaceLimit:
+    # 整个项目所有Pod的请求内存资源总和设置（100Mi表示100M内存，1Gi表示1G内存）
+    memoryRequest: 1Gi
+    # 整个项目所有Pod的请求cpu资源总和设置（100m表示0.1，表示0.1个CPU）
+    cpuRequest: 1000m
+    # 整个项目所有Pod的最大内存资源总和设置（100Mi表示100M内存，1Gi表示1G内存）
+    memoryLimit: 4Gi
+    # 整个项目所有Pod的最大cpu资源总和设置（100m表示0.1，表示0.1个CPU）
+    cpuLimit: 4000m
+    # 整个项目所有Pod的数量总和设置
+    podsLimit: 32
