@@ -1,68 +1,24 @@
 dockerImages:
   - source: busybox:latest
     target: public/busybox:latest
-  - source: dorystack/alpine:3.10.9-dory
-    target: public/alpine:3.10.9-dory
-  - source: dorystack/alpine:3.11.13-dory
-    target: public/alpine:3.11.13-dory
-  - source: dorystack/alpine:3.12.9-dory
-    target: public/alpine:3.12.9-dory
-  - source: dorystack/alpine:3.13.7-dory
-    target: public/alpine:3.13.7-dory
   - source: dorystack/alpine:3.14.3-dory
     target: public/alpine:3.14.3-dory
   - source: dorystack/alpine:3.15.0-dory
     target: public/alpine:3.15.0-dory
-  - source: dorystack/alpine:3.9.6-dory
-    target: public/alpine:3.9.6-dory
-  - source: dorystack/golang:1.13.15-alpine3.12-dory
-    target: public/golang:1.13.15-alpine3.12-dory
   - source: dorystack/golang:1.14.15-alpine3.13-dory
     target: public/golang:1.14.15-alpine3.13-dory
-  - source: dorystack/golang:1.15.15-alpine3.14-dory
-    target: public/golang:1.15.15-alpine3.14-dory
-  - source: dorystack/golang:1.16.10-alpine3.15-dory
-    target: public/golang:1.16.10-alpine3.15-dory
   - source: dorystack/golang:1.17.3-alpine3.15-dory
     target: public/golang:1.17.3-alpine3.15-dory
-  - source: dorystack/gradle:4.10.2-jdk10-dory
-    target: public/gradle:4.10.2-jdk10-dory
-  - source: dorystack/gradle:4.10.2-jdk7-dory
-    target: public/gradle:4.10.2-jdk7-dory
-  - source: dorystack/gradle:4.8.0-jdk9-dory
-    target: public/gradle:4.8.0-jdk9-dory
-  - source: dorystack/gradle:5.6.4-jdk12-dory
-    target: public/gradle:5.6.4-jdk12-dory
-  - source: dorystack/gradle:6.3.0-jdk13-dory
-    target: public/gradle:6.3.0-jdk13-dory
   - source: dorystack/gradle:6.7.0-jdk14-dory
     target: public/gradle:6.7.0-jdk14-dory
-  - source: dorystack/gradle:6.8.3-jdk15-dory
-    target: public/gradle:6.8.3-jdk15-dory
-  - source: dorystack/gradle:7.2.0-jdk16-dory
-    target: public/gradle:7.2.0-jdk16-dory
   - source: dorystack/gradle:7.3.0-jdk11-dory
     target: public/gradle:7.3.0-jdk11-dory
   - source: dorystack/gradle:7.3.0-jdk17-dory
     target: public/gradle:7.3.0-jdk17-dory
   - source: dorystack/gradle:7.3.0-jdk8-dory
     target: public/gradle:7.3.0-jdk8-dory
-  - source: dorystack/maven:3.5.4-jdk-9-dory
-    target: public/maven:3.5.4-jdk-9-dory
-  - source: dorystack/maven:3.6.0-jdk-10-dory
-    target: public/maven:3.6.0-jdk-10-dory
-  - source: dorystack/maven:3.6.1-jdk-7-dory
-    target: public/maven:3.6.1-jdk-7-dory
-  - source: dorystack/maven:3.6.2-jdk-12-dory
-    target: public/maven:3.6.2-jdk-12-dory
-  - source: dorystack/maven:3.6.3-jdk-13-dory
-    target: public/maven:3.6.3-jdk-13-dory
   - source: dorystack/maven:3.6.3-jdk-14-dory
     target: public/maven:3.6.3-jdk-14-dory
-  - source: dorystack/maven:3.8.1-openjdk-15-dory
-    target: public/maven:3.8.1-openjdk-15-dory
-  - source: dorystack/maven:3.8.3-openjdk-16-dory
-    target: public/maven:3.8.3-openjdk-16-dory
   - source: dorystack/maven:3.8.3-openjdk-17-dory
     target: public/maven:3.8.3-openjdk-17-dory
   - source: dorystack/maven:3.8.4-jdk-11-dory
@@ -71,31 +27,13 @@ dockerImages:
     target: public/maven:3.8.4-jdk-8-dory
   - source: dorystack/python:3.10.0-alpine3.15-dory
     target: public/python:3.10.0-alpine3.15-dory
-  - source: dorystack/python:3.6.15-alpine3.15-dory
-    target: public/python:3.6.15-alpine3.15-dory
-  - source: dorystack/python:3.7.12-alpine3.15-dory
-    target: public/python:3.7.12-alpine3.15-dory
-  - source: dorystack/python:3.8.12-alpine3.15-dory
-    target: public/python:3.8.12-alpine3.15-dory
   - source: dorystack/python:3.9.9-alpine3.15-dory
     target: public/python:3.9.9-alpine3.15-dory
-  - source: node:10.17.0-alpine3.10
-    target: hub/node:10.17.0-alpine3.10
-  - source: node:11.15.0-alpine
-    target: hub/node:11.15.0-alpine
-  - source: node:12.13.1-alpine3.10
-    target: hub/node:12.13.1-alpine3.10
   - source: node:13.14-alpine3.11
     target: hub/node:13.14-alpine3.11
-  - source: node:14.17.3-alpine3.14
-    target: hub/node:14.17.3-alpine3.14
   - source: node:15.14.0-alpine3.13
     target: hub/node:15.14.0-alpine3.13
-  - source: node:16.5.0-alpine3.14
-    target: hub/node:16.5.0-alpine3.14
   - source: node:17.0.1-alpine3.14
     target: hub/node:17.0.1-alpine3.14
-  - source: node:8.16.2-alpine3.10
-    target: hub/node:8.16.2-alpine3.10
-  - source: node:9.11.2-alpine
-    target: hub/node:9.11.2-alpine
+  - source: openjdk:14-jdk-alpine3.10
+    target: hub/openjdk:14-jdk-alpine3.10

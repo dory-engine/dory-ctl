@@ -251,9 +251,9 @@ defaultPipeline:
 demoProjectImageSettings:
   springDemoImage: "hub/openjdk:14-jdk-alpine3.10"
   nodeDemoImage: "hub/node:13.14-alpine3.11"
-  pythonDemoImage: "hub/python:3.9.9-alpine3.15"
-  goDemoImage: "hub/alpine:3.15.0"
-  ginDemoImage: "hub/alpine:3.15.0"
+  pythonDemoImage: "public/python:3.9.9-alpine3.15-dory"
+  goDemoImage: "public/alpine:3.15.0-dory"
+  ginDemoImage: "public/alpine:3.15.0-dory"
 
 # 编译环境设置，对应的环境与docker镜像设置
 buildDockerEnvs:
@@ -313,26 +313,12 @@ buildDockerEnvs:
         - buildEnvName: maven-jdk17
           # 构建环境容器镜像所在的镜像仓库相对路径
           image: "public/maven:3.8.3-openjdk-17-dory"
-        - buildEnvName: maven-jdk16
-          image: "public/maven:3.8.3-openjdk-16-dory"
-        - buildEnvName: maven-jdk15
-          image: "public/maven:3.8.1-openjdk-15-dory"
         - buildEnvName: maven-jdk14
           image: "public/maven:3.6.3-jdk-14-dory"
-        - buildEnvName: maven-jdk13
-          image: "public/maven:3.6.3-jdk-13-dory"
-        - buildEnvName: maven-jdk12
-          image: "public/maven:3.6.2-jdk-12-dory"
         - buildEnvName: maven-jdk11
           image: "public/maven:3.8.4-jdk-11-dory"
-        - buildEnvName: maven-jdk10
-          image: "public/maven:3.6.0-jdk-10-dory"
-        - buildEnvName: maven-jdk9
-          image: "public/maven:3.5.4-jdk-9-dory"
         - buildEnvName: maven-jdk8
           image: "public/maven:3.8.4-jdk-8-dory"
-        - buildEnvName: maven-jdk7
-          image: "public/maven:3.6.1-jdk-7-dory"
         - buildEnvName: maven
           image: "public/maven:3.8.3-openjdk-17-dory"
       # 构建环境的类型
@@ -351,24 +337,10 @@ buildDockerEnvs:
       buildEnvs:
         - buildEnvName: npm-node17
           image: "hub/node:17.0.1-alpine3.14"
-        - buildEnvName: npm-node16
-          image: "hub/node:16.5.0-alpine3.14"
         - buildEnvName: npm-node15
           image: "hub/node:15.14.0-alpine3.13"
-        - buildEnvName: npm-node14
-          image: "hub/node:14.17.3-alpine3.14"
         - buildEnvName: npm-node13
           image: "hub/node:13.14-alpine3.11"
-        - buildEnvName: npm-node12
-          image: "hub/node:12.13.1-alpine3.10"
-        - buildEnvName: npm-node11
-          image: "hub/node:11.15.0-alpine"
-        - buildEnvName: npm-node10
-          image: "hub/node:10.17.0-alpine3.10"
-        - buildEnvName: npm-node9
-          image: "hub/node:9.11.2-alpine"
-        - buildEnvName: npm-node8
-          image: "hub/node:8.16.2-alpine3.10"
         - buildEnvName: npm
           image: "hub/node:17.0.1-alpine3.14"
       # 构建环境的类型
@@ -387,14 +359,8 @@ buildDockerEnvs:
       buildEnvs:
         - buildEnvName: go-1.17
           image: "public/golang:1.17.3-alpine3.15-dory"
-        - buildEnvName: go-1.16
-          image: "public/golang:1.16.10-alpine3.15-dory"
-        - buildEnvName: go-1.15
-          image: "public/golang:1.15.15-alpine3.14-dory"
         - buildEnvName: go-1.14
           image: "public/golang:1.14.15-alpine3.13-dory"
-        - buildEnvName: go-1.13
-          image: "public/golang:1.13.15-alpine3.12-dory"
         - buildEnvName: go
           image: "public/golang:1.17.3-alpine3.15-dory"
       # 构建环境的类型
@@ -415,12 +381,6 @@ buildDockerEnvs:
           image: "public/python:3.10.0-alpine3.15-dory"
         - buildEnvName: python-3.9
           image: "public/python:3.9.9-alpine3.15-dory"
-        - buildEnvName: python-3.8
-          image: "public/python:3.8.12-alpine3.15-dory"
-        - buildEnvName: python-3.7
-          image: "public/python:3.7.12-alpine3.15-dory"
-        - buildEnvName: python-3.6
-          image: "public/python:3.6.15-alpine3.15-dory"
         - buildEnvName: python
           image: "public/python:3.10.0-alpine3.15-dory"
       # 构建环境的类型
@@ -439,26 +399,12 @@ buildDockerEnvs:
       buildEnvs:
         - buildEnvName: gradle-jdk17
           image: "public/gradle:7.3.0-jdk17-dory"
-        - buildEnvName: gradle-jdk16
-          image: "public/gradle:7.2.0-jdk16-dory"
-        - buildEnvName: gradle-jdk15
-          image: "public/gradle:6.8.3-jdk15-dory"
         - buildEnvName: gradle-jdk14
           image: "public/gradle:6.7.0-jdk14-dory"
-        - buildEnvName: gradle-jdk13
-          image: "public/gradle:6.3.0-jdk13-dory"
-        - buildEnvName: gradle-jdk12
-          image: "public/gradle:5.6.4-jdk12-dory"
         - buildEnvName: gradle-jdk11
           image: "public/gradle:7.3.0-jdk11-dory"
-        - buildEnvName: gradle-jdk10
-          image: "public/gradle:4.10.2-jdk10-dory"
-        - buildEnvName: gradle-jdk9
-          image: "public/gradle:4.8.0-jdk9-dory"
         - buildEnvName: gradle-jdk8
           image: "public/gradle:7.3.0-jdk8-dory"
-        - buildEnvName: gradle-jdk7
-          image: "public/gradle:4.10.2-jdk7-dory"
         - buildEnvName: gradle
           image: "public/gradle:7.3.0-jdk17-dory"
       # 构建环境的类型
@@ -479,15 +425,5 @@ buildDockerEnvs:
           image: "public/alpine:3.15.0-dory"
         - buildEnvName: alpine-3.14
           image: "public/alpine:3.14.3-dory"
-        - buildEnvName: alpine-3.13
-          image: "public/alpine:3.13.7-dory"
-        - buildEnvName: alpine-3.12
-          image: "public/alpine:3.12.9-dory"
-        - buildEnvName: alpine-3.11
-          image: "public/alpine:3.11.13-dory"
-        - buildEnvName: alpine-3.10
-          image: "public/alpine:3.10.9-dory"
-        - buildEnvName: alpine-3.9
-          image: "public/alpine:3.9.6-dory"
         - buildEnvName: alpine
           image: "public/alpine:3.15.0-dory"

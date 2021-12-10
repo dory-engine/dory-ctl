@@ -304,8 +304,9 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 		// create dory docker-compose.yaml
 		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
-		_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", doryDir), 0700)
-		_ = os.MkdirAll(fmt.Sprintf("%s/tmp", doryDir), 0700)
+		dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installDockerConfig.RootDir, installDockerConfig.DoryDir)
+		_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
+		_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 		dockerComposeDir := "dory"
 		dockerComposeName := "docker-compose.yaml"
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
@@ -326,7 +327,6 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
 
 		// create dory-core config files
-		dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installDockerConfig.RootDir, installDockerConfig.DoryDir)
 		dorycoreConfigDir := fmt.Sprintf("%s/config", dorycoreDir)
 		dorycoreScriptDir := "dory/dory-core"
 		dorycoreConfigName := "config.yaml"
