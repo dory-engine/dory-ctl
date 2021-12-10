@@ -3,11 +3,11 @@ envName: test
 # kubernetes环境描述，用于显示在流水线上的环境名称
 envDesc: 测试环境
 # kubernetes环境的 apiserver 地址
-host: {{ $.dorycore.kubernetes.host | quote }}
+host: {{ $.kubernetes.host | quote }}
 # kubernetes环境的 apiserver 端口
-port: {{ $.dorycore.kubernetes.port }}
+port: {{ $.kubernetes.port }}
 # kubernetes环境的 apiserver token
-token: {{ $.dorycore.kubernetes.token | quote }}
+token: {{ $.kubernetes.token | quote }}
 # 用于在集群中创建项目的数据目录的pod配置
 projectDataPod:
   # pod所在名字空间
@@ -19,12 +19,12 @@ projectDataPod:
 
 # harbor配置，用于kubernetes集群拉取harbor镜像
 harborConfig:
-  hostname: {{ $.harbor.domainName | quote }}
+  hostname: {{ $.imageRepo.domainName | quote }}
   # ip地址使用集群vip
   ip: {{ $.hostIP | quote }}
   port: 443
   username: admin
-  password: {{ $.harbor.password | quote }}
+  password: {{ $.imageRepo.password | quote }}
   email: admin@example.com
 
 # nexus配置，用于kubernetes集群拉取的debug容器yum源设置和docker proxy设置
@@ -33,19 +33,19 @@ nexusConfig:
   hostname: {{ $.hostIP | quote }}
   # ip地址使用集群vip
   ip: {{ $.hostIP | quote }}
-  port: {{ $.dory.nexus.port }}
-  portDocker: {{ $.dory.nexus.portHub }}
-  portGcr: {{ $.dory.nexus.portGcr }}
-  portQuay: {{ $.dory.nexus.portQuay }}
+  port: {{ $.dory.artifactRepo.port }}
+  portDocker: {{ $.dory.artifactRepo.portHub }}
+  portGcr: {{ $.dory.artifactRepo.portGcr }}
+  portQuay: {{ $.dory.artifactRepo.portQuay }}
   username: public-user
   password: public-user
   email: public-user@139.com
 
-{{ if $.dorycore.kubernetes.pvConfigLocal.localPath }}
+{{ if $.kubernetes.pvConfigLocal.localPath }}
 # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 pvConfigLocal:
   # 本地存储路径
-  localPath: {{ $.dorycore.kubernetes.pvConfigLocal.localPath | quote }}
+  localPath: {{ $.kubernetes.pvConfigLocal.localPath | quote }}
 {{ else }}
 # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 # pvConfigLocal:
@@ -53,13 +53,13 @@ pvConfigLocal:
 #   localPath: "/data/k8s-vols"
 {{ end }}
 
-{{ if $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
+{{ if $.kubernetes.pvConfigNfs.nfsPath }}
 # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 pvConfigNfs:
   # nfs存储路径
-  nfsPath: {{ $.dorycore.kubernetes.pvConfigNfs.nfsPath | quote }}
+  nfsPath: {{ $.kubernetes.pvConfigNfs.nfsPath | quote }}
   # nfs服务器地址
-  nfsServer: {{ $.dorycore.kubernetes.pvConfigNfs.nfsServer | quote }}
+  nfsServer: {{ $.kubernetes.pvConfigNfs.nfsServer | quote }}
 {{ else }}
 # # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 # pvConfigNfs:
@@ -69,18 +69,18 @@ pvConfigNfs:
 #   nfsServer: "10.2.0.10"
 {{ end }}
 
-{{ if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+{{ if $.kubernetes.pvConfigCephfs.cephPath }}
 # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
 pvConfigCephfs:
   # ceph存储路径
-  cephPath: {{ $.dorycore.kubernetes.pvConfigCephfs.cephPath | quote }}
+  cephPath: {{ $.kubernetes.pvConfigCephfs.cephPath | quote }}
   # ceph账号
-  cephUser: {{ $.dorycore.kubernetes.pvConfigCephfs.cephUser | quote }}
+  cephUser: {{ $.kubernetes.pvConfigCephfs.cephUser | quote }}
   # ceph秘钥
-  cephSecret: {{ $.dorycore.kubernetes.pvConfigCephfs.cephSecret | quote }}
+  cephSecret: {{ $.kubernetes.pvConfigCephfs.cephSecret | quote }}
   # ceph monitor地址
   cephMonitors:
-  {{ range $_, $cephMonitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
+  {{ range $_, $cephMonitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
   - {{ $cephMonitor | quote }}
   {{ end }}
 {{ else }}

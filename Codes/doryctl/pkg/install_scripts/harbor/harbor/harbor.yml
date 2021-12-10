@@ -2,7 +2,7 @@
 
 # The IP address or hostname to access admin UI and registry service.
 # DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
-hostname: {{ $.harbor.domainName }}
+hostname: {{ $.imageRepo.domainName }}
 
 # http related config
 http:
@@ -14,8 +14,8 @@ https:
   # https port for harbor, default is 443
   port: 443
   # The path of cert and key files for nginx
-  certificate: {{ $.rootDir }}/{{ $.harborDir }}/{{ $.harbor.certsDir }}/{{ $.harbor.domainName }}.crt
-  private_key: {{ $.rootDir }}/{{ $.harborDir }}/{{ $.harbor.certsDir }}/{{ $.harbor.domainName }}.key
+  certificate: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.crt
+  private_key: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.key
 
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
@@ -31,7 +31,7 @@ https:
 # The initial password of Harbor admin
 # It only works in first time to install harbor
 # Remember Change the admin password from UI after launching Harbor.
-harbor_admin_password: {{ $.harbor.password }}
+harbor_admin_password: {{ $.imageRepo.password }}
 
 # Harbor DB configuration
 database:
@@ -44,7 +44,7 @@ database:
   max_open_conns: 900
 
 # The default data volume
-data_volume: {{ $.rootDir }}/{{ $.harborDir }}/{{ $.harbor.dataDir }}
+data_volume: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.dataDir }}
 
 # Harbor Storage settings by default is using /data dir on local filesystem
 # Uncomment storage_service setting If you want to using external storage
@@ -117,7 +117,7 @@ log:
     # are all valid.
     rotate_size: 200M
     # The directory on your host that store log
-    location: {{ $.rootDir }}/{{ $.harborDir }}/{{ $.harbor.dataDir }}/log
+    location: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.dataDir }}/log
 
   # Uncomment following lines to enable external syslog endpoint.
   # external_endpoint:

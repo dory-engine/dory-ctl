@@ -20,24 +20,26 @@ type InstallDockerImages struct {
 }
 
 type InstallDockerConfig struct {
-	RootDir   string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
-	DoryDir   string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
-	HarborDir string `yaml:"harborDir" json:"harborDir" bson:"harborDir" validate:"required"`
-	HostIP    string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
-	ViewURL   string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
-	Dory      struct {
-		Gitea struct {
+	RootDir      string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
+	DoryDir      string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
+	ImageRepoDir string `yaml:"imageRepoDir" json:"imageRepoDir" bson:"imageRepoDir" validate:"required"`
+	HostIP       string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
+	ViewURL      string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
+	Dory         struct {
+		GitRepo struct {
+			Type    string `yaml:"type" json:"type" bson:"type" validate:"required"`
 			Image   string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:"required"`
+			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:""`
 			Port    int    `yaml:"port" json:"port" bson:"port" validate:"required"`
-		} `yaml:"gitea" json:"gitea" bson:"gitea" validate:"required"`
-		Nexus struct {
+		} `yaml:"gitRepo" json:"gitRepo" bson:"gitRepo" validate:"required"`
+		ArtifactRepo struct {
+			Type     string `yaml:"type" json:"type" bson:"type" validate:"required"`
 			Image    string `yaml:"image" json:"image" bson:"image" validate:"required"`
 			Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
 			PortHub  int    `yaml:"portHub" json:"portHub" bson:"portHub" validate:"required"`
 			PortGcr  int    `yaml:"portGcr" json:"portGcr" bson:"portGcr" validate:"required"`
 			PortQuay int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required"`
-		} `yaml:"nexus" json:"nexus" bson:"nexus" validate:"required"`
+		} `yaml:"artifactRepo" json:"artifactRepo" bson:"artifactRepo" validate:"required"`
 		Openldap struct {
 			Image      string `yaml:"image" json:"image" bson:"image" validate:"required"`
 			ImageAdmin string `yaml:"imageAdmin" json:"imageAdmin" bson:"imageAdmin" validate:"required"`
@@ -55,21 +57,21 @@ type InstallDockerConfig struct {
 			Password string `yaml:"password" json:"password" bson:"password" validate:""`
 		} `yaml:"mongo" json:"mongo" bson:"mongo" validate:"required"`
 		Docker struct {
-			Image           string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			DockerName      string `yaml:"dockerName" json:"dockerName" bson:"dockerName" validate:"required"`
-			DockerNamespace string `yaml:"dockerNamespace" json:"dockerNamespace" bson:"dockerNamespace" validate:""`
-			DockerNumber    int    `yaml:"dockerNumber" json:"dockerNumber" bson:"dockerNumber" validate:"required"`
+			Image        string `yaml:"image" json:"image" bson:"image" validate:"required"`
+			DockerName   string `yaml:"dockerName" json:"dockerName" bson:"dockerName" validate:"required"`
+			DockerNumber int    `yaml:"dockerNumber" json:"dockerNumber" bson:"dockerNumber" validate:"required"`
 		} `yaml:"docker" json:"docker" bson:"docker" validate:"required"`
 		Dorycore struct {
 			Port int `yaml:"port" json:"port" bson:"port" validate:"required"`
 		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
-	Harbor struct {
+	ImageRepo struct {
+		Type       string `yaml:"type" json:"type" bson:"type" validate:"required"`
 		DomainName string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
 		CertsDir   string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
 		DataDir    string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
 		Password   string `yaml:"password" json:"password" bson:"password" validate:""`
-	} `yaml:"harbor" json:"harbor" bson:"harbor" validate:"required"`
+	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {
 		AdminUser struct {
 			Username string `yaml:"username" json:"username" bson:"username" validate:"required"`
@@ -85,24 +87,24 @@ type InstallDockerConfig struct {
 			Ssl      bool   `yaml:"ssl" json:"ssl" bson:"ssl" validate:""`
 			From     string `yaml:"from" json:"from" bson:"from" validate:"required"`
 		} `yaml:"mail" json:"mail" bson:"mail" validate:"required"`
-		Kubernetes struct {
-			Host          string `yaml:"host" json:"host" bson:"host" validate:"required"`
-			Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
-			Token         string `yaml:"token" json:"token" bson:"token" validate:"required"`
-			Namespace     string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
-			PvConfigLocal struct {
-				LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
-			} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
-			PvConfigNfs struct {
-				NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:""`
-				NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:""`
-			} `yaml:"pvConfigNfs" json:"pvConfigNfs" bson:"pvConfigNfs" validate:""`
-			PvConfigCephfs struct {
-				CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:""`
-				CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:""`
-				CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
-				CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
-			} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
-		} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 	} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
+	Kubernetes struct {
+		Host          string `yaml:"host" json:"host" bson:"host" validate:"required"`
+		Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		Token         string `yaml:"token" json:"token" bson:"token" validate:"required"`
+		Namespace     string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
+		PvConfigLocal struct {
+			LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
+		} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
+		PvConfigNfs struct {
+			NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:""`
+			NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:""`
+		} `yaml:"pvConfigNfs" json:"pvConfigNfs" bson:"pvConfigNfs" validate:""`
+		PvConfigCephfs struct {
+			CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:""`
+			CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:""`
+			CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
+			CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
+		} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
+	} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 }

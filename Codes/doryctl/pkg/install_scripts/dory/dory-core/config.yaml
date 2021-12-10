@@ -156,13 +156,17 @@ ldap:
 # 代码仓库配置，支持gitlab和gitea
 gitRepoConfigs:
   # 代码仓库类型，选项: gitlab, gitea
-  - kind: gitea
+  - kind: {{ $.dory.gitRepo.type }}
     # 代码仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
-    repoName: gitea-dory
+    repoName: {{ $.dory.gitRepo.type }}-dory
     # 代码仓库外部查看url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.gitea.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
     # 代码仓库的地址，dory访问该仓库的地址
+    {{- if eq $.dory.gitRepo.type "gitea" }}
     url: http://gitea:3000
+    {{- else if eq $.dory.gitRepo.type "gitlab" }}
+    url: http://gitlab
+    {{- end }}
     # 代码仓库管理员账号
     username: "PLEASE_INPUT_BY_MANUAL"
     # 代码仓库管理员显示名
@@ -180,29 +184,29 @@ gitRepoConfigs:
 # 镜像仓库配置，支持harbor
 imageRepoConfigs:
   # 镜像仓库类型，选项: harbor
-  - kind: harbor
+  - kind: {{ $.imageRepo.type }}
     # 镜像仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
-    repoName: harbor-dory
+    repoName: {{ $.imageRepo.type }}-dory
     # 镜像仓库外部查看url
-    viewUrl: https://{{ $.harbor.domainName }}
+    viewUrl: https://{{ $.imageRepo.domainName }}
     # 镜像仓库地址，使用https
-    url: {{ $.harbor.domainName | quote }}
+    url: {{ $.imageRepo.domainName | quote }}
     # 镜像仓库管理员账号
     username: admin
     # 镜像仓库管理员密码
-    password: {{ $.harbor.password | quote }}
+    password: {{ $.imageRepo.password | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
-    apiUrl: https://{{ $.harbor.domainName }}
+    apiUrl: https://{{ $.imageRepo.domainName }}
 # 制品仓库配置，支持nexus
 artifactRepoConfigs:
   # 制品仓库类型，选项: nexus
-  - kind: nexus
+  - kind: {{ $.dory.artifactRepo.type }}
     # 制品仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
-    repoName: nexus-dory
+    repoName: {{ $.dory.artifactRepo.type }}-dory
     # 制品仓库外部查看url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.nexus.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
     # 制品仓库地址，docker executor访问该仓库的地址（建议使用外部ip+端口）
-    url: http://{{ $.hostIP }}:{{ $.dory.nexus.port }}
+    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
     # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址（建议使用外部ip）
     host: {{ $.hostIP | quote }}
     # 制品仓库管理员账号
@@ -212,9 +216,9 @@ artifactRepoConfigs:
     # 制品仓库public role名称
     publicRole: public-role
     # 制品仓库拉取dockerhub的主机地址端口，kubernetes环境拉取镜像的时候访问该仓库的地址（建议使用外部ip+端口）
-    dockerHubUrl: {{ $.hostIP }}:{{ $.dory.nexus.portHub }}
+    dockerHubUrl: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
     # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址（建议使用外部ip+端口）
-    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.nexus.port }}
+    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
     # 拉取第三方开源依赖的公用账号名称
     publicUser: public-user
     # 拉取第三方开源依赖的公用账号密码

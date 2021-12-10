@@ -30,22 +30,50 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 		return err
 	}
 
-	fieldName = "harborDir"
-	fieldValue = idc.HarborDir
+	fieldName = "dory.gitRepo.type"
+	fieldValue = idc.Dory.GitRepo.Type
+	if idc.Dory.GitRepo.Type != "gitea" && idc.Dory.GitRepo.Type != "gitlab" {
+		err = fmt.Errorf("%s: %s %s format error: must be gitea or gitlab", errInfo, fieldName, fieldValue)
+		return err
+	}
+
+	fieldName = "dory.gitRepo.imageDB"
+	fieldValue = idc.Dory.GitRepo.ImageDB
+	if idc.Dory.GitRepo.Type == "gitea" && idc.Dory.GitRepo.ImageDB == "" {
+		err = fmt.Errorf("%s: %s %s format error: gitea imageDB can not be empty", errInfo, fieldName, fieldValue)
+		return err
+	}
+
+	fieldName = "dory.artifactRepo.type"
+	fieldValue = idc.Dory.ArtifactRepo.Type
+	if idc.Dory.ArtifactRepo.Type != "nexus" {
+		err = fmt.Errorf("%s: %s %s format error: must be nexus", errInfo, fieldName, fieldValue)
+		return err
+	}
+
+	fieldName = "imageRepo.type"
+	fieldValue = idc.ImageRepo.Type
+	if idc.ImageRepo.Type != "harbor" {
+		err = fmt.Errorf("%s: %s %s format error: must be harbor", errInfo, fieldName, fieldValue)
+		return err
+	}
+
+	fieldName = "imageRepoDir"
+	fieldValue = idc.ImageRepoDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
-	fieldName = "harbor.certsDir"
-	fieldValue = idc.Harbor.CertsDir
+	fieldName = "imageRepoDir.certsDir"
+	fieldValue = idc.ImageRepo.CertsDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
-	fieldName = "harbor.dataDir"
-	fieldValue = idc.Harbor.DataDir
+	fieldName = "imageRepoDir.dataDir"
+	fieldValue = idc.ImageRepo.DataDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
@@ -64,31 +92,31 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	}
 
 	var count int
-	if idc.Dorycore.Kubernetes.PvConfigLocal.LocalPath != "" {
+	if idc.Kubernetes.PvConfigLocal.LocalPath != "" {
 		count = count + 1
 	}
-	if len(idc.Dorycore.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
+	if len(idc.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
 		count = count + 1
 	}
-	if idc.Dorycore.Kubernetes.PvConfigNfs.NfsServer != "" {
+	if idc.Kubernetes.PvConfigNfs.NfsServer != "" {
 		count = count + 1
 	}
 	if count != 1 {
-		err = fmt.Errorf("%s: dorycore.kubernetes.pvConfigLocal/pvConfigNfs/pvConfigCephfs must set one only", errInfo)
+		err = fmt.Errorf("%s: kubernetes.pvConfigLocal/pvConfigNfs/pvConfigCephfs must set one only", errInfo)
 		return err
 	}
 
-	if idc.Dorycore.Kubernetes.PvConfigLocal.LocalPath != "" {
-		if !strings.HasPrefix(idc.Dorycore.Kubernetes.PvConfigLocal.LocalPath, "/") {
-			fieldName = "dorycore.kubernetes.pvConfigLocal.localPath"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigLocal.LocalPath
+	if idc.Kubernetes.PvConfigLocal.LocalPath != "" {
+		if !strings.HasPrefix(idc.Kubernetes.PvConfigLocal.LocalPath, "/") {
+			fieldName = "kubernetes.pvConfigLocal.localPath"
+			fieldValue = idc.Kubernetes.PvConfigLocal.LocalPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}
-	if len(idc.Dorycore.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
-		for _, monitor := range idc.Dorycore.Kubernetes.PvConfigCephfs.CephMonitors {
-			fieldName = "dorycore.kubernetes.pvConfigCephfs.cephMonitors"
+	if len(idc.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
+		for _, monitor := range idc.Kubernetes.PvConfigCephfs.CephMonitors {
+			fieldName = "kubernetes.pvConfigCephfs.cephMonitors"
 			fieldValue = monitor
 			arr := strings.Split(monitor, ":")
 			if len(arr) != 2 {
@@ -101,30 +129,30 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 				return err
 			}
 		}
-		if idc.Dorycore.Kubernetes.PvConfigCephfs.CephSecret == "" {
-			fieldName = "dorycore.kubernetes.pvConfigCephfs.cephSecret"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigCephfs.CephSecret
+		if idc.Kubernetes.PvConfigCephfs.CephSecret == "" {
+			fieldName = "kubernetes.pvConfigCephfs.cephSecret"
+			fieldValue = idc.Kubernetes.PvConfigCephfs.CephSecret
 			err = fmt.Errorf("%s: %s %s format error: can not be empty", errInfo, fieldName, fieldValue)
 			return err
 		}
-		if idc.Dorycore.Kubernetes.PvConfigCephfs.CephUser == "" {
-			fieldName = "dorycore.kubernetes.pvConfigCephfs.cephUser"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigCephfs.CephUser
+		if idc.Kubernetes.PvConfigCephfs.CephUser == "" {
+			fieldName = "kubernetes.pvConfigCephfs.cephUser"
+			fieldValue = idc.Kubernetes.PvConfigCephfs.CephUser
 			err = fmt.Errorf("%s: %s %s format error: can not be empty", errInfo, fieldName, fieldValue)
 			return err
 		}
-		if !strings.HasPrefix(idc.Dorycore.Kubernetes.PvConfigCephfs.CephPath, "/") {
-			fieldName = "dorycore.kubernetes.pvConfigCephfs.cephPath"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigCephfs.CephPath
+		if !strings.HasPrefix(idc.Kubernetes.PvConfigCephfs.CephPath, "/") {
+			fieldName = "kubernetes.pvConfigCephfs.cephPath"
+			fieldValue = idc.Kubernetes.PvConfigCephfs.CephPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}
 
-	if idc.Dorycore.Kubernetes.PvConfigNfs.NfsServer != "" {
-		if !strings.HasPrefix(idc.Dorycore.Kubernetes.PvConfigNfs.NfsPath, "/") {
-			fieldName = "dorycore.kubernetes.pvConfigNfs.nfsPath"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigNfs.NfsPath
+	if idc.Kubernetes.PvConfigNfs.NfsServer != "" {
+		if !strings.HasPrefix(idc.Kubernetes.PvConfigNfs.NfsPath, "/") {
+			fieldName = "kubernetes.pvConfigNfs.nfsPath"
+			fieldValue = idc.Kubernetes.PvConfigNfs.NfsPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
@@ -139,8 +167,8 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	if idc.Dory.Mongo.Password == "" {
 		idc.Dory.Mongo.Password = RandomString(16, false, "=")
 	}
-	if idc.Harbor.Password == "" {
-		idc.Harbor.Password = RandomString(16, false, "=")
+	if idc.ImageRepo.Password == "" {
+		idc.ImageRepo.Password = RandomString(16, false, "=")
 	}
 
 	return err

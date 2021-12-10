@@ -60,8 +60,8 @@ func (o *OptionsInstallPull) Run(args []string) error {
 	bs := []byte{}
 
 	harborScriptDir := "harbor"
-	harborDockerImagesYaml := "docker-images.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborDockerImagesYaml))
+	dockerImagesYaml := "docker-images.yaml"
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, dockerImagesYaml))
 	if err != nil {
 		err = fmt.Errorf("pull docker images error: %s", err.Error())
 		return err

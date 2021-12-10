@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	auth "github.com/abbot/go-http-auth"
+	"golang.org/x/crypto/bcrypt"
 	"math"
 )
 
@@ -43,4 +45,15 @@ func main() {
 
 	measure(r)
 	measure(c)
+
+	s := auth.H("j23x6GgfmznBY5QYCbN")
+	fmt.Println(auth.RandomKey())
+	fmt.Println("###")
+	fmt.Println(s)
+
+	bs, _ := bcrypt.GenerateFromPassword([]byte("j23x6GgfmznBY5QYCbN"), 10)
+	fmt.Println(string(bs))
+
+	// $2y$10$VD9pK4Egg8TtXn/1IPezXuEou7WLeGnrHl4WmDeBtRxKjH.XGULMG
+	// $2a$10$0JaZqjPQEIQ0NUAY7KsUq.M3jhrOLPJzg6MhXGaSzeOOPwX4DRY.W
 }

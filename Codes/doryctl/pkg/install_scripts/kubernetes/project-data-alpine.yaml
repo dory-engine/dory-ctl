@@ -3,17 +3,17 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ $.dorycore.kubernetes.namespace }}
+  name: {{ $.kubernetes.namespace }}
   labels:
-    ns: {{ $.dorycore.kubernetes.namespace }}
+    ns: {{ $.kubernetes.namespace }}
 
 ---
-{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.harbor.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.harbor.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.harbor.password | nospace | b64enc | quote) " } } }" }}
+{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.password | nospace | b64enc | quote) " } } }" }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $.harbor.domainName }}
-  namespace: {{ $.dorycore.kubernetes.namespace }}
+  name: {{ $.imageRepo.domainName }}
+  namespace: {{ $.kubernetes.namespace }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: |
@@ -33,38 +33,38 @@ spec:
     storage: 500Gi
   accessModes:
     - ReadWriteMany
-  {{- if $.dorycore.kubernetes.pvConfigLocal.localPath }}
+  {{- if $.kubernetes.pvConfigLocal.localPath }}
   hostPath:
-    path: {{ $.dorycore.kubernetes.pvConfigLocal.localPath }}
+    path: {{ $.kubernetes.pvConfigLocal.localPath }}
     type: DirectoryOrCreate
-  {{- else if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+  {{- else if $.kubernetes.pvConfigCephfs.cephPath }}
   cephfs:
-    path: {{ $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
-    user: {{ $.dorycore.kubernetes.pvConfigCephfs.cephUser }}
+    path: {{ $.kubernetes.pvConfigCephfs.cephPath }}
+    user: {{ $.kubernetes.pvConfigCephfs.cephUser }}
     monitors:
-    {{- range $_, $monitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
+    {{- range $_, $monitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
     - {{ $monitor | quote }}
     {{- end }}
     secretRef:
       name: cephfs-secret
-      namespace: {{ $.dorycore.kubernetes.project.projectInfo.projectName }}
+      namespace: {{ $.kubernetes.project.projectInfo.projectName }}
     readOnly: false
-  {{- else if $.dorycore.kubernetes.pvConfigNfs.nfsServer }}
+  {{- else if $.kubernetes.pvConfigNfs.nfsServer }}
   nfs:
-    path: {{ $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
-    server: {{ $.dorycore.kubernetes.pvConfigNfs.nfsServer }}
+    path: {{ $.kubernetes.pvConfigNfs.nfsPath }}
+    server: {{ $.kubernetes.pvConfigNfs.nfsServer }}
     readOnly: false
   {{- end }}
 
-{{- if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+{{- if $.kubernetes.pvConfigCephfs.cephPath }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: cephfs-secret
-  namespace: {{ $.dorycore.kubernetes.namespace }}
+  namespace: {{ $.kubernetes.namespace }}
 data:
-  key: {{ $.dorycore.kubernetes.pvConfigCephfs.cephSecret | b64enc }}
+  key: {{ $.kubernetes.pvConfigCephfs.cephSecret | b64enc }}
 {{- end }}
 
 ---
@@ -72,7 +72,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: project-data-pvc
-  namespace: {{ $.dorycore.kubernetes.namespace }}
+  namespace: {{ $.kubernetes.namespace }}
 spec:
   accessModes:
     - ReadWriteMany
@@ -92,7 +92,7 @@ metadata:
   labels:
     app: project-data-alpine
   name: project-data-alpine
-  namespace: {{ $.dorycore.kubernetes.namespace }}
+  namespace: {{ $.kubernetes.namespace }}
 spec:
   replicas: 1
   selector:
@@ -109,7 +109,7 @@ spec:
             - tail
             - -f
             - /dev/null
-          image: {{ $.harbor.domainName }}/public/alpine:3.15.0-dory
+          image: {{ $.imageRepo.domainName }}/public/alpine:3.15.0-dory
           imagePullPolicy: IfNotPresent
           name: project-data-alpine
           volumeMounts:
@@ -121,7 +121,7 @@ spec:
               name: project-data-pvc
               subPath: .
       imagePullSecrets:
-        - name: {{ $.harbor.domainName }}
+        - name: {{ $.imageRepo.domainName }}
       volumes:
         - hostPath:
             path: /etc/timezone

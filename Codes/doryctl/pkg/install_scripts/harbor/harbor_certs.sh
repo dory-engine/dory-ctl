@@ -1,7 +1,7 @@
 # 设置harbor域名
-export HARBOR_CONFIG_DOMAIN_NAME={{ $.harbor.domainName }}
+export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepo.domainName }}
 # 设置证书存放的相对路径
-export HARBOR_CONFIG_CERT_PATH={{ $.harbor.certsDir }}
+export HARBOR_CONFIG_CERT_PATH={{ $.imageRepo.certsDir }}
 
 rm -rf ${HARBOR_CONFIG_CERT_PATH}/
 mkdir -p ${HARBOR_CONFIG_CERT_PATH}/
