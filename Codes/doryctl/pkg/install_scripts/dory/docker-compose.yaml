@@ -107,7 +107,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: "{{ $.dory.mongo.password }}"
     restart: always
 
-  {{- $list := (repeat $.dory.docker.dockerNumber "x " | trim | split " ") -}}
+  {{- $list := (repeat $.dory.docker.dockerNumber "x " | trim | split " ") }}
   {{- range $i, $_ := $list }}
   {{ $idx := ($i | replace "_" "") }}
   {{ $.dory.docker.dockerName }}-{{ $idx }}:
