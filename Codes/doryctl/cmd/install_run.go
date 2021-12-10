@@ -288,14 +288,15 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
-		LogInfo("docker images push to harbor")
-		for _, idi := range dockerImages.InstallDockerImages {
+		LogInfo("docker images push to harbor begin")
+		for i, idi := range dockerImages.InstallDockerImages {
 			targetImage := fmt.Sprintf("%s/%s", installDockerConfig.Harbor.DomainName, idi.Target)
 			_, _, err = pkg.CommandExec(fmt.Sprintf("docker tag %s %s && docker push %s", idi.Source, targetImage, targetImage), ".")
 			if err != nil {
 				err = fmt.Errorf("docker images push to harbor %s error: %s", idi.Source, err.Error())
 				return err
 			}
+			fmt.Println(fmt.Sprintf("# progress: %d/%d", i+1, len(dockerImages.InstallDockerImages)))
 		}
 		LogSuccess(fmt.Sprintf("docker images push to harbor success"))
 

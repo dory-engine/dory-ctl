@@ -79,23 +79,23 @@ dockerImages:
     target: public/python:3.8.12-alpine3.15-dory
   - source: dorystack/python:3.9.9-alpine3.15-dory
     target: public/python:3.9.9-alpine3.15-dory
-  - source: node:8.16.2-alpine3.10
-    target:  hub/node:8.16.2-alpine3.10
-  - source: node:9.11.2-alpine
-    target:  hub/node:9.11.2-alpine
   - source: node:10.17.0-alpine3.10
-    target:  hub/node:10.17.0-alpine3.10
+    target: hub/node:10.17.0-alpine3.10
   - source: node:11.15.0-alpine
-    target:  hub/node:11.15.0-alpine
+    target: hub/node:11.15.0-alpine
   - source: node:12.13.1-alpine3.10
-    target:  hub/node:12.13.1-alpine3.10
+    target: hub/node:12.13.1-alpine3.10
   - source: node:13.14-alpine3.11
-    target:  hub/node:13.14-alpine3.11
+    target: hub/node:13.14-alpine3.11
   - source: node:14.17.3-alpine3.14
-    target:  hub/node:14.17.3-alpine3.14
+    target: hub/node:14.17.3-alpine3.14
   - source: node:15.14.0-alpine3.13
-    target:  hub/node:15.14.0-alpine3.13
+    target: hub/node:15.14.0-alpine3.13
   - source: node:16.5.0-alpine3.14
-    target:  hub/node:16.5.0-alpine3.14
+    target: hub/node:16.5.0-alpine3.14
   - source: node:17.0.1-alpine3.14
-    target:  hub/node:17.0.1-alpine3.14
+    target: hub/node:17.0.1-alpine3.14
+  - source: node:8.16.2-alpine3.10
+    target: hub/node:8.16.2-alpine3.10
+  - source: node:9.11.2-alpine
+    target: hub/node:9.11.2-alpine
