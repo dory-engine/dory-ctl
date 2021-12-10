@@ -466,8 +466,8 @@ func (o *OptionsInstallRun) Run(args []string) error {
 
 		//////////////////////////////////////////////////
 
-		// create project-data-alpine.yaml
-		// create config.yaml
+		// create project-data-alpine in kubernetes
+		doryDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.DoryDir)
 		kubernetesDir := "kubernetes"
 		projectDataAlpineName := "project-data-alpine.yaml"
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, kubernetesDir, projectDataAlpineName))
@@ -476,11 +476,28 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		strProjectDataAlpine, err := pkg.ParseTplFromVals(vals, string(bs))
 		if err != nil {
-			err = fmt.Errorf("create project-data-alpine.yaml error: %s", err.Error())
+			err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
 			return err
 		}
-		fmt.Println("####")
-		fmt.Println(strProjectDataAlpine)
+		err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, projectDataAlpineName), []byte(strProjectDataAlpine), 0600)
+		if err != nil {
+			err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
+			return err
+		}
+		cmdProjectDataAlpine := fmt.Sprintf(`(kubectl -n %s delete sts project-data-alpine || true) && \
+		(kubectl -n %s delete pvc project-data-pvc || true) && \
+		(kubectl delete pv project-data-pv || true)`, installDockerConfig.Dorycore.Kubernetes.Namespace, installDockerConfig.Dorycore.Kubernetes.Namespace)
+		_, _, err = pkg.CommandExec(cmdProjectDataAlpine, doryDir)
+		if err != nil {
+			err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", projectDataAlpineName), doryDir)
+		if err != nil {
+			err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("create project-data-alpine in kubernetes success"))
 
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)

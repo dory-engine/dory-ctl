@@ -23,9 +23,9 @@ data:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: project-data
+  name: project-data-pv
   labels:
-    app: project-data
+    app: project-data-pv
   annotations:
     volume.beta.kubernetes.io/storage-class: "project-data-pv"
 spec:
@@ -109,7 +109,7 @@ spec:
             - tail
             - -f
             - /dev/null
-          image: {{ $.harbor.domainName }}/hub/alpine:3.15.0
+          image: {{ $.harbor.domainName }}/public/alpine:3.15.0-dory
           imagePullPolicy: IfNotPresent
           name: project-data-alpine
           volumeMounts:
