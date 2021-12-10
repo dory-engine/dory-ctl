@@ -1,7 +1,7 @@
 {
   "auths": {
     "{{ $.harbor.domainName }}": {
-      "auth": {{ printf "admin:%s" $.harbor.adminPassword | b64enc | quote }}
+      "auth": {{ printf "admin:%s" $.harbor.password | b64enc | quote }}
     },
     "{{ $.hostIP }}:{{ $.dory.nexus.portHub }}": {
       "auth":  {{ "public-user:public-user" | b64enc | quote }}

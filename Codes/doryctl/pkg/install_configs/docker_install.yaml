@@ -18,8 +18,6 @@ dory:
     imageDB: mysql:8.0.20
     # 暴露的服务端口
     port: 10001
-    # 数据库密码，为空表示自动随机生成
-    dbPassword: ""
   # nexus制品与依赖仓库设置
   nexus:
     # 镜像名
@@ -41,7 +39,7 @@ dory:
     # 管理界面暴露的服务端口
     port: 10007
     # 管理员密码，为空表示自动随机生成
-    adminPassword: ""
+    password: ""
     # 账号中心域设置
     domain: "dory.local"
     # 账号中心baseDN设置
@@ -81,9 +79,7 @@ harbor:
   # harbor的数据存放的相对路径
   dataDir: data
   # harbor的管理员密码，为空表示自动随机生成
-  adminPassword: ""
-  # harbor数据库密码，为空表示自动随机生成
-  dbPassword: ""
+  password: ""
 # dorycore应用设置
 dorycore:
   # 默认管理员设置，自动在ldap中开通账号

@@ -24,7 +24,7 @@ harborConfig:
   ip: {{ $.hostIP | quote }}
   port: 443
   username: admin
-  password: {{ $.harbor.adminPassword | quote }}
+  password: {{ $.harbor.password | quote }}
   email: admin@example.com
 
 # nexus配置，用于kubernetes集群拉取的debug容器yum源设置和docker proxy设置

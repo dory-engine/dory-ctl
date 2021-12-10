@@ -157,11 +157,8 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 		}
 	}
 
-	if idc.Dory.Gitea.DbPassword == "" {
-		idc.Dory.Gitea.DbPassword = RandomString(16, false, "=")
-	}
-	if idc.Dory.Openldap.AdminPassword == "" {
-		idc.Dory.Openldap.AdminPassword = RandomString(16, false, "=")
+	if idc.Dory.Openldap.Password == "" {
+		idc.Dory.Openldap.Password = RandomString(16, false, "=")
 	}
 	if idc.Dory.Redis.Password == "" {
 		idc.Dory.Redis.Password = RandomString(16, false, "=")
@@ -169,11 +166,8 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	if idc.Dory.Mongo.Password == "" {
 		idc.Dory.Mongo.Password = RandomString(16, false, "=")
 	}
-	if idc.Harbor.AdminPassword == "" {
-		idc.Harbor.AdminPassword = RandomString(16, false, "=")
-	}
-	if idc.Harbor.DbPassword == "" {
-		idc.Harbor.DbPassword = RandomString(16, false, "=")
+	if idc.Harbor.Password == "" {
+		idc.Harbor.Password = RandomString(16, false, "=")
 	}
 
 	return err

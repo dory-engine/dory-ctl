@@ -152,7 +152,7 @@ ldap:
   # LDAP管理员账号全称
   adminCN: "cn=admin,{{ $.dory.openldap.baseDN }}"
   # LDAP管理员账号密码
-  password: {{ $.dory.openldap.adminPassword | quote}}
+  password: {{ $.dory.openldap.password | quote}}
 # 代码仓库配置，支持gitlab和gitea
 gitRepoConfigs:
   # 代码仓库类型，选项: gitlab, gitea
@@ -190,7 +190,7 @@ imageRepoConfigs:
     # 镜像仓库管理员账号
     username: admin
     # 镜像仓库管理员密码
-    password: {{ $.harbor.adminPassword | quote }}
+    password: {{ $.harbor.password | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
     apiUrl: https://{{ $.harbor.domainName }}
 # 制品仓库配置，支持nexus

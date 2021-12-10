@@ -25,10 +25,9 @@ type InstallDockerConfig struct {
 	ViewURL   string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
 	Dory      struct {
 		Gitea struct {
-			Image      string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			ImageDB    string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:"required"`
-			Port       int    `yaml:"port" json:"port" bson:"port" validate:"required"`
-			DbPassword string `yaml:"dbPassword" json:"dbPassword" bson:"dbPassword" validate:""`
+			Image   string `yaml:"image" json:"image" bson:"image" validate:"required"`
+			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:"required"`
+			Port    int    `yaml:"port" json:"port" bson:"port" validate:"required"`
 		} `yaml:"gitea" json:"gitea" bson:"gitea" validate:"required"`
 		Nexus struct {
 			Image    string `yaml:"image" json:"image" bson:"image" validate:"required"`
@@ -38,12 +37,12 @@ type InstallDockerConfig struct {
 			PortQuay int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required"`
 		} `yaml:"nexus" json:"nexus" bson:"nexus" validate:"required"`
 		Openldap struct {
-			Image         string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			ImageAdmin    string `yaml:"imageAdmin" json:"imageAdmin" bson:"imageAdmin" validate:"required"`
-			Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
-			AdminPassword string `yaml:"adminPassword" json:"adminPassword" bson:"adminPassword" validate:""`
-			Domain        string `yaml:"domain" json:"domain" bson:"domain" validate:"required"`
-			BaseDN        string `yaml:"baseDN" json:"baseDN" bson:"baseDN" validate:"required"`
+			Image      string `yaml:"image" json:"image" bson:"image" validate:"required"`
+			ImageAdmin string `yaml:"imageAdmin" json:"imageAdmin" bson:"imageAdmin" validate:"required"`
+			Port       int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+			Password   string `yaml:"password" json:"password" bson:"password" validate:""`
+			Domain     string `yaml:"domain" json:"domain" bson:"domain" validate:"required"`
+			BaseDN     string `yaml:"baseDN" json:"baseDN" bson:"baseDN" validate:"required"`
 		} `yaml:"openldap" json:"openldap" bson:"openldap" validate:"required"`
 		Redis struct {
 			Image    string `yaml:"image" json:"image" bson:"image" validate:"required"`
@@ -64,11 +63,10 @@ type InstallDockerConfig struct {
 		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	Harbor struct {
-		DomainName    string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
-		CertsDir      string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
-		DataDir       string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
-		AdminPassword string `yaml:"adminPassword" json:"adminPassword" bson:"adminPassword" validate:""`
-		DbPassword    string `yaml:"dbPassword" json:"dbPassword" bson:"dbPassword" validate:""`
+		DomainName string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
+		CertsDir   string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
+		DataDir    string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
+		Password   string `yaml:"password" json:"password" bson:"password" validate:""`
 	} `yaml:"harbor" json:"harbor" bson:"harbor" validate:"required"`
 	Dorycore struct {
 		AdminUser struct {
