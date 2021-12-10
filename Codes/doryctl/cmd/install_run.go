@@ -8,6 +8,8 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
+	"strings"
+	"time"
 )
 
 type OptionsInstallRun struct {
@@ -132,132 +134,132 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			return err
 		}
 
-		//// create harbor certificates
-		//harborDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.HarborDir)
-		//_ = os.MkdirAll(harborDir, 0700)
-		//harborScriptDir := "harbor"
-		//harborScriptName := "harbor_certs.sh"
-		//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
-		//if err != nil {
-		//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		//	return err
-		//}
-		//strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
-		//if err != nil {
-		//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		//	return err
-		//}
-		//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
-		//if err != nil {
-		//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		//	return err
-		//}
-		//
-		//LogInfo("create harbor certificates begin")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		//	return err
-		//}
-		//LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
-		//
-		//// extract harbor install files
-		//err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("extract harbor install files error: %s", err.Error())
-		//	return err
-		//}
-		//
-		//harborYamlDir := "harbor/harbor"
-		//harborYamlName := "harbor.yml"
-		//_ = os.Rename(fmt.Sprintf("%s/harbor", installDockerConfig.RootDir), harborDir)
-		//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborYamlDir, harborYamlName))
-		//if err != nil {
-		//	err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
-		//	return err
-		//}
-		//strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-		//if err != nil {
-		//	err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
-		//	return err
-		//}
-		//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
-		//if err != nil {
-		//	err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
-		//	return err
-		//}
-		//_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
-		//_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
-		//_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
-		//LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
-		//LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
-		//
-		//// install harbor
-		//LogInfo("install harbor begin")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-		//err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//// update /etc/hosts
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
-		//if err != nil {
-		//	// harbor domain name not exists
-		//	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.Harbor.DomainName), harborDir)
-		//	if err != nil {
-		//		err = fmt.Errorf("install harbor error: %s", err.Error())
-		//		return err
-		//	}
-		//	LogInfo("add harbor domain name to /etc/hosts")
-		//}
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//LogInfo("waiting harbor boot up for 10 seconds")
-		//time.Sleep(time.Second * 10)
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//LogInfo("docker login to harbor")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username admin --password %s %s", installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName), harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("install harbor error: %s", err.Error())
-		//	return err
-		//}
-		//LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
-		//
-		//// create harbor project public, hub, gcr, quay
-		//LogInfo("create harbor project public, hub, gcr, quay begin")
-		//harborCreateProjectCmd := fmt.Sprintf(`curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "public", "public": true}' && \
-		//	curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "hub", "public": true}' && \
-		//	curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "gcr", "public": true}' && \
-		//	curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "quay", "public": true}'`, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName)
-		//_, _, err = pkg.CommandExec(harborCreateProjectCmd, harborDir)
-		//if err != nil {
-		//	err = fmt.Errorf("create harbor project public, hub, gcr, quay error: %s", err.Error())
-		//	return err
-		//}
-		//LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
+		// create harbor certificates
+		harborDir := fmt.Sprintf("%s/%s", installDockerConfig.RootDir, installDockerConfig.HarborDir)
+		_ = os.MkdirAll(harborDir, 0700)
+		harborScriptDir := "harbor"
+		harborScriptName := "harbor_certs.sh"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+		strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+
+		LogInfo("create harbor certificates begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installDockerConfig.Harbor.CertsDir))
+
+		// extract harbor install files
+		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
+		if err != nil {
+			err = fmt.Errorf("extract harbor install files error: %s", err.Error())
+			return err
+		}
+
+		harborYamlDir := "harbor/harbor"
+		harborYamlName := "harbor.yml"
+		_ = os.Rename(fmt.Sprintf("%s/harbor", installDockerConfig.RootDir), harborDir)
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborYamlDir, harborYamlName))
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("create create harbor.yml error: %s", err.Error())
+			return err
+		}
+		_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+		LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
+		LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
+
+		// install harbor
+		LogInfo("install harbor begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
+		err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		// update /etc/hosts
+		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.Harbor.DomainName), harborDir)
+		if err != nil {
+			// harbor domain name not exists
+			_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.Harbor.DomainName), harborDir)
+			if err != nil {
+				err = fmt.Errorf("install harbor error: %s", err.Error())
+				return err
+			}
+			LogInfo("add harbor domain name to /etc/hosts")
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		LogInfo("waiting harbor boot up for 10 seconds")
+		time.Sleep(time.Second * 10)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		LogInfo("docker login to harbor")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username admin --password %s %s", installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName), harborDir)
+		if err != nil {
+			err = fmt.Errorf("install harbor error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
+
+		// create harbor project public, hub, gcr, quay
+		LogInfo("create harbor project public, hub, gcr, quay begin")
+		harborCreateProjectCmd := fmt.Sprintf(`curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "public", "public": true}' && \
+			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "hub", "public": true}' && \
+			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "gcr", "public": true}' && \
+			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "quay", "public": true}'`, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName, installDockerConfig.Harbor.AdminPassword, installDockerConfig.Harbor.DomainName)
+		_, _, err = pkg.CommandExec(harborCreateProjectCmd, harborDir)
+		if err != nil {
+			err = fmt.Errorf("create harbor project public, hub, gcr, quay error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 
 		//////////////////////////////////////////////////
 
@@ -415,21 +417,21 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 		LogSuccess(fmt.Sprintf("create directory and chown %s success", doryDir))
 
-		//// run all dory services
-		//LogInfo("run all dory services begin")
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
-		//if err != nil {
-		//	err = fmt.Errorf("run all dory services error: %s", err.Error())
-		//	return err
-		//}
-		//LogInfo("waiting all dory services boot up for 10 seconds")
-		//time.Sleep(time.Second * 10)
-		//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
-		//if err != nil {
-		//	err = fmt.Errorf("run all dory services error: %s", err.Error())
-		//	return err
-		//}
-		//LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
+		// run all dory services
+		LogInfo("run all dory services begin")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
+		if err != nil {
+			err = fmt.Errorf("run all dory services error: %s", err.Error())
+			return err
+		}
+		LogInfo("waiting all dory services boot up for 10 seconds")
+		time.Sleep(time.Second * 10)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
+		if err != nil {
+			err = fmt.Errorf("run all dory services error: %s", err.Error())
+			return err
+		}
+		LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
 
 	} else if o.Mode == "kubernetes" {
 		fmt.Println("args:", args)

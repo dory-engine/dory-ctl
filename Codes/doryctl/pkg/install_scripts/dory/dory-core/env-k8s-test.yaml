@@ -41,35 +41,35 @@ nexusConfig:
   password: public-user
   email: public-user@139.com
 
-{{- if $.dorycore.kubernetes.pvConfigLocal.localPath }}
+{{ if $.dorycore.kubernetes.pvConfigLocal.localPath }}
 # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 pvConfigLocal:
   # 本地存储路径
   localPath: {{ $.dorycore.kubernetes.pvConfigLocal.localPath | quote }}
-{{- else }}
+{{ else }}
 # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 # pvConfigLocal:
 #   # 本地存储路径
 #   localPath: "/data/k8s-vols"
-{{- end }}
+{{ end }}
 
-{{- if $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
+{{ if $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
 # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 pvConfigNfs:
   # nfs存储路径
   nfsPath: {{ $.dorycore.kubernetes.pvConfigNfs.nfsPath | quote }}
   # nfs服务器地址
   nfsServer: {{ $.dorycore.kubernetes.pvConfigNfs.nfsServer | quote }}
-{{- else }}
+{{ else }}
 # # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 # pvConfigNfs:
 #   # nfs存储路径
 #   nfsPath: "/data/nfs-vols/k8s-vols"
 #   # nfs服务器地址
 #   nfsServer: "10.2.0.10"
-{{- end }}
+{{ end }}
 
-{{- if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+{{ if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
 # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
 pvConfigCephfs:
   # ceph存储路径
@@ -80,10 +80,10 @@ pvConfigCephfs:
   cephSecret: {{ $.dorycore.kubernetes.pvConfigCephfs.cephSecret | quote }}
   # ceph monitor地址
   cephMonitors:
-  {{- range $_, $cephMonitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
+  {{ range $_, $cephMonitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
   - {{ $cephMonitor | quote }}
-  {{- end }}
-{{- else }}
+  {{ end }}
+{{ else }}
 # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
 # pvConfigCephfs:
 #   # ceph存储路径
@@ -97,21 +97,21 @@ pvConfigCephfs:
 #   - "192.168.0.1:6789"
 #   - "192.168.0.2:6789"
 #   - "192.168.0.3:6789"
-{{- end }}
+{{ end }}
 
-{{- if $.dorycore.kubernetes.pvConfigGlusterfs.path }}
+{{ if $.dorycore.kubernetes.pvConfigGlusterfs.path }}
 # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
 pvConfigGlusterfs:
   # glusterfs存储集群ip地址
   endpointIPs:
-  {{- range $_, $endpointIP := $.dorycore.kubernetes.pvConfigGlusterfs.endpointIPs }}
+  {{ range $_, $endpointIP := $.dorycore.kubernetes.pvConfigGlusterfs.endpointIPs }}
   - {{ $endpointIP | quote }}
-  {{- end }}
+  {{ end }}
   # glusterfs存储集群端口
   endpointPort: {{ $.dorycore.kubernetes.pvConfigGlusterfs.endpointPort }}
   # glusterfs存储集群路径
   path: {{ $.dorycore.kubernetes.pvConfigGlusterfs.path | quote }}
-{{- else }}
+{{ else }}
 # # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
 # pvConfigGlusterfs:
 #   # glusterfs存储集群ip地址
@@ -123,7 +123,7 @@ pvConfigGlusterfs:
 #   endpointPort: 1
 #   # glusterfs存储集群路径
 #   path: "kube_vol"
-{{- end }}
+{{ end }}
 
 # 项目的deployment选择部署在什么标签的节点上，格式为（labelName: labelValue）
 projectNodeSelector: {}
