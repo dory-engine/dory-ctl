@@ -138,7 +138,7 @@ docker:
     # tls key存放的路径
     tlsKeyPath: "/certs/tls.key"
   # docker executor 的数量，docker executor 部署在docker中请设置（选填）
-  dockerNumber: 1
+  dockerNumber: {{ $.dory.docker.dockerNumber }}
   # docker executor 的服务名，访问docker executor的方式为 xxx-0.xxx，例如docker-0.docker
   docker: {{ $.dory.docker.dockerName | quote }}
   # docker executor 的端口
