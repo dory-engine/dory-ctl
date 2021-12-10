@@ -83,7 +83,7 @@ spec:
   storageClassName: project-data-pv
   selector:
     matchLabels:
-      app: project-data
+      app: project-data-pv
 
 ---
 apiVersion: apps/v1
