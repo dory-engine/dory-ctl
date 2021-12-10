@@ -180,15 +180,15 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		for _, idi := range dockerImages.InstallDockerImages {
 			fmt.Println(fmt.Sprintf("%s", idi.Source))
 		}
-		LogInfo("pull docker images begin")
-		for _, idi := range dockerImages.InstallDockerImages {
-			_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
-			if err != nil {
-				err = fmt.Errorf("pull docker image %s error: %s", idi.Source, err.Error())
-				return err
-			}
-		}
-		LogSuccess(fmt.Sprintf("pull docker images success"))
+		//LogInfo("pull docker images begin")
+		//for _, idi := range dockerImages.InstallDockerImages {
+		//	_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
+		//	if err != nil {
+		//		err = fmt.Errorf("pull docker image %s error: %s", idi.Source, err.Error())
+		//		return err
+		//	}
+		//}
+		//LogSuccess(fmt.Sprintf("pull docker images success"))
 
 		// extract harbor install files
 		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
