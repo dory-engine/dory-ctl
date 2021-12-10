@@ -75,18 +75,12 @@ func (o *OptionsInstallPrint) Run(args []string) error {
 			return err
 		}
 		quick.Highlight(os.Stdout, string(bs), "yaml", "terminal", "native")
-		color.Set(color.FgWhite)
-		color.Set(color.BgBlack)
-		fmt.Println(string(bs))
 	} else if o.Mode == "kubernetes" {
 		bs, err := pkg.FsInstallConfigs.ReadFile(fmt.Sprintf("%s/kubernetes_install.yaml", pkg.DirInstallConfigs))
 		if err != nil {
 			return err
 		}
 		quick.Highlight(os.Stdout, string(bs), "yaml", "terminal", "native")
-		color.Set(color.FgWhite)
-		color.Set(color.BgBlack)
-		fmt.Println(string(bs))
 	}
 	return err
 }

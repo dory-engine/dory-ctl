@@ -1,10 +1,16 @@
 # doryctl
 
-## TODO
+## doryctl install
 
-- 开源版使用命令行作为操作方式，开源版新增doryctl命令行，通过api接口操作doryengine
+- docker-compose模式安装
 
-- doryctl命令行的yaml、json输出可以显示颜色。
+```shell script
+# 检查节点上相关软件以及kubernetes集群是否可用
+doryctl install check --mode docker
 
-- doryctl命令行的日志输出可以显示颜色。
+# 拉取相关镜像
+doryctl install pull
 
+# 获取安装设置
+doryctl install print --mode docker
+```
