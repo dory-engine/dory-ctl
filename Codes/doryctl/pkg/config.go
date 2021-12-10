@@ -70,14 +70,11 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	if len(idc.Dorycore.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
 		count = count + 1
 	}
-	if len(idc.Dorycore.Kubernetes.PvConfigGlusterfs.EndpointIPs) > 0 {
-		count = count + 1
-	}
 	if idc.Dorycore.Kubernetes.PvConfigNfs.NfsServer != "" {
 		count = count + 1
 	}
 	if count != 1 {
-		err = fmt.Errorf("%s: dorycore.kubernetes.pvConfigLocal/pvConfigNfs/pvConfigCephfs/pvConfigGlusterfs must set one only", errInfo)
+		err = fmt.Errorf("%s: dorycore.kubernetes.pvConfigLocal/pvConfigNfs/pvConfigCephfs must set one only", errInfo)
 		return err
 	}
 
@@ -120,30 +117,6 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 			fieldName = "dorycore.kubernetes.pvConfigCephfs.cephPath"
 			fieldValue = idc.Dorycore.Kubernetes.PvConfigCephfs.CephPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
-			return err
-		}
-	}
-
-	if len(idc.Dorycore.Kubernetes.PvConfigGlusterfs.EndpointIPs) > 0 {
-		for _, epi := range idc.Dorycore.Kubernetes.PvConfigGlusterfs.EndpointIPs {
-			fieldName = "dorycore.kubernetes.pvConfigGlusterfs.endpointIPs"
-			fieldValue = epi
-			err = ValidateIpAddress(epi)
-			if err != nil {
-				err = fmt.Errorf("%s: %s %s format error: %s", errInfo, fieldName, fieldValue, err.Error())
-				return err
-			}
-		}
-		if idc.Dorycore.Kubernetes.PvConfigGlusterfs.EndpointPort < 1 {
-			fieldName = "dorycore.kubernetes.pvConfigGlusterfs.endpointPort"
-			fieldValue = fmt.Sprintf("%d", idc.Dorycore.Kubernetes.PvConfigGlusterfs.EndpointPort)
-			err = fmt.Errorf("%s: %s %s format error: must set", errInfo, fieldName, fieldValue)
-			return err
-		}
-		if strings.HasPrefix(idc.Dorycore.Kubernetes.PvConfigGlusterfs.Path, "/") {
-			fieldName = "dorycore.kubernetes.pvConfigGlusterfs.path"
-			fieldValue = idc.Dorycore.Kubernetes.PvConfigGlusterfs.Path
-			err = fmt.Errorf("%s: %s %s format error: can not start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}

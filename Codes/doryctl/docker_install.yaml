@@ -114,6 +114,9 @@ dorycore:
     port: 6443
     # kubernetes环境的 apiserver token
     token: "xxx"
+    # project-data-alpine pod 所在的名字空间
+    namespace: "dory"
+
     # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
     # pvConfigLocal:
     #   # 本地存储路径
@@ -139,15 +142,3 @@ dorycore:
     #   - "192.168.0.1:6789"
     #   - "192.168.0.2:6789"
     #   - "192.168.0.3:6789"
-
-    # # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
-    # pvConfigGlusterfs:
-    #   # glusterfs存储集群ip地址
-    #   endpointIPs:
-    #   - "192.168.0.1"
-    #   - "192.168.0.2"
-    #   - "192.168.0.3"
-    #   # glusterfs存储集群端口
-    #   endpointPort: 1
-    #   # glusterfs存储集群路径
-    #   path: "kube_vol"

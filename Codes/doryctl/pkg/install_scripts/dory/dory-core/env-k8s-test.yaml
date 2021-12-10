@@ -99,32 +99,6 @@ pvConfigCephfs:
 #   - "192.168.0.3:6789"
 {{ end }}
 
-{{ if $.dorycore.kubernetes.pvConfigGlusterfs.path }}
-# 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
-pvConfigGlusterfs:
-  # glusterfs存储集群ip地址
-  endpointIPs:
-  {{ range $_, $endpointIP := $.dorycore.kubernetes.pvConfigGlusterfs.endpointIPs }}
-  - {{ $endpointIP | quote }}
-  {{ end }}
-  # glusterfs存储集群端口
-  endpointPort: {{ $.dorycore.kubernetes.pvConfigGlusterfs.endpointPort }}
-  # glusterfs存储集群路径
-  path: {{ $.dorycore.kubernetes.pvConfigGlusterfs.path | quote }}
-{{ else }}
-# # 假如持久化存储使用glusterfs情况下请设置，否则请删除以下配置
-# pvConfigGlusterfs:
-#   # glusterfs存储集群ip地址
-#   endpointIPs:
-#   - "192.168.0.1"
-#   - "192.168.0.2"
-#   - "192.168.0.3"
-#   # glusterfs存储集群端口
-#   endpointPort: 1
-#   # glusterfs存储集群路径
-#   path: "kube_vol"
-{{ end }}
-
 # 项目的deployment选择部署在什么标签的节点上，格式为（labelName: labelValue）
 projectNodeSelector: {}
 

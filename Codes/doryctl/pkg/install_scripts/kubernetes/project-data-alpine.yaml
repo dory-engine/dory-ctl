@@ -1,0 +1,136 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $.dorycore.kubernetes.namespace }}
+  labels:
+    ns: {{ $.dorycore.kubernetes.namespace }}
+
+---
+{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.harbor.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.harbor.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.harbor.password | nospace | b64enc | quote) " } } }" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.harbor.domainName }}
+  namespace: {{ $.dorycore.kubernetes.namespace }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    {{ $harborDockerConfigJson | b64enc | nindent 4 }}
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: project-data
+  labels:
+    app: project-data
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "project-data-pv"
+spec:
+  capacity:
+    storage: 500Gi
+  accessModes:
+    - ReadWriteMany
+  {{- if $.dorycore.kubernetes.pvConfigLocal.localPath }}
+  hostPath:
+    path: {{ $.dorycore.kubernetes.pvConfigLocal.localPath }}
+    type: DirectoryOrCreate
+  {{- else if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+  cephfs:
+    path: {{ $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+    user: {{ $.dorycore.kubernetes.pvConfigCephfs.cephUser }}
+    monitors:
+    {{- range $_, $monitor := $.dorycore.kubernetes.pvConfigCephfs.cephMonitors }}
+    - {{ $monitor | quote }}
+    {{- end }}
+    secretRef:
+      name: cephfs-secret
+      namespace: {{ $.dorycore.kubernetes.project.projectInfo.projectName }}
+    readOnly: false
+  {{- else if $.dorycore.kubernetes.pvConfigNfs.nfsServer }}
+  nfs:
+    path: {{ $.dorycore.kubernetes.pvConfigNfs.nfsPath }}
+    server: {{ $.dorycore.kubernetes.pvConfigNfs.nfsServer }}
+    readOnly: false
+  {{- end }}
+
+{{- if $.dorycore.kubernetes.pvConfigCephfs.cephPath }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cephfs-secret
+  namespace: {{ $.dorycore.kubernetes.namespace }}
+data:
+  key: {{ $.dorycore.kubernetes.pvConfigCephfs.cephSecret | b64enc }}
+{{- end }}
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: project-data-pvc
+  namespace: {{ $.dorycore.kubernetes.namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: project-data-pv
+  selector:
+    matchLabels:
+      app: project-data
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: project-data-alpine
+  name: project-data-alpine
+  namespace: {{ $.dorycore.kubernetes.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: project-data-alpine
+  serviceName: project-data-alpine
+  template:
+    metadata:
+      labels:
+        app: project-data-alpine
+    spec:
+      containers:
+        - command:
+            - tail
+            - -f
+            - /dev/null
+          image: {{ $.harbor.domainName }}/hub/alpine:3.15.0
+          imagePullPolicy: IfNotPresent
+          name: project-data-alpine
+          volumeMounts:
+            - mountPath: /etc/timezone
+              name: timezone
+            - mountPath: /etc/localtime
+              name: localtime
+            - mountPath: /project-data
+              name: project-data-pvc
+              subPath: .
+      imagePullSecrets:
+        - name: {{ $.harbor.domainName }}
+      volumes:
+        - hostPath:
+            path: /etc/timezone
+            type: File
+          name: timezone
+        - hostPath:
+            path: /etc/localtime
+            type: File
+          name: localtime
+        - name: project-data-pvc
+          persistentVolumeClaim:
+            claimName: project-data-pvc

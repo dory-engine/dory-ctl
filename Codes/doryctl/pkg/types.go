@@ -10,11 +10,13 @@ type DoryConfig struct {
 	UserToken   string        `yaml:"userToken" json:"userToken" bson:"userToken" validate:""`
 }
 
+type InstallDockerImage struct {
+	Source string `yaml:"source" json:"source" bson:"source" validate:"required"`
+	Target string `yaml:"target" json:"target" bson:"target" validate:""`
+}
+
 type InstallDockerImages struct {
-	InstallDockerImages []struct {
-		Source string `yaml:"source" json:"source" bson:"source" validate:"required"`
-		Target string `yaml:"target" json:"target" bson:"target" validate:"required"`
-	} `yaml:"dockerImages" json:"dockerImages" bson:"dockerImages" validate:""`
+	InstallDockerImages []InstallDockerImage `yaml:"dockerImages" json:"dockerImages" bson:"dockerImages" validate:""`
 }
 
 type InstallDockerConfig struct {
@@ -87,6 +89,7 @@ type InstallDockerConfig struct {
 			Host          string `yaml:"host" json:"host" bson:"host" validate:"required"`
 			Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
 			Token         string `yaml:"token" json:"token" bson:"token" validate:"required"`
+			Namespace     string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
 			PvConfigLocal struct {
 				LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
 			} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
@@ -100,11 +103,6 @@ type InstallDockerConfig struct {
 				CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
 				CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
 			} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
-			PvConfigGlusterfs struct {
-				EndpointIPs  []string `yaml:"endpointIPs" json:"endpointIPs" bson:"endpointIPs" validate:""`
-				EndpointPort int      `yaml:"endpointPort" json:"endpointPort" bson:"endpointPort" validate:""`
-				Path         string   `yaml:"path" json:"path" bson:"path" validate:""`
-			} `yaml:"pvConfigGlusterfs" json:"pvConfigGlusterfs" bson:"pvConfigGlusterfs" validate:""`
 		} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 	} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 }
