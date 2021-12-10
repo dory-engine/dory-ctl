@@ -79,12 +79,13 @@ func (o *OptionsInstallPull) Run(args []string) error {
 	}
 
 	LogInfo("pull docker images begin")
-	for _, idi := range dockerImages.InstallDockerImages {
+	for i, idi := range dockerImages.InstallDockerImages {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
 		if err != nil {
 			err = fmt.Errorf("pull docker image %s error: %s", idi.Source, err.Error())
 			return err
 		}
+		LogSuccess(fmt.Sprintf("# progress: %d/%d %s", i+1, len(dockerImages.InstallDockerImages), idi.Source))
 	}
 	LogSuccess(fmt.Sprintf("pull docker images success"))
 
