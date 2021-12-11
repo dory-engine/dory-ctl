@@ -86,15 +86,6 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 	}
 	LogSuccess("check docker installed success")
 
-	LogInfo("check helm installed")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("helm version"), ".")
-	if err != nil {
-		err = fmt.Errorf("check helm installed error: %s", err.Error())
-		LogError(err.Error())
-		return err
-	}
-	LogSuccess("check helm installed success")
-
 	LogInfo("check kubernetes installed")
 	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl get nodes"), ".")
 	if err != nil {
@@ -114,6 +105,14 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 		}
 		LogSuccess("check docker-compose installed success")
 	} else if o.Mode == "kubernetes" {
+		LogInfo("check helm installed")
+		_, _, err = pkg.CommandExec(fmt.Sprintf("helm version"), ".")
+		if err != nil {
+			err = fmt.Errorf("check helm installed error: %s", err.Error())
+			LogError(err.Error())
+			return err
+		}
+		LogSuccess("check helm installed success")
 	}
 	return err
 }

@@ -231,17 +231,6 @@ func (o *OptionsInstallRun) Run(args []string) error {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
 		}
-		// update /etc/hosts
-		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.ImageRepo.DomainName), harborDir)
-		if err != nil {
-			// harbor domain name not exists
-			_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.ImageRepo.DomainName), harborDir)
-			if err != nil {
-				err = fmt.Errorf("install harbor error: %s", err.Error())
-				return err
-			}
-			LogInfo("add harbor domain name to /etc/hosts")
-		}
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
 		if err != nil {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
@@ -253,6 +242,18 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		if err != nil {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
+		}
+
+		// update /etc/hosts
+		_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installDockerConfig.ImageRepo.DomainName), harborDir)
+		if err != nil {
+			// harbor domain name not exists
+			_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installDockerConfig.HostIP, installDockerConfig.ImageRepo.DomainName), harborDir)
+			if err != nil {
+				err = fmt.Errorf("install harbor error: %s", err.Error())
+				return err
+			}
+			LogInfo("add harbor domain name to /etc/hosts")
 		}
 		LogInfo("docker login to harbor")
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username admin --password %s %s", installDockerConfig.ImageRepo.Password, installDockerConfig.ImageRepo.DomainName), harborDir)
@@ -504,5 +505,10 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		fmt.Println("args:", args)
 		fmt.Println("install with kubernetes")
 	}
+	return err
+}
+
+func HarborInstallDocker(installDockerConfig pkg.InstallDockerConfig) error {
+	var err error
 	return err
 }
