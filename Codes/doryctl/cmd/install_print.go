@@ -2,11 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/alecthomas/chroma/quick"
 	"github.com/dorystack/doryctl/pkg"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 type OptionsInstallPrint struct {
@@ -68,7 +65,6 @@ func (o *OptionsInstallPrint) Validate(args []string) error {
 func (o *OptionsInstallPrint) Run(args []string) error {
 	var err error
 
-	defer color.Unset()
 	bs, err := pkg.FsInstallConfigs.ReadFile(fmt.Sprintf("%s/install-config.yaml", pkg.DirInstallConfigs))
 	if err != nil {
 		return err
@@ -81,6 +77,6 @@ func (o *OptionsInstallPrint) Run(args []string) error {
 		err = fmt.Errorf("parse install config error: %s", err.Error())
 		return err
 	}
-	quick.Highlight(os.Stdout, strInstallConfig, "yaml", "terminal", "native")
+	fmt.Println(strInstallConfig)
 	return err
 }
