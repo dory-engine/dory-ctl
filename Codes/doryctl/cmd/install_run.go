@@ -178,14 +178,19 @@ func (o *OptionsInstallRun) HarborCreateProject(installConfig pkg.InstallConfig)
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepoDir)
 
 	LogInfo("create harbor project public, hub, gcr, quay begin")
-	harborCreateProjectCmd := fmt.Sprintf(`curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "public", "public": true}' && \
-			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "hub", "public": true}' && \
-			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "gcr", "public": true}' && \
-			curl -k -X POST "https://admin:%s@%s/api/v2.0/projects" -H  "accept: application/json" -H  "Content-Type: application/json" -d '{"project_name": "quay", "public": true}'`, installConfig.ImageRepo.Password, installConfig.ImageRepo.DomainName, installConfig.ImageRepo.Password, installConfig.ImageRepo.DomainName, installConfig.ImageRepo.Password, installConfig.ImageRepo.DomainName, installConfig.ImageRepo.Password, installConfig.ImageRepo.DomainName)
-	_, _, err = pkg.CommandExec(harborCreateProjectCmd, harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor project public, hub, gcr, quay error: %s", err.Error())
-		return err
+	projectNames := []string{
+		"public",
+		"hub",
+		"gcr",
+		"quay",
+	}
+	for _, projectName := range projectNames {
+		err = installConfig.HarborProjectAdd(projectName)
+		if err != nil {
+			err = fmt.Errorf("create harbor project %s error: %s", projectName, err.Error())
+			return err
+		}
+		LogInfo(fmt.Sprintf("create harbor project %s success", projectName))
 	}
 	LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
 

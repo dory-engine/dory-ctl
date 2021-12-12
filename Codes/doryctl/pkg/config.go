@@ -1,9 +1,16 @@
 package pkg
 
 import (
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"github.com/tidwall/gjson"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (ic *InstallConfig) VerifyInstallConfig() error {
@@ -186,6 +193,76 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 	}
 	if ic.ImageRepo.Password == "" {
 		ic.ImageRepo.Password = RandomString(16, false, "=")
+	}
+
+	return err
+}
+
+func (ic *InstallConfig) HarborQuery(url, method string, param map[string]interface{}) (string, int, error) {
+	var err error
+	var strJson string
+	var statusCode int
+	var req *http.Request
+	var resp *http.Response
+	var bs []byte
+	client := &http.Client{
+		Timeout: time.Second * time.Duration(time.Second*5),
+	}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	url = fmt.Sprintf("https://%s%s", ic.ImageRepo.DomainName, url)
+
+	if len(param) > 0 {
+		bs, err = json.Marshal(param)
+		if err != nil {
+			return strJson, statusCode, err
+		}
+		req, err = http.NewRequest(method, url, bytes.NewReader(bs))
+		if err != nil {
+			return strJson, statusCode, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+		if err != nil {
+			return strJson, statusCode, err
+		}
+	}
+
+	req.SetBasicAuth("admin", ic.ImageRepo.Password)
+	resp, err = client.Do(req)
+	if err != nil {
+		return strJson, statusCode, err
+	}
+	defer resp.Body.Close()
+	statusCode = resp.StatusCode
+	bs, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return strJson, statusCode, err
+	}
+	strJson = string(bs)
+	return strJson, statusCode, err
+}
+
+func (ic *InstallConfig) HarborProjectAdd(projectName string) error {
+	var err error
+	var statusCode int
+	var strJson string
+
+	url := fmt.Sprintf("/api/v2.0/projects")
+	param := map[string]interface{}{
+		"project_name": projectName,
+		"public":       true,
+	}
+	strJson, statusCode, err = ic.HarborQuery(url, http.MethodPost, param)
+	if err != nil {
+		return err
+	}
+
+	errmsg := fmt.Sprintf("%s %s", gjson.Get(strJson, "errors.0.code").String(), gjson.Get(strJson, "errors.0.message").String())
+	if statusCode < http.StatusOK || statusCode >= http.StatusBadRequest {
+		err = fmt.Errorf(errmsg)
+		return err
 	}
 
 	return err
