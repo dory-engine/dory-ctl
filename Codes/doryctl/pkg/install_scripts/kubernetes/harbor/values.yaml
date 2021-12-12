@@ -345,7 +345,7 @@ updateStrategy:
 logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: "QaVuhwQo5mbaPdx3jks"
+harborAdminPassword: {{ $.imageRepo.password | quote }}
 
 # The name of the secret which contains key named "ca.crt". Setting this enables the
 # download link on portal to download the certificate of CA when the certificate isn't
@@ -353,7 +353,8 @@ harborAdminPassword: "QaVuhwQo5mbaPdx3jks"
 caSecretName: ""
 
 # The secret key used for encryption. Must be a string of 16 chars.
-secretKey: "LYuddPISSstlNSoqU"
+secretKey: {{ randAlphaNum 16 | quote }}
+
 
 # The proxy settings for updating trivy vulnerabilities from the Internet and replicating
 # artifacts from/to the registries that cannot be reached directly
@@ -530,10 +531,10 @@ registry:
   relativeurls: false
   credentials:
     username: "harbor_registry_user"
-    password: "j23x6GgfmznBY5QYCbN"
+    password: {{ $.imageRepo.registryPassword | quote }}
     # If you update the username or password of registry, make sure use cli tool htpasswd to generate the bcrypt hash
     # e.g. "htpasswd -nbBC10 $username $password"
-    htpasswd: "harbor_registry_user:$2y$10$VD9pK4Egg8TtXn/1IPezXuEou7WLeGnrHl4WmDeBtRxKjH.XGULMG"
+    htpasswd: "harbor_registry_user:{{ $.imageRepo.registryHtpasswd }}"
 
   middleware:
     enabled: false
@@ -695,7 +696,7 @@ database:
       repository: goharbor/harbor-db
       tag: {{ $.imageRepo.version }}
     # The initial superuser password for internal database
-    password: "VAEWjTixzCPfbaKnkgYT6CaJo"
+    password: {{ randAlphaNum 16 | quote }}
     # The size limit for Shared memory, pgSQL use it for shared_buffer
     # More details see:
     # https://github.com/goharbor/harbor/issues/15034

@@ -67,13 +67,15 @@ type InstallConfig struct {
 		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	ImageRepo struct {
-		Type       string `yaml:"type" json:"type" bson:"type" validate:"required"`
-		DomainName string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
-		CertsDir   string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
-		DataDir    string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
-		Password   string `yaml:"password" json:"password" bson:"password" validate:""`
-		Version    string `yaml:"version" json:"version" bson:"version" validate:"required"`
-		VersionBig string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
+		Type             string `yaml:"type" json:"type" bson:"type" validate:"required"`
+		DomainName       string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
+		CertsDir         string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
+		DataDir          string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
+		Password         string `yaml:"password" json:"password" bson:"password" validate:""`
+		RegistryPassword string `yaml:"registryPassword" json:"registryPassword" bson:"registryPassword" validate:""`
+		RegistryHtpasswd string `yaml:"registryHtpasswd" json:"registryHtpasswd" bson:"registryHtpasswd" validate:""`
+		Version          string `yaml:"version" json:"version" bson:"version" validate:"required"`
+		VersionBig       string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
 	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {
 		AdminUser struct {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tidwall/gjson"
+	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -194,6 +195,11 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 	if ic.ImageRepo.Password == "" {
 		ic.ImageRepo.Password = RandomString(16, false, "=")
 	}
+	if ic.ImageRepo.RegistryPassword == "" {
+		ic.ImageRepo.RegistryPassword = RandomString(16, false, "")
+	}
+	bs, _ := bcrypt.GenerateFromPassword([]byte(ic.ImageRepo.RegistryPassword), 10)
+	ic.ImageRepo.RegistryHtpasswd = string(bs)
 
 	return err
 }
