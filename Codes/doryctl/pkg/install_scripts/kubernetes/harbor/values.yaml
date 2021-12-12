@@ -35,8 +35,8 @@ expose:
       notarySecretName: ""
   ingress:
     hosts:
-      core: registry.new.imdory.com
-      notary: notary.registry.new.imdory.com
+      core: {{ $.imageRepo.domainName }}
+      notary: notary.{{ $.imageRepo.domainName }}
     # set to the type of ingress controller if it has specific requirements.
     # leave as `default` for most ingress controllers.
     # set to `gce` if using the GCE ingress controller
@@ -45,13 +45,13 @@ expose:
     annotations:
       # note different ingress controllers may require a different ssl-redirect annotation
       # for Envoy, use ingress.kubernetes.io/force-ssl-redirect: "true" and remove the nginx lines below
-      # ingress.kubernetes.io/ssl-redirect: "true"
-      # ingress.kubernetes.io/proxy-body-size: "0"
-      # nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      ingress.kubernetes.io/ssl-redirect: "true"
+      ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
       traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
       traefik.ingress.kubernetes.io/router.tls: "true"
-      cert-manager.io/issuer: "letsencrypt-issuer"
+      # cert-manager.io/issuer: "letsencrypt-issuer"
     notary:
       # notary-specific annotations
       annotations: {}
@@ -120,7 +120,7 @@ expose:
 # the IP address of k8s node
 #
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
-externalURL: https://registry.new.imdory.com
+externalURL: https://{{ $.imageRepo.domainName }}
 
 # The internal TLS used for harbor components secure communicating. In order to enable https
 # in each components tls cert files need to provided in advance.
@@ -381,7 +381,7 @@ proxy:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -402,7 +402,7 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -423,7 +423,7 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -461,7 +461,7 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   replicas: 1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
@@ -498,7 +498,7 @@ registry:
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -506,7 +506,7 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
 
     # resources:
     #  requests:
@@ -557,7 +557,7 @@ chartmuseum:
   absoluteUrl: false
   image:
     repository: goharbor/chartmuseum-photon
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   replicas: 1
   # resources:
   #  requests:
@@ -578,7 +578,7 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.3.4
+    tag: {{ $.imageRepo.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -641,7 +641,7 @@ notary:
     automountServiceAccountToken: false
     image:
       repository: goharbor/notary-server-photon
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     replicas: 1
     # resources:
     #  requests:
@@ -661,7 +661,7 @@ notary:
     automountServiceAccountToken: false
     image:
       repository: goharbor/notary-signer-photon
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     replicas: 1
     # resources:
     #  requests:
@@ -693,7 +693,7 @@ database:
     automountServiceAccountToken: false
     image:
       repository: goharbor/harbor-db
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     # The initial superuser password for internal database
     password: "VAEWjTixzCPfbaKnkgYT6CaJo"
     # The size limit for Shared memory, pgSQL use it for shared_buffer
@@ -757,7 +757,7 @@ redis:
     automountServiceAccountToken: false
     image:
       repository: goharbor/redis-photon
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -797,7 +797,7 @@ exporter:
     automountServiceAccountToken: false
     image:
       repository: goharbor/harbor-exporter
-      tag: v2.3.4
+      tag: {{ $.imageRepo.version }}
     nodeSelector: {}
     tolerations: []
     affinity: {}

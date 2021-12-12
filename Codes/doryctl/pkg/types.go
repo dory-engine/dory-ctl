@@ -19,7 +19,8 @@ type InstallDockerImages struct {
 	InstallDockerImages []InstallDockerImage `yaml:"dockerImages" json:"dockerImages" bson:"dockerImages" validate:""`
 }
 
-type InstallDockerConfig struct {
+type InstallConfig struct {
+	InstallMode  string `yaml:"installMode" json:"installMode" bson:"installMode" validate:"required"`
 	RootDir      string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
 	DoryDir      string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
 	ImageRepoDir string `yaml:"imageRepoDir" json:"imageRepoDir" bson:"imageRepoDir" validate:"required"`
@@ -71,6 +72,8 @@ type InstallDockerConfig struct {
 		CertsDir   string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
 		DataDir    string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
 		Password   string `yaml:"password" json:"password" bson:"password" validate:""`
+		Version    string `yaml:"version" json:"version" bson:"version" validate:"required"`
+		VersionBig string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
 	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {
 		AdminUser struct {

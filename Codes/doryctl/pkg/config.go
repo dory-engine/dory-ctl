@@ -6,14 +6,21 @@ import (
 	"strings"
 )
 
-func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
+func (ic *InstallConfig) VerifyInstallConfig() error {
 	var err error
-	errInfo := fmt.Sprintf("verify install docker config error")
+	errInfo := fmt.Sprintf("verify install config error")
 
 	var fieldName, fieldValue string
 
+	fieldName = "installMode"
+	fieldValue = ic.InstallMode
+	if fieldValue != "docker" && fieldValue != "kubernetes" {
+		err = fmt.Errorf("%s: %s %s format error: must be docker or kubernetes", errInfo, fieldName, fieldValue)
+		return err
+	}
+
 	fieldName = "rootDir"
-	fieldValue = idc.RootDir
+	fieldValue = ic.RootDir
 	if !strings.HasPrefix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 		return err
@@ -24,63 +31,63 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	}
 
 	fieldName = "doryDir"
-	fieldValue = idc.DoryDir
+	fieldValue = ic.DoryDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "dory.gitRepo.type"
-	fieldValue = idc.Dory.GitRepo.Type
-	if idc.Dory.GitRepo.Type != "gitea" && idc.Dory.GitRepo.Type != "gitlab" {
+	fieldValue = ic.Dory.GitRepo.Type
+	if ic.Dory.GitRepo.Type != "gitea" && ic.Dory.GitRepo.Type != "gitlab" {
 		err = fmt.Errorf("%s: %s %s format error: must be gitea or gitlab", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "dory.gitRepo.imageDB"
-	fieldValue = idc.Dory.GitRepo.ImageDB
-	if idc.Dory.GitRepo.Type == "gitea" && idc.Dory.GitRepo.ImageDB == "" {
+	fieldValue = ic.Dory.GitRepo.ImageDB
+	if ic.Dory.GitRepo.Type == "gitea" && ic.Dory.GitRepo.ImageDB == "" {
 		err = fmt.Errorf("%s: %s %s format error: gitea imageDB can not be empty", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "dory.artifactRepo.type"
-	fieldValue = idc.Dory.ArtifactRepo.Type
-	if idc.Dory.ArtifactRepo.Type != "nexus" {
+	fieldValue = ic.Dory.ArtifactRepo.Type
+	if ic.Dory.ArtifactRepo.Type != "nexus" {
 		err = fmt.Errorf("%s: %s %s format error: must be nexus", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "imageRepo.type"
-	fieldValue = idc.ImageRepo.Type
-	if idc.ImageRepo.Type != "harbor" {
+	fieldValue = ic.ImageRepo.Type
+	if ic.ImageRepo.Type != "harbor" {
 		err = fmt.Errorf("%s: %s %s format error: must be harbor", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "imageRepoDir"
-	fieldValue = idc.ImageRepoDir
+	fieldValue = ic.ImageRepoDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "imageRepoDir.certsDir"
-	fieldValue = idc.ImageRepo.CertsDir
+	fieldValue = ic.ImageRepo.CertsDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "imageRepoDir.dataDir"
-	fieldValue = idc.ImageRepo.DataDir
+	fieldValue = ic.ImageRepo.DataDir
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
 	fieldName = "hostIP"
-	fieldValue = idc.HostIP
+	fieldValue = ic.HostIP
 	err = ValidateIpAddress(fieldValue)
 	if err != nil {
 		err = fmt.Errorf("%s: %s %s format error: %s", errInfo, fieldName, fieldValue, err.Error())
@@ -92,13 +99,13 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 	}
 
 	var count int
-	if idc.Kubernetes.PvConfigLocal.LocalPath != "" {
+	if ic.Kubernetes.PvConfigLocal.LocalPath != "" {
 		count = count + 1
 	}
-	if len(idc.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
+	if len(ic.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
 		count = count + 1
 	}
-	if idc.Kubernetes.PvConfigNfs.NfsServer != "" {
+	if ic.Kubernetes.PvConfigNfs.NfsServer != "" {
 		count = count + 1
 	}
 	if count != 1 {
@@ -106,16 +113,16 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 		return err
 	}
 
-	if idc.Kubernetes.PvConfigLocal.LocalPath != "" {
-		if !strings.HasPrefix(idc.Kubernetes.PvConfigLocal.LocalPath, "/") {
+	if ic.Kubernetes.PvConfigLocal.LocalPath != "" {
+		if !strings.HasPrefix(ic.Kubernetes.PvConfigLocal.LocalPath, "/") {
 			fieldName = "kubernetes.pvConfigLocal.localPath"
-			fieldValue = idc.Kubernetes.PvConfigLocal.LocalPath
+			fieldValue = ic.Kubernetes.PvConfigLocal.LocalPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}
-	if len(idc.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
-		for _, monitor := range idc.Kubernetes.PvConfigCephfs.CephMonitors {
+	if len(ic.Kubernetes.PvConfigCephfs.CephMonitors) > 0 {
+		for _, monitor := range ic.Kubernetes.PvConfigCephfs.CephMonitors {
 			fieldName = "kubernetes.pvConfigCephfs.cephMonitors"
 			fieldValue = monitor
 			arr := strings.Split(monitor, ":")
@@ -129,46 +136,56 @@ func (idc *InstallDockerConfig) VerifyInstallDockerConfig() error {
 				return err
 			}
 		}
-		if idc.Kubernetes.PvConfigCephfs.CephSecret == "" {
+		if ic.Kubernetes.PvConfigCephfs.CephSecret == "" {
 			fieldName = "kubernetes.pvConfigCephfs.cephSecret"
-			fieldValue = idc.Kubernetes.PvConfigCephfs.CephSecret
+			fieldValue = ic.Kubernetes.PvConfigCephfs.CephSecret
 			err = fmt.Errorf("%s: %s %s format error: can not be empty", errInfo, fieldName, fieldValue)
 			return err
 		}
-		if idc.Kubernetes.PvConfigCephfs.CephUser == "" {
+		if ic.Kubernetes.PvConfigCephfs.CephUser == "" {
 			fieldName = "kubernetes.pvConfigCephfs.cephUser"
-			fieldValue = idc.Kubernetes.PvConfigCephfs.CephUser
+			fieldValue = ic.Kubernetes.PvConfigCephfs.CephUser
 			err = fmt.Errorf("%s: %s %s format error: can not be empty", errInfo, fieldName, fieldValue)
 			return err
 		}
-		if !strings.HasPrefix(idc.Kubernetes.PvConfigCephfs.CephPath, "/") {
+		if !strings.HasPrefix(ic.Kubernetes.PvConfigCephfs.CephPath, "/") {
 			fieldName = "kubernetes.pvConfigCephfs.cephPath"
-			fieldValue = idc.Kubernetes.PvConfigCephfs.CephPath
+			fieldValue = ic.Kubernetes.PvConfigCephfs.CephPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}
 
-	if idc.Kubernetes.PvConfigNfs.NfsServer != "" {
-		if !strings.HasPrefix(idc.Kubernetes.PvConfigNfs.NfsPath, "/") {
+	if ic.Kubernetes.PvConfigNfs.NfsServer != "" {
+		if !strings.HasPrefix(ic.Kubernetes.PvConfigNfs.NfsPath, "/") {
 			fieldName = "kubernetes.pvConfigNfs.nfsPath"
-			fieldValue = idc.Kubernetes.PvConfigNfs.NfsPath
+			fieldValue = ic.Kubernetes.PvConfigNfs.NfsPath
 			err = fmt.Errorf("%s: %s %s format error: must start with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 	}
 
-	if idc.Dory.Openldap.Password == "" {
-		idc.Dory.Openldap.Password = RandomString(16, false, "=")
+	arr := strings.Split(ic.ImageRepo.Version, ".")
+	if len(arr) != 3 {
+		fieldName = "imageRepo.version"
+		fieldValue = ic.ImageRepo.Version
+		err = fmt.Errorf("%s: %s %s format error: should like v2.4.0", errInfo, fieldName, fieldValue)
+		return err
 	}
-	if idc.Dory.Redis.Password == "" {
-		idc.Dory.Redis.Password = RandomString(16, false, "=")
+	arr[2] = "0"
+	ic.ImageRepo.VersionBig = strings.Join(arr, ".")
+
+	if ic.Dory.Openldap.Password == "" {
+		ic.Dory.Openldap.Password = RandomString(16, false, "=")
 	}
-	if idc.Dory.Mongo.Password == "" {
-		idc.Dory.Mongo.Password = RandomString(16, false, "=")
+	if ic.Dory.Redis.Password == "" {
+		ic.Dory.Redis.Password = RandomString(16, false, "=")
 	}
-	if idc.ImageRepo.Password == "" {
-		idc.ImageRepo.Password = RandomString(16, false, "=")
+	if ic.Dory.Mongo.Password == "" {
+		ic.Dory.Mongo.Password = RandomString(16, false, "=")
+	}
+	if ic.ImageRepo.Password == "" {
+		ic.ImageRepo.Password = RandomString(16, false, "=")
 	}
 
 	return err

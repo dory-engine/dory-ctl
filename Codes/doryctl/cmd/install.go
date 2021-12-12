@@ -11,12 +11,8 @@ func NewCmdInstall() *cobra.Command {
 	msgUse := fmt.Sprintf("install")
 	msgShort := fmt.Sprintf("install dory-core with docker or kubernetes")
 	msgLong := fmt.Sprintf(`install dory-core and relative components with docker-compose or kubernetes`)
-	msgExample := fmt.Sprintf(`# install dory-core and relative components with docker-compose, will create all config files and docker-compose.yaml file
-%s install run --mode docker -f docker.yaml
-
-#  install dory-core and relative components with kubernetes, will create all config files and kubernetes deploy YAML files
-%s install run --mode kubernetes -f kubernetes.yaml
-`, pkg.BaseCmdName, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`# install dory-core and relative components with docker-compose or kubernetes
+%s install run -f install-config.yaml`, pkg.BaseCmdName)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

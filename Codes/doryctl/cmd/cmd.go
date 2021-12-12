@@ -58,11 +58,11 @@ func NewCmdRoot() *cobra.Command {
 	o := OptCommon
 	msgUse := fmt.Sprintf("%s is a command line toolkit", pkg.BaseCmdName)
 	msgShort := fmt.Sprintf("command line toolkit")
-	msgLong := fmt.Sprintf(`%s is a command line toolkit to manage dory-engine`, pkg.BaseCmdName)
-	msgExample := fmt.Sprintf(`  # install dory-engine on docker
-  %s install run --mode=docker -f docker_install.yaml
+	msgLong := fmt.Sprintf(`%s is a command line toolkit to manage dory-core`, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`  # install dory-core
+  %s install run -f install-config.yaml
 
-  # login to dory-engine
+  # login to dory-core
   %s login --serverURL http://dory.example.com:8080 --insecure=false --username test-user
 `, pkg.BaseCmdName, pkg.BaseCmdName)
 

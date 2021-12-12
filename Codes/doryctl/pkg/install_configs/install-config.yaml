@@ -1,10 +1,16 @@
+# 安装模式，选项: docker, kubernetes
+# docker模式，表示把所有组件使用docker-compose的方式部署
+# kubernetes模式，表示把所有组件部署在kubernetes中
+installMode: docker
 # 所有dory组件存放的根目录，绝对路径
+# 如果安装模式为kubernetes，并且kubernetes集群存在多个节点，请保证根目录在共享存储下，例如nfs、cephfs
 rootDir: "/root/tmp"
 # dory组件存放的子目录（相对根目录）
 doryDir: "dory"
 # 镜像仓库组件存放的子目录（相对根目录）
 imageRepoDir: "harbor"
-# 本机的ip地址，请勿使用127.0.0.1这种本机地址
+# 本机的ip地址，请勿使用127.0.0.1这种loopback地址
+# 如果安装模式为kubernetes，主机ip为master节点的ip地址（单master节点情况下）或者master节点的浮动ip（多master节点情况下）
 hostIP: "10.2.0.10"
 # 外部查看本机的url地址，请不要包含端口
 viewURL: http://new2.imdory.com
@@ -84,6 +90,8 @@ imageRepo:
   dataDir: data
   # 镜像仓库的管理员密码，为空表示自动随机生成
   password: ""
+  # 镜像仓库版本，harbor版本，支持v2.2.x - v2.4.x
+  version: v2.4.0
 # dorycore应用设置
 dorycore:
   # 默认管理员设置，自动在ldap中开通账号

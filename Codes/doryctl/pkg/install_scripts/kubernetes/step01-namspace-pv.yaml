@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $.currentNamespace }}
+  labels:
+    ns: {{ $.currentNamespace }}
+
+---
+{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.password | nospace | b64enc | quote) " } } }" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.imageRepo.domainName }}
+  namespace: {{ $.currentNamespace }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    {{ $harborDockerConfigJson | b64enc | nindent 4 }}
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ $.currentNamespace }}-pv
+  labels:
+    app: {{ $.currentNamespace }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ $.currentNamespace }}-pv"
+  spec:
+    capacity:
+      storage: 500Gi
+    accessModes:
+      - ReadWriteMany
+    {{- if $.kubernetes.pvConfigLocal.localPath }}
+    hostPath:
+      path: {{ $.kubernetes.pvConfigLocal.localPath }}/{{ $.currentNamespace }}
+      type: DirectoryOrCreate
+    {{- else if $.kubernetes.pvConfigCephfs.cephPath }}
+    cephfs:
+      path: {{ $.kubernetes.pvConfigCephfs.cephPath }}/{{ $.currentNamespace }}
+      user: {{ $.kubernetes.pvConfigCephfs.cephUser }}
+      monitors:
+      {{- range $_, $monitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
+      - {{ $monitor | quote }}
+      {{- end }}
+      secretRef:
+        name: cephfs-secret
+        namespace: {{ $.kubernetes.project.projectInfo.projectName }}
+      readOnly: false
+    {{- else if $.kubernetes.pvConfigNfs.nfsServer }}
+    nfs:
+      path: {{ $.kubernetes.pvConfigNfs.nfsPath }}/{{ $.currentNamespace }}
+      server: {{ $.kubernetes.pvConfigNfs.nfsServer }}
+      readOnly: false
+    {{- end }}
+
+{{- if $.kubernetes.pvConfigCephfs.cephPath }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cephfs-secret
+  namespace: {{ $.currentNamespace }}
+data:
+  key: {{ $.kubernetes.pvConfigCephfs.cephSecret | b64enc }}
+{{- end }}
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ $.currentNamespace }}-pvc
+  namespace: {{ $.currentNamespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 500Gi
+  storageClassName: {{ $.currentNamespace }}-pv
+  selector:
+    matchLabels:
+      app: {{ $.currentNamespace }}

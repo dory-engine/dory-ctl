@@ -117,18 +117,20 @@ mongodb:
   database: dorydb
 # docker executor 配置
 docker:
+  {{- if eq $.installMode "kubernetes" }}
   # docker executor 部署在kubernetes中请设置（选填）
   kubernetes:
     # kubernetes环境的 apiserver 地址
-    host: ""
+    host: {{ $.kubernetes.host | quote }}
     # kubernetes环境的 apiserver 端口
-    port: 0
+    port: {{ $.kubernetes.port }}
     # kubernetes环境的 apiserver token
-    token: ""
+    token: {{ $.kubernetes.token | quote }}
     # docker executor 证书存放的secret
-    secretTls: ""
+    secretTls: "dind-tls"
     # docker executor 所在的名字空间
-    namespace: ""
+    namespace: {{ $.kubernetes.namespace | quote }}
+  {{- else if eq $.installMode "docker" }}
   # docker executor 部署在docker中请设置（选填）
   localCert:
     # ca cert存放的路径
@@ -139,6 +141,7 @@ docker:
     tlsKeyPath: "/certs/tls.key"
   # docker executor 的数量，docker executor 部署在docker中请设置（选填）
   dockerNumber: {{ $.dory.docker.dockerNumber }}
+  {{- end }}
   # docker executor 的服务名，访问docker executor的方式为 xxx-0.xxx，例如docker-0.docker
   docker: {{ $.dory.docker.dockerName | quote }}
   # docker executor 的端口
