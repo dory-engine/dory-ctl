@@ -129,7 +129,7 @@ docker:
     # docker executor 证书存放的secret
     secretTls: "dind-tls"
     # docker executor 所在的名字空间
-    namespace: {{ $.kubernetes.namespace | quote }}
+    namespace: {{ $.dory.namespace | quote }}
   {{- else if eq $.installMode "docker" }}
   # docker executor 部署在docker中请设置（选填）
   localCert:

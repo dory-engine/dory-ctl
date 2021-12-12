@@ -38,8 +38,8 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 		return err
 	}
 
-	fieldName = "doryDir"
-	fieldValue = ic.DoryDir
+	fieldName = "dory.namespace"
+	fieldValue = ic.Dory.Namespace
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
@@ -73,25 +73,42 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 		return err
 	}
 
-	fieldName = "imageRepoDir"
-	fieldValue = ic.ImageRepoDir
+	fieldName = "imageRepo.namespace"
+	fieldValue = ic.ImageRepo.Namespace
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
-	fieldName = "imageRepoDir.certsDir"
-	fieldValue = ic.ImageRepo.CertsDir
+	fieldName = "imageRepo.Namespace"
+	fieldValue = ic.ImageRepo.Namespace
 	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 		return err
 	}
 
-	fieldName = "imageRepoDir.dataDir"
-	fieldValue = ic.ImageRepo.DataDir
-	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
-		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
-		return err
+	if ic.InstallMode == "docker" {
+		fieldName = "imageRepo.certsDir"
+		fieldValue = ic.ImageRepo.CertsDir
+		if fieldValue == "" {
+			err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.certsDir can not be empty", errInfo, fieldName, fieldValue)
+			return err
+		}
+		if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
+			err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+			return err
+		}
+
+		fieldName = "imageRepo.dataDir"
+		fieldValue = ic.ImageRepo.DataDir
+		if fieldValue == "" {
+			err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.dataDir can not be empty", errInfo, fieldName, fieldValue)
+			return err
+		}
+		if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
+			err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+			return err
+		}
 	}
 
 	fieldName = "hostIP"

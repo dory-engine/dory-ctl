@@ -14,8 +14,8 @@ https:
   # https port for harbor, default is 443
   port: 443
   # The path of cert and key files for nginx
-  certificate: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.crt
-  private_key: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.key
+  certificate: {{ $.rootDir }}/{{ $.imageRepo.namespace }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.crt
+  private_key: {{ $.rootDir }}/{{ $.imageRepo.namespace }}/{{ $.imageRepo.certsDir }}/{{ $.imageRepo.domainName }}.key
 
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
@@ -44,7 +44,7 @@ database:
   max_open_conns: 900
 
 # The default data volume
-data_volume: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.dataDir }}
+data_volume: {{ $.rootDir }}/{{ $.imageRepo.namespace }}/{{ $.imageRepo.dataDir }}
 
 # Harbor Storage settings by default is using /data dir on local filesystem
 # Uncomment storage_service setting If you want to using external storage
@@ -117,7 +117,7 @@ log:
     # are all valid.
     rotate_size: 200M
     # The directory on your host that store log
-    location: {{ $.rootDir }}/{{ $.imageRepoDir }}/{{ $.imageRepo.dataDir }}/log
+    location: {{ $.rootDir }}/{{ $.imageRepo.namespace }}/{{ $.imageRepo.dataDir }}/log
 
   # Uncomment following lines to enable external syslog endpoint.
   # external_endpoint:

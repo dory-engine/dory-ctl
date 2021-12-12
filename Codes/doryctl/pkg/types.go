@@ -20,14 +20,13 @@ type InstallDockerImages struct {
 }
 
 type InstallConfig struct {
-	InstallMode  string `yaml:"installMode" json:"installMode" bson:"installMode" validate:"required"`
-	RootDir      string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
-	DoryDir      string `yaml:"doryDir" json:"doryDir" bson:"doryDir" validate:"required"`
-	ImageRepoDir string `yaml:"imageRepoDir" json:"imageRepoDir" bson:"imageRepoDir" validate:"required"`
-	HostIP       string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
-	ViewURL      string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
-	Dory         struct {
-		GitRepo struct {
+	InstallMode string `yaml:"installMode" json:"installMode" bson:"installMode" validate:"required"`
+	RootDir     string `yaml:"rootDir" json:"rootDir" bson:"rootDir" validate:"required"`
+	HostIP      string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
+	ViewURL     string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
+	Dory        struct {
+		Namespace string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
+		GitRepo   struct {
 			Type    string `yaml:"type" json:"type" bson:"type" validate:"required"`
 			Image   string `yaml:"image" json:"image" bson:"image" validate:"required"`
 			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:""`
@@ -67,14 +66,15 @@ type InstallConfig struct {
 		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	ImageRepo struct {
+		Namespace        string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
 		Type             string `yaml:"type" json:"type" bson:"type" validate:"required"`
 		DomainName       string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
-		CertsDir         string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required"`
-		DataDir          string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required"`
+		Version          string `yaml:"version" json:"version" bson:"version" validate:"required"`
 		Password         string `yaml:"password" json:"password" bson:"password" validate:""`
+		CertsDir         string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:""`
+		DataDir          string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:""`
 		RegistryPassword string `yaml:"registryPassword" json:"registryPassword" bson:"registryPassword" validate:""`
 		RegistryHtpasswd string `yaml:"registryHtpasswd" json:"registryHtpasswd" bson:"registryHtpasswd" validate:""`
-		Version          string `yaml:"version" json:"version" bson:"version" validate:"required"`
 		VersionBig       string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
 	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {
@@ -97,7 +97,6 @@ type InstallConfig struct {
 		Host          string `yaml:"host" json:"host" bson:"host" validate:"required"`
 		Port          int    `yaml:"port" json:"port" bson:"port" validate:"required"`
 		Token         string `yaml:"token" json:"token" bson:"token" validate:"required"`
-		Namespace     string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
 		PvConfigLocal struct {
 			LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
 		} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`

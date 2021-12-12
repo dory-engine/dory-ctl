@@ -152,7 +152,7 @@ func (o *OptionsInstallRun) HarborGetDockerImages() (pkg.InstallDockerImages, er
 
 func (o *OptionsInstallRun) HarborLoginDocker(installConfig pkg.InstallConfig) error {
 	var err error
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepoDir)
+	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
 
 	// update /etc/hosts
 	_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installConfig.ImageRepo.DomainName), harborDir)
@@ -177,7 +177,7 @@ func (o *OptionsInstallRun) HarborLoginDocker(installConfig pkg.InstallConfig) e
 
 func (o *OptionsInstallRun) HarborCreateProject(installConfig pkg.InstallConfig) error {
 	var err error
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepoDir)
+	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
 
 	LogInfo("create harbor project public, hub, gcr, quay begin")
 	projectNames := []string{
@@ -233,7 +233,7 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 		return err
 	}
 
-	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.DoryDir)
+	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
 	dorycoreConfigDir := fmt.Sprintf("%s/config", dorycoreDir)
 	dorycoreScriptDir := "dory/dory-core"
 	dorycoreConfigName := "config.yaml"
@@ -288,7 +288,7 @@ func (o *OptionsInstallRun) DoryCreateDockerCertsConfig(installConfig pkg.Instal
 		return err
 	}
 
-	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.DoryDir, installConfig.Dory.Docker.DockerName)
+	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
 	_ = os.MkdirAll(dockerDir, 0700)
 	dockerScriptDir := "dory/docker"
 	dockerScriptName := "docker_certs.sh"
@@ -357,7 +357,7 @@ func (o *OptionsInstallRun) DoryCreateDockerCertsConfig(installConfig pkg.Instal
 func (o *OptionsInstallRun) DoryCreateDirs(installConfig pkg.InstallConfig) error {
 	var err error
 
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.DoryDir)
+	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 
 	// get nexus init data
 	_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), doryDir)
@@ -406,7 +406,7 @@ func (o *OptionsInstallRun) DoryCreateKubernetesDataPod(installConfig pkg.Instal
 		return err
 	}
 
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.DoryDir)
+	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 
 	kubernetesDir := "kubernetes"
 	projectDataAlpineName := "project-data-alpine.yaml"
@@ -427,7 +427,7 @@ func (o *OptionsInstallRun) DoryCreateKubernetesDataPod(installConfig pkg.Instal
 	}
 	cmdProjectDataAlpine := fmt.Sprintf(`(kubectl -n %s delete sts project-data-alpine || true) && \
 		(kubectl -n %s delete pvc project-data-pvc || true) && \
-		(kubectl delete pv project-data-pv || true)`, installConfig.Kubernetes.Namespace, installConfig.Kubernetes.Namespace)
+		(kubectl delete pv project-data-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
 	_, _, err = pkg.CommandExec(cmdProjectDataAlpine, doryDir)
 	if err != nil {
 		err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
@@ -456,7 +456,7 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	}
 
 	// create harbor certificates
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepoDir)
+	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
 	_ = os.MkdirAll(harborDir, 0700)
 	harborScriptDir := "harbor"
 	harborScriptName := "harbor_certs.sh"
@@ -597,8 +597,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	//////////////////////////////////////////////////
 
 	// create dory docker-compose.yaml
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.DoryDir)
-	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.DoryDir)
+	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
 	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 	dockerComposeDir := "dory"
@@ -716,42 +716,9 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	LogSuccess(fmt.Sprintf("create %s/%s success", harborInstallYamlDir, harborValuesYamlName))
 	LogSuccess(fmt.Sprintf("extract harbor helm files %s success", harborInstallYamlDir))
 
-	//// install harbor
-	//LogInfo("install harbor begin")
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-	//err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//LogInfo("waiting harbor boot up for 10 seconds")
-	//time.Sleep(time.Second * 10)
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//
+	// create harbor namespace and pv pvc
+	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
+
 	//// auto login to harbor
 	//err = o.HarborLoginDocker(installConfig)
 	//if err != nil {
@@ -773,8 +740,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//////////////////////////////////////////////////
 
 	// // create dory docker-compose.yaml
-	// doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.DoryDir)
-	// dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.DoryDir)
+	// doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	// dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
 	// _ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
 	// _ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 	// dockerComposeDir := "dory"

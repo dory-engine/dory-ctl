@@ -201,7 +201,7 @@ persistence:
     registry:
       # Use the existing PVC which must be created manually before bound,
       # and specify the "subPath" if the PVC is shared with other components
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       # Specify the "storageClass" used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to "-" to disable dynamic provisioning
@@ -210,13 +210,13 @@ persistence:
       accessMode: ReadWriteMany
       size: 5Gi
     chartmuseum:
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       storageClass: "-"
       subPath: "chartmuseum"
       accessMode: ReadWriteMany
       size: 5Gi
     jobservice:
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       storageClass: "-"
       subPath: "jobservice"
       accessMode: ReadWriteMany
@@ -224,7 +224,7 @@ persistence:
     # If external database is used, the following settings for database will
     # be ignored
     database:
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       storageClass: "-"
       subPath: "database"
       accessMode: ReadWriteMany
@@ -232,13 +232,13 @@ persistence:
     # If external Redis is used, the following settings for Redis will
     # be ignored
     redis:
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       storageClass: "-"
       subPath: "redis"
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
-      existingClaim: "harbor-pvc"
+      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
       storageClass: "-"
       subPath: "trivy"
       accessMode: ReadWriteOnce

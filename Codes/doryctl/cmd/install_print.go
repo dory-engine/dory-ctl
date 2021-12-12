@@ -11,6 +11,7 @@ import (
 
 type OptionsInstallPrint struct {
 	*OptionsCommon
+	Mode string
 }
 
 func NewOptionsInstallPrint() *OptionsInstallPrint {
@@ -25,9 +26,13 @@ func NewCmdInstallPrint() *cobra.Command {
 	msgUse := fmt.Sprintf("print")
 	msgShort := fmt.Sprintf("print install settings YAML file")
 	msgLong := fmt.Sprintf(`print docker or kubernetes install settings YAML file`)
-	msgExample := fmt.Sprintf(`# print install settings YAML file
-%s install print
-`, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`# print docker install settings YAML file
+%s install print --mode docker
+
+#  print kubernetes install settings YAML file
+%s install print --mode kubernetes
+
+`, pkg.BaseCmdName, pkg.BaseCmdName)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -41,6 +46,7 @@ func NewCmdInstallPrint() *cobra.Command {
 			cobra.CheckErr(o.Run(args))
 		},
 	}
+	cmd.Flags().StringVar(&o.Mode, "mode", "", "install mode, options: docker, kubernetes")
 	return cmd
 }
 
@@ -51,6 +57,10 @@ func (o *OptionsInstallPrint) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsInstallPrint) Validate(args []string) error {
 	var err error
+	if o.Mode != "docker" && o.Mode != "kubernetes" {
+		err = fmt.Errorf("[ERROR] --mode must be docker or kubernetes")
+		return err
+	}
 	return err
 }
 
@@ -63,6 +73,14 @@ func (o *OptionsInstallPrint) Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	quick.Highlight(os.Stdout, string(bs), "yaml", "terminal", "native")
+	vals := map[string]interface{}{
+		"mode": o.Mode,
+	}
+	strInstallConfig, err := pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("parse install config error: %s", err.Error())
+		return err
+	}
+	quick.Highlight(os.Stdout, strInstallConfig, "yaml", "terminal", "native")
 	return err
 }

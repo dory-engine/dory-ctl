@@ -1,28 +1,42 @@
 # 安装模式，选项: docker, kubernetes
 # docker模式，表示把所有组件使用docker-compose的方式部署
 # kubernetes模式，表示把所有组件部署在kubernetes中
+{{- if eq $.mode "docker" }}
 installMode: docker
-# 所有dory组件存放的根目录，绝对路径
-# 如果安装模式为kubernetes，并且kubernetes集群存在多个节点，请保证根目录在共享存储下，例如nfs、cephfs
-rootDir: "/root/tmp"
-# dory组件存放的子目录（相对根目录）
-doryDir: "dory"
-# 镜像仓库组件存放的子目录（相对根目录）
-imageRepoDir: "harbor"
-# 本机的ip地址，请勿使用127.0.0.1这种loopback地址
+{{- else if eq $.mode "kubernetes" }}
+installMode: kubernetes
+{{- end }}
+# 所有dory组件和镜像仓库组件存放的根目录（绝对路径）
+# 如果安装模式为docker，为本机的绝对路径。
+# 如果安装模式为kubernetes，并且kubernetes集群存在多个节点，请保证本机挂装了共享存储(例如nfs、cephfs)，并且目录在共享存储的挂装目录下
+{{- if eq $.mode "docker" }}
+rootDir: "/data/tmp"
+{{- else if eq $.mode "kubernetes" }}
+rootDir: "/mnt/nfs/tmp"
+{{- end }}
+# 主机ip地址，通过本ip地址可以访问到部署的镜像仓库和制品依赖仓库。
+# 如果安装模式为docker，表示本机的ip地址，请勿使用127.0.0.1这种loopback地址。
 # 如果安装模式为kubernetes，主机ip为master节点的ip地址（单master节点情况下）或者master节点的浮动ip（多master节点情况下）
+{{- if eq $.mode "docker" }}
 hostIP: "10.2.0.10"
+{{- else if eq $.mode "kubernetes" }}
+hostIP: "10.1.0.2"
+{{- end }}
 # 外部查看本机的url地址，请不要包含端口
 viewURL: http://new2.imdory.com
 # dory组件部署设置
 dory:
+  # dory组件所在的名字空间
+  # 假如安装模式为kubernetes，表示dory组件所安装的名字空间
+  # 假如安装模式为docker，表示dory组件存放的子目录
+  namespace: "dory"
   # 代码仓库设置
   gitRepo:
     # 代码仓库类型，选项: gitea, gitlab
     type: gitea
     # 镜像名
     image: gitea/gitea:1.15.6
-    # 数据库镜像名，gitea情况下必须填写
+    # 数据库镜像名，gitea情况下必须填写(选填)
     imageDB: mysql:8.0.20
     # 暴露的服务端口
     port: 30001
@@ -77,21 +91,29 @@ dory:
   # dorycore部署设置
   dorycore:
     # dashboard暴露的服务端口
-    port: 10010
+    port: 30010
 # 镜像仓库设置
 imageRepo:
+  # 镜像仓库组件所在的名字空间
+  # 假如安装模式为kubernetes，表示镜像仓库组件所安装的名字空间
+  # 假如安装模式为docker，表示镜像仓库组件存放的子目录
+  namespace: harbor
   # 镜像仓库类型，选项: harbor
   type: harbor
   # 镜像仓库的访问域名，用于创建harbor的自签名tls证书
   domainName: harbor2.new.imdory.com
-  # 镜像仓库的tls自签名证书存放的相对路径
-  certsDir: certs
-  # 镜像仓库的数据存放的相对路径
-  dataDir: data
-  # 镜像仓库的管理员密码，为空表示自动随机生成
-  password: ""
   # 镜像仓库版本，harbor版本，支持v2.2.x - v2.4.x
   version: v2.4.0
+  # 镜像仓库的管理员密码，为空表示自动随机生成
+  password: ""
+  {{- if eq $.mode "docker" }}
+  # 镜像仓库的tls自签名证书存放的相对路径
+  # 安装模式为docker情况下必须填写
+  certsDir: certs
+  # 镜像仓库的数据存放的相对路径
+  # 安装模式为docker情况下必须填写
+  dataDir: data
+  {{- end }}
 # dorycore应用设置
 dorycore:
   # 默认管理员设置，自动在ldap中开通账号
@@ -126,8 +148,6 @@ kubernetes:
   port: 6443
   # kubernetes环境的 apiserver token
   token: "xxx"
-  # project-data-alpine pod 所在的名字空间
-  namespace: "dory"
 
   # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:

@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ $.kubernetes.namespace }}
+  name: {{ $.dory.namespace }}
   labels:
-    ns: {{ $.kubernetes.namespace }}
+    ns: {{ $.dory.namespace }}
 
 ---
 {{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.password | nospace | b64enc | quote) " } } }" }}
@@ -12,7 +12,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ $.imageRepo.domainName }}
-  namespace: {{ $.kubernetes.namespace }}
+  namespace: {{ $.dory.namespace }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: |
@@ -61,7 +61,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: cephfs-secret
-  namespace: {{ $.kubernetes.namespace }}
+  namespace: {{ $.dory.namespace }}
 data:
   key: {{ $.kubernetes.pvConfigCephfs.cephSecret | b64enc }}
 {{- end }}
@@ -71,7 +71,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: project-data-pvc
-  namespace: {{ $.kubernetes.namespace }}
+  namespace: {{ $.dory.namespace }}
 spec:
   accessModes:
     - ReadWriteMany
@@ -91,7 +91,7 @@ metadata:
   labels:
     app: project-data-alpine
   name: project-data-alpine
-  namespace: {{ $.kubernetes.namespace }}
+  namespace: {{ $.dory.namespace }}
 spec:
   replicas: 1
   selector:
