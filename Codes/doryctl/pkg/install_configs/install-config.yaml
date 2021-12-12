@@ -25,7 +25,7 @@ dory:
     # 数据库镜像名，gitea情况下必须填写
     imageDB: mysql:8.0.20
     # 暴露的服务端口
-    port: 10001
+    port: 30001
   # 制品依赖仓库设置
   artifactRepo:
     # 制品依赖仓库类型，选项: nexus
@@ -33,13 +33,13 @@ dory:
     # 镜像名
     image: sonatype/nexus3:3.37.0
     # web服务暴露的服务端口
-    port: 10003
+    port: 30003
     # dockerhub镜像代理暴露的服务端口
-    portHub: 10004
+    portHub: 30004
     # gcr镜像代理暴露的服务端口
-    portGcr: 10005
+    portGcr: 30005
     # quay镜像代理暴露的服务端口
-    portQuay: 10006
+    portQuay: 30006
   # openldap账号中心设置
   openldap:
     # 镜像名
@@ -47,7 +47,7 @@ dory:
     # ldapadmin镜像名
     imageAdmin: osixia/phpldapadmin:stable-amd64
     # 管理界面暴露的服务端口
-    port: 10007
+    port: 30007
     # 管理员密码，为空表示自动随机生成
     password: ""
     # 账号中心域设置
