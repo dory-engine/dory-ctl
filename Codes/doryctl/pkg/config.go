@@ -346,7 +346,7 @@ func (ic *InstallConfig) KubernetesPodsGet(namespace string) ([]KubePod, error) 
 
 	url := fmt.Sprintf("/api/v1/namespaces/%s/pods", namespace)
 	param := map[string]interface{}{}
-	strJson, statusCode, err = ic.HarborQuery(url, http.MethodGet, param)
+	strJson, statusCode, err = ic.KubernetesQuery(url, http.MethodGet, param)
 	if err != nil {
 		return pods, err
 	}
