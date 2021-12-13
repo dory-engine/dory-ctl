@@ -1,4 +1,4 @@
-{{- range $_, $deploy := $.Values.deploysSpec }}
+{{- range $_, $deploy := $deploys }}
 
 {{- if $deploy.deployNodePort }}
 ---
@@ -6,7 +6,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $deploy.deployName }}
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ $.dory.namespace }}
   labels:
     app: {{ $deploy.deployName }}
 spec:
@@ -25,7 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $deploy.deployName }}-headless
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ $.dory.namespace }}
   labels:
     app: {{ $deploy.deployName }}
 spec:
@@ -44,7 +44,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $deploy.deployName }}
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ $.dory.namespace }}
   labels:
     app: {{ $deploy.deployName }}
 spec:

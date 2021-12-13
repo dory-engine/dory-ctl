@@ -1,10 +1,10 @@
-{{- range $_, $deploy := $.Values.deploysSpec }}
+{{- range $_, $deploy := $.deploys }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ $deploy.deployName }}
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ $.dory.namespace }}
   labels:
     app: {{ $deploy.deployName }}
     {{- if $deploy.deployLabels }}
@@ -80,12 +80,12 @@ spec:
         {{- end }}
         {{- end }}
 
-      - name: {{ $.Values.namespace }}-pvc
+      - name: {{ $.dory.namespace }}-pvc
         persistentVolumeClaim:
-          claimName: {{ $.Values.namespace }}-pvc
+          claimName: {{ $.dory.namespace }}-pvc
 
       imagePullSecrets:
-        - name: {{ $.Values.harborConfig.hostname }}
+        - name: {{ $.imageRepo.domainName }}
       {{- if $deploy.nodeSelector }}
       nodeSelector:
         {{- range $key, $val := $deploy.nodeSelector }}
@@ -140,7 +140,7 @@ spec:
               subPath: {{ $volume.subPath }}
               {{- end }}
           {{- else }}
-          - name: {{ $.Values.namespace }}-pvc
+          - name: {{ $.dory.namespace }}-pvc
             mountPath: {{ $volume.mountPath }}
             subPath: {{ $volume.subPath }}
           {{- end }}

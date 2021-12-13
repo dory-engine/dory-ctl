@@ -873,6 +873,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// create dory install yaml
 	doryInstallYamlName := "dory-install.yaml"
+	step02StatefulsetName := "step02-statefulset.yaml"
+	step03ServiceName := "step03-service.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, doryInstallYamlName))
 	if err != nil {
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
@@ -884,9 +886,38 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		return err
 	}
 	fmt.Println(strDoryInstallYaml)
+	fmt.Println("############")
 	var installVals map[string]interface{}
 	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
-	fmt.Println(installVals)
+	for k, v := range vals {
+		installVals[k] = v
+	}
+
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step02StatefulsetName))
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
+	strStep02Statefulset, err := pkg.ParseTplFromVals(installVals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
+	fmt.Println(strStep02Statefulset)
+	fmt.Println("############")
+
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step03ServiceName))
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
+	strStep03Service, err := pkg.ParseTplFromVals(installVals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
+	fmt.Println(strStep03Service)
+	fmt.Println("############")
 
 	return err
 }

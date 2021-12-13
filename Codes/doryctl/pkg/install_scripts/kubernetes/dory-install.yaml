@@ -1,5 +1,5 @@
 namespace: {{ $.dory.namespace }}
-deploysSpec:
+deploys:
   {{- if eq $.dory.gitRepo.type "gitea" }}
     {{ $giteaDbPwd := randAlphaNum 16 }}
   - deployName: {{ $.dory.gitRepo.type }}
