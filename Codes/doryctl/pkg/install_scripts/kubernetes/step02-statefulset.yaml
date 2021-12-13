@@ -70,8 +70,8 @@ spec:
         {{- range $_, $svv := $sv }}
         -
           {{- range $svvk, $svvv := $svv }}
-            {{ $svvk }}: {{ $svvv }}
-            {{- end }}
+          {{ $svvk }}: {{ $svvv }}
+          {{- end }}
         {{- end }}
         {{- else }}
         {{ $sk }}: {{ $sv }}
@@ -89,8 +89,8 @@ spec:
       {{- if $deploy.nodeSelector }}
       nodeSelector:
         {{- range $key, $val := $deploy.nodeSelector }}
-          {{ $key }}: {{ $val }}
-          {{- end }}
+        {{ $key }}: {{ $val }}
+        {{- end }}
       {{- end }}
       {{- if $deploy.hostAliases }}
       hostAliases:
@@ -131,14 +131,14 @@ spec:
           {{- else if $volume.secret }}
           -
             {{- range $sk, $sv := $volume.secret }}
-              {{- if eq $sk "secretName" }}
-              name: {{ $sv }}
-              {{- end }}
-              {{- end }}
-              mountPath: {{ $volume.mountPath }}
-              {{- if $volume.subPath }}
-              subPath: {{ $volume.subPath }}
-              {{- end }}
+            {{- if eq $sk "secretName" }}
+            name: {{ $sv }}
+            {{- end }}
+            {{- end }}
+            mountPath: {{ $volume.mountPath }}
+            {{- if $volume.subPath }}
+            subPath: {{ $volume.subPath }}
+            {{- end }}
           {{- else }}
           - name: {{ $.dory.namespace }}-pvc
             mountPath: {{ $volume.mountPath }}
@@ -212,7 +212,7 @@ spec:
           {{- if $deploy.securityContext }}
           securityContext:
             {{- range $k, $v := $deploy.securityContext }}
-              {{ $k }}: {{ $v }}
-              {{- end }}
+            {{ $k }}: {{ $v }}
+            {{- end }}
           {{- end }}
 {{- end }}
