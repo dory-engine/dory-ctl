@@ -282,9 +282,9 @@ deploys:
             - key: tls.key
               path: tls.key
       - mountPath: /root/.docker/config.json
-        subPath: {{ $.dory.docker.dockerName }}/root/config.json
+        subPath: {{ $.dory.docker.dockerName }}/config.json
       - mountPath: /etc/docker/daemon.json
-        subPath: {{ $.dory.docker.dockerName }}/etc/daemon.json
+        subPath: {{ $.dory.docker.dockerName }}/daemon.json
       - mountPath: /dory-core/dory-data
         subPath: dory-core/dory-data
     deployHealthCheck:

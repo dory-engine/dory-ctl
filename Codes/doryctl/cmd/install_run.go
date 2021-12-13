@@ -447,6 +447,51 @@ func (o *OptionsInstallRun) DoryCreateKubernetesDataPod(installConfig pkg.Instal
 	return err
 }
 
+func (o *OptionsInstallRun) KubernetesCheckPodStatus(installConfig pkg.InstallConfig, namespaceMode string) error {
+	var err error
+	// waiting for dory to ready
+	var ready bool
+	var namespace string
+	if namespaceMode == "harbor" {
+		namespace = installConfig.ImageRepo.Namespace
+	} else if namespaceMode == "dory" {
+		namespace = installConfig.Dory.Namespace
+	} else {
+		err = fmt.Errorf("namespaceMode must be harbor or dory")
+		return err
+	}
+	for {
+		ready = true
+		LogInfo(fmt.Sprintf("waiting 5 seconds for %s to ready", namespaceMode))
+		time.Sleep(time.Second * 5)
+		pods, err := installConfig.KubernetesPodsGet(namespace)
+		if err != nil {
+			err = fmt.Errorf("waiting for %s to ready error: %s", namespaceMode, err.Error())
+			return err
+		}
+		for _, pod := range pods {
+			ok := true
+			for _, containerStatus := range pod.Status.ContainerStatuses {
+				if !containerStatus.Ready {
+					ok = false
+					break
+				}
+			}
+			ready = ready && ok
+		}
+		_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl -n %s get pods -o wide", namespace), ".")
+		if err != nil {
+			err = fmt.Errorf("waiting for %s to ready error: %s", namespaceMode, err.Error())
+			return err
+		}
+		if ready {
+			break
+		}
+	}
+	LogSuccess(fmt.Sprintf("waiting for %s to ready success", namespaceMode))
+	return err
+}
+
 func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) error {
 	var err error
 	bs := []byte{}
@@ -684,6 +729,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	}
 
 	kubernetesInstallDir := "dory-kubernetes-deploy"
+	_ = os.RemoveAll(kubernetesInstallDir)
+	_ = os.MkdirAll(kubernetesInstallDir, 0700)
 
 	//// get pull docker images
 	//dockerImages, err := o.HarborGetDockerImages()
@@ -796,36 +843,10 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//LogSuccess(fmt.Sprintf("install harbor in kubernetes success"))
 	//
 	//// waiting for harbor to ready
-	//var ready bool
-	//for {
-	//	ready = true
-	//	LogInfo(fmt.Sprintf("waiting 5 seconds for harbor to ready"))
-	//	time.Sleep(time.Second * 5)
-	//	pods, err := installConfig.KubernetesPodsGet(installConfig.ImageRepo.Namespace)
-	//	if err != nil {
-	//		err = fmt.Errorf("waiting for harbor to ready error: %s", err.Error())
-	//		return err
-	//	}
-	//	for _, pod := range pods {
-	//		ok := true
-	//		for _, containerStatus := range pod.Status.ContainerStatuses {
-	//			if !containerStatus.Ready {
-	//				ok = false
-	//				break
-	//			}
-	//		}
-	//		ready = ready && ok
-	//	}
-	//	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl -n %s get pods -o wide", installConfig.ImageRepo.Namespace), ".")
-	//	if err != nil {
-	//		err = fmt.Errorf("waiting for harbor to ready error: %s", err.Error())
-	//		return err
-	//	}
-	//	if ready {
-	//		break
-	//	}
+	//err = o.KubernetesCheckPodStatus(installConfig, "harbor")
+	//if err != nil {
+	//	return err
 	//}
-	//LogSuccess(fmt.Sprintf("waiting for harbor to ready success"))
 	//
 	//// update docker harbor certificates
 	//harborUpdateCertsName := "harbor_update_docker_certs.sh"
@@ -871,6 +892,43 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//}
 
 	//////////////////////////////////////////////////
+
+	// create dory namespace and pv pvc
+	vals["currentNamespace"] = installConfig.Dory.Namespace
+	step01NamespacePvName := "step01-namespace-pv.yaml"
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+
+	LogInfo(fmt.Sprintf("create dory namespace and pv pvc begin"))
+	cmdClearPv := fmt.Sprintf(`(kubectl delete namespace %s || true) && \
+		(kubectl delete pv %s-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
+	_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	_ = os.RemoveAll(doryDir)
+	_ = os.MkdirAll(doryDir, 0700)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	LogSuccess(fmt.Sprintf("create dory namespace and pv pvc success"))
 
 	// create dory install yaml
 	doryInstallYamlName := "dory-install.yaml"
@@ -935,9 +993,43 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	if err != nil {
 		return err
 	}
+	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+
+	// put docker certificates in kubernetes
+	LogInfo("put docker certificates in kubernetes begin")
+	cmdSecret := fmt.Sprintf(`kubectl -n %s create secret generic %s-tls --from-file=certs/ca.crt --from-file=certs/tls.crt --from-file=certs/tls.key --dry-run=client -o yaml | kubectl apply -f -`, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+	_, _, err = pkg.CommandExec(cmdSecret, dockerDir)
+	if err != nil {
+		err = fmt.Errorf("put docker certificates in kubernetes error: %s", err.Error())
+		return err
+	}
+	dockerScriptName := "docker_certs.sh"
+	_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName))
+	_ = os.RemoveAll(fmt.Sprintf("%s/certs", dockerDir))
+	LogSuccess(fmt.Sprintf("put docker certificates in kubernetes success"))
 
 	// create directories and nexus data
 	err = o.DoryCreateDirs(installConfig)
+	if err != nil {
+		return err
+	}
+
+	// deploy all dory services in kubernetes
+	LogInfo("deploy all dory services in kubernetes begin")
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), kubernetesInstallDir)
+	if err != nil {
+		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
+		return err
+	}
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), kubernetesInstallDir)
+	if err != nil {
+		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
+		return err
+	}
+	LogSuccess(fmt.Sprintf("deploy all dory services in kubernetes success"))
+
+	// waiting for dory to ready
+	err = o.KubernetesCheckPodStatus(installConfig, "dory")
 	if err != nil {
 		return err
 	}

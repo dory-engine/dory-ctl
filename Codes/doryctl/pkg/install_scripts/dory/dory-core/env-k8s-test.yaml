@@ -41,35 +41,35 @@ nexusConfig:
   password: public-user
   email: public-user@139.com
 
-{{ if $.kubernetes.pvConfigLocal.localPath }}
+{{- if $.kubernetes.pvConfigLocal.localPath }}
 # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 pvConfigLocal:
   # 本地存储路径
   localPath: {{ $.kubernetes.pvConfigLocal.localPath | quote }}
-{{ else }}
+{{- else }}
 # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
 # pvConfigLocal:
 #   # 本地存储路径
 #   localPath: "/data/k8s-vols"
-{{ end }}
+{{- end }}
 
-{{ if $.kubernetes.pvConfigNfs.nfsPath }}
+{{- if $.kubernetes.pvConfigNfs.nfsPath }}
 # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 pvConfigNfs:
   # nfs存储路径
   nfsPath: {{ $.kubernetes.pvConfigNfs.nfsPath | quote }}
   # nfs服务器地址
   nfsServer: {{ $.kubernetes.pvConfigNfs.nfsServer | quote }}
-{{ else }}
+{{- else }}
 # # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
 # pvConfigNfs:
 #   # nfs存储路径
 #   nfsPath: "/data/nfs-vols/k8s-vols"
 #   # nfs服务器地址
 #   nfsServer: "10.2.0.10"
-{{ end }}
+{{- end }}
 
-{{ if $.kubernetes.pvConfigCephfs.cephPath }}
+{{- if $.kubernetes.pvConfigCephfs.cephPath }}
 # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
 pvConfigCephfs:
   # ceph存储路径
@@ -83,7 +83,7 @@ pvConfigCephfs:
   {{ range $_, $cephMonitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
   - {{ $cephMonitor | quote }}
   {{ end }}
-{{ else }}
+{{- else }}
 # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
 # pvConfigCephfs:
 #   # ceph存储路径
@@ -97,7 +97,7 @@ pvConfigCephfs:
 #   - "192.168.0.1:6789"
 #   - "192.168.0.2:6789"
 #   - "192.168.0.3:6789"
-{{ end }}
+{{- end }}
 
 # 项目的deployment选择部署在什么标签的节点上，格式为（labelName: labelValue）
 projectNodeSelector: {}
