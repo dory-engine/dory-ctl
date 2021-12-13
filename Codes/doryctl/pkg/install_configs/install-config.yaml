@@ -157,7 +157,7 @@ kubernetes:
   # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
   pvConfigNfs:
     # nfs存储路径
-    nfsPath: "/data/nfs-vols/k8s-vols"
+    nfsPath: "/data/nfs-vols/tmp"
     # nfs服务器地址
     nfsServer: "10.2.0.10"
 
