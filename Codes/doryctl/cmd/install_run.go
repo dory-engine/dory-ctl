@@ -718,7 +718,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// create harbor namespace and pv pvc
 	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
-	step01NamespacePvName := "step01-namspace-pv.yaml"
+	step01NamespacePvName := "step01-namespace-pv.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
 	if err != nil {
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
