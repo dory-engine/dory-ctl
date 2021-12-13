@@ -169,6 +169,10 @@ spec:
           {{- range $_, $port := $deploy.deployLocalPort }}
           - containerPort: {{ $port.port }}
           {{- end }}
+          {{- else if $deploy.deployNodePort }}
+          {{- range $_, $port := $deploy.deployNodePort }}
+          - containerPort: {{ $port.port }}
+          {{- end }}
           {{- end }}
           {{- if $deploy.deployHealthCheck }}
           {{- if and $deploy.deployHealthCheck.checkPort $deploy.deployHealthCheck.readinessDelaySeconds $deploy.deployHealthCheck.readinessPeriodSeconds }}

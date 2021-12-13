@@ -6,6 +6,9 @@
 - doryctl install run 显示后续操作提示，打印账号信息
 - doryctl check 显示创建k8s admin-user，以及获取token命令
 
+- kuberentes gitea启动异常（权限异常）
+- kubernetes docker的harbor证书异常
+
 ## doryctl install 安装dory-core组件
 
 ### docker-compose模式安装
