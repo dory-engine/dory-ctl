@@ -872,7 +872,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//////////////////////////////////////////////////
 
 	// create dory install yaml
-	doryInstallYamlName := "harbor_update_docker_certs.sh"
+	doryInstallYamlName := "dory-install.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, doryInstallYamlName))
 	if err != nil {
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
