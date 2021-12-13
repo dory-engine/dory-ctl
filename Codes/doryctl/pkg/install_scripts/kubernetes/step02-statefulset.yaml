@@ -64,21 +64,21 @@ spec:
       {{- range $sk, $sv := $volume.secret }}{{- if eq $sk "secretName" }}{{ $secretName = $sv }}{{- end }}{{- end }}
       - name: {{ $secretName }}
         secret:
-        {{- range $sk, $sv := $volume.secret }}
-        {{- if eq $sk "items" }}
-        {{ $sk }}:
-        {{- range $_, $svv := $sv }}
-        -
-          {{- range $svvk, $svvv := $svv }}
-          {{ $svvk }}: {{ $svvv }}
+          {{- range $sk, $sv := $volume.secret }}
+          {{- if eq $sk "items" }}
+          {{ $sk }}:
+          {{- range $_, $svv := $sv }}
+          -
+            {{- range $svvk, $svvv := $svv }}
+            {{ $svvk }}: {{ $svvv }}
+            {{- end }}
           {{- end }}
-        {{- end }}
-        {{- else }}
-        {{ $sk }}: {{ $sv }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
+          {{- else }}
+          {{ $sk }}: {{ $sv }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
 
       - name: {{ $.dory.namespace }}-pvc
         persistentVolumeClaim:
