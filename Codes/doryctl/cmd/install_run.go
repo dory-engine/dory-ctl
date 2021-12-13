@@ -795,8 +795,9 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//LogSuccess(fmt.Sprintf("install harbor in kubernetes success"))
 
 	// waiting for harbor to ready
-	ready := true
+	var ready bool
 	for {
+		ready = true
 		LogInfo(fmt.Sprintf("waiting 5 seconds for harbor to ready"))
 		time.Sleep(time.Second * 5)
 		pods, err := installConfig.KubernetesPodsGet(installConfig.ImageRepo.Namespace)
