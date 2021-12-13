@@ -238,6 +238,7 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 	dorycoreScriptDir := "dory/dory-core"
 	dorycoreConfigName := "config.yaml"
 	dorycoreEnvK8sName := "env-k8s-test.yaml"
+	_ = os.RemoveAll(dorycoreConfigDir)
 	_ = os.MkdirAll(dorycoreConfigDir, 0700)
 	// create config.yaml
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreConfigName))
@@ -289,6 +290,7 @@ func (o *OptionsInstallRun) DoryCreateDockerCertsConfig(installConfig pkg.Instal
 	}
 
 	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+	_ = os.RemoveAll(dockerDir)
 	_ = os.MkdirAll(dockerDir, 0700)
 	dockerScriptDir := "dory/docker"
 	dockerScriptName := "docker_certs.sh"
@@ -373,6 +375,7 @@ func (o *OptionsInstallRun) DoryCreateDirs(installConfig pkg.InstallConfig) erro
 	LogSuccess(fmt.Sprintf("get nexus init data %s success", doryDir))
 
 	// create directory and chown
+	_ = os.RemoveAll(fmt.Sprintf("%s/mongo-core-dory", doryDir))
 	_ = os.MkdirAll(fmt.Sprintf("%s/mongo-core-dory", doryDir), 0700)
 	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/mongo-core-dory", doryDir), doryDir)
 	if err != nil {
@@ -458,6 +461,7 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	// create harbor certificates
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
+	_ = os.RemoveAll(harborDir)
 	_ = os.MkdirAll(harborDir, 0700)
 	harborScriptDir := "harbor"
 	harborScriptName := "harbor_certs.sh"
@@ -600,6 +604,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	// create dory docker-compose.yaml
 	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
+	_ = os.RemoveAll(fmt.Sprintf("%s/dory-data", dorycoreDir))
+	_ = os.RemoveAll(fmt.Sprintf("%s/tmp", dorycoreDir))
 	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 	dockerComposeDir := "dory"
@@ -751,6 +757,10 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// create harbor directory and chown
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
+	_ = os.RemoveAll(fmt.Sprintf("%s/database", harborDir))
+	_ = os.RemoveAll(fmt.Sprintf("%s/jobservice", harborDir))
+	_ = os.RemoveAll(fmt.Sprintf("%s/redis", harborDir))
+	_ = os.RemoveAll(fmt.Sprintf("%s/registry", harborDir))
 	_ = os.MkdirAll(fmt.Sprintf("%s/database", harborDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/jobservice", harborDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/redis", harborDir), 0700)
