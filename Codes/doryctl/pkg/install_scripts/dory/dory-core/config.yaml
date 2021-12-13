@@ -127,7 +127,7 @@ docker:
     # kubernetes环境的 apiserver token
     token: {{ $.kubernetes.token | quote }}
     # docker executor 证书存放的secret
-    secretTls: "dind-tls"
+    secretTls: "{{ $.dory.docker.dockerName }}-tls"
     # docker executor 所在的名字空间
     namespace: {{ $.dory.namespace | quote }}
   {{- else if eq $.installMode "docker" }}

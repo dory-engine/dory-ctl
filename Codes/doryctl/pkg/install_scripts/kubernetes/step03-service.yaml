@@ -33,7 +33,7 @@ spec:
   selector:
     app: {{ $deploy.deployName }}
   ports:
-  {{- range $_, $deployPort := $deploy.deployLocalPort }}
+  {{- range $_, $deployPort := $deploy.deployNodePort }}
   - name: port-{{ $deployPort.port }}
     port: {{ $deployPort.port }}
   {{- end }}

@@ -273,7 +273,7 @@ deploys:
         subPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
       - mountPath: /certs
         secret:
-          secretName: dind-tls
+          secretName: {{ $.dory.docker.dockerName }}-tls
           items:
             - key: ca.crt
               path: ca.crt
@@ -322,7 +322,7 @@ deploys:
         subPath: dory-core/tmp
       - mountPath: /certs
         secret:
-          secretName: dind-tls
+          secretName: {{ $.dory.docker.dockerName }}-tls
           items:
             - key: ca.crt
               path: ca.crt
