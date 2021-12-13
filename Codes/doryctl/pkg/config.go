@@ -290,3 +290,79 @@ func (ic *InstallConfig) HarborProjectAdd(projectName string) error {
 
 	return err
 }
+
+func (ic *InstallConfig) KubernetesQuery(url, method string, param map[string]interface{}) (string, int, error) {
+	var err error
+	var strJson string
+	var statusCode int
+	var req *http.Request
+	var resp *http.Response
+	var bs []byte
+	client := &http.Client{
+		Timeout: time.Second * time.Duration(time.Second*5),
+	}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	url = fmt.Sprintf("https://%s:%d%s", ic.Kubernetes.Host, ic.Kubernetes.Port, url)
+
+	if len(param) > 0 {
+		bs, err = json.Marshal(param)
+		if err != nil {
+			return strJson, statusCode, err
+		}
+		req, err = http.NewRequest(method, url, bytes.NewReader(bs))
+		if err != nil {
+			return strJson, statusCode, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+		if err != nil {
+			return strJson, statusCode, err
+		}
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ic.Kubernetes.Token))
+	resp, err = client.Do(req)
+	if err != nil {
+		return strJson, statusCode, err
+	}
+	defer resp.Body.Close()
+	statusCode = resp.StatusCode
+	bs, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return strJson, statusCode, err
+	}
+	strJson = string(bs)
+	return strJson, statusCode, err
+}
+
+func (ic *InstallConfig) KubernetesPodsGet(namespace string) ([]KubePod, error) {
+	var err error
+	var statusCode int
+	var strJson string
+
+	pods := []KubePod{}
+
+	url := fmt.Sprintf("/api/v1/namespaces/%s/pods", namespace)
+	param := map[string]interface{}{}
+	strJson, statusCode, err = ic.HarborQuery(url, http.MethodGet, param)
+	if err != nil {
+		return pods, err
+	}
+
+	errmsg := gjson.Get(strJson, "message").String()
+	if statusCode < http.StatusOK || statusCode >= http.StatusBadRequest {
+		err = fmt.Errorf(errmsg)
+		return pods, err
+	}
+
+	var podList KubePodList
+	err = json.Unmarshal([]byte(strJson), &podList)
+	if err != nil {
+		return pods, err
+	}
+
+	pods = podList.Items
+	return pods, err
+}

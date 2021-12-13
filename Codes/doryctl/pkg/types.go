@@ -112,3 +112,72 @@ type InstallConfig struct {
 		} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
 	} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 }
+
+type KubePodState struct {
+	Waiting struct {
+		Reason string `yaml:"reason" json:"reason" bson:"reason" validate:""`
+	} `yaml:"waiting" json:"waiting" bson:"waiting" validate:""`
+	Running struct {
+		StartedAt string `yaml:"startedAt" json:"startedAt" bson:"startedAt" validate:""`
+	} `yaml:"running" json:"running" bson:"running" validate:""`
+	Terminated struct {
+		Reason   string `yaml:"reason" json:"reason" bson:"reason" validate:""`
+		ExitCode int    `yaml:"exitCode" json:"exitCode" bson:"exitCode" validate:""`
+		Signal   int    `yaml:"signal" json:"signal" bson:"signal" validate:""`
+	} `yaml:"terminated" json:"terminated" bson:"terminated" validate:""`
+}
+
+type KubePod struct {
+	ApiVersion string `yaml:"apiVersion" json:"apiVersion" bson:"apiVersion" validate:"required"`
+	Kind       string `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	MetaData   struct {
+		Name              string            `yaml:"name" json:"name" bson:"name" validate:"required"`
+		NameSpace         string            `yaml:"namespace" json:"namespace" bson:"namespace" validate:""`
+		Labels            map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
+		Annotations       map[string]string `yaml:"annotations" json:"annotations" bson:"annotations" validate:""`
+		CreationTimestamp string            `yaml:"creationTimestamp" json:"creationTimestamp" bson:"creationTimestamp" validate:""`
+		DeletionTimestamp string            `yaml:"deletionTimestamp" json:"deletionTimestamp" bson:"deletionTimestamp" validate:""`
+		OwnerReferences   []struct {
+			ApiVersion         string `yaml:"apiVersion" json:"apiVersion" bson:"apiVersion" validate:"required"`
+			BlockOwnerDeletion bool   `yaml:"blockOwnerDeletion" json:"blockOwnerDeletion" bson:"blockOwnerDeletion" validate:""`
+			Controller         bool   `yaml:"controller" json:"controller" bson:"controller" validate:""`
+			Kind               string `yaml:"kind" json:"kind" bson:"kind" validate:""`
+			Name               string `yaml:"name" json:"name" bson:"name" validate:""`
+			Uid                string `yaml:"uid" json:"uid" bson:"uid" validate:""`
+		} `yaml:"ownerReferences" json:"ownerReferences" bson:"ownerReferences" validate:""`
+	} `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
+	Spec struct {
+		Containers []struct {
+			Name  string `yaml:"name" json:"name" bson:"name" validate:""`
+			Image string `yaml:"image" json:"image" bson:"image" validate:""`
+		} `yaml:"containers" json:"containers" bson:"containers" validate:""`
+	} `yaml:"spec" json:"spec" bson:"spec" validate:""`
+	Status struct {
+		Reason     string `yaml:"reason" json:"reason" bson:"reason" validate:""`
+		Conditions []struct {
+			Type   string `yaml:"type" json:"type" bson:"type" validate:""`
+			Status string `yaml:"status" json:"status" bson:"status" validate:""`
+		} `yaml:"conditions" json:"conditions" bson:"conditions" validate:""`
+		ContainerStatuses []struct {
+			Name         string       `yaml:"name" json:"name" bson:"name" validate:""`
+			Ready        bool         `yaml:"ready" json:"ready" bson:"ready" validate:""`
+			Started      bool         `yaml:"started" json:"started" bson:"started" validate:""`
+			RestartCount int          `yaml:"restartCount" json:"restartCount" bson:"restartCount" validate:""`
+			State        KubePodState `yaml:"state" json:"state" bson:"state" validate:""`
+		} `yaml:"containerStatuses" json:"containerStatuses" bson:"containerStatuses" validate:""`
+		InitContainerStatuses []struct {
+			Name         string       `yaml:"name" json:"name" bson:"name" validate:""`
+			Ready        bool         `yaml:"ready" json:"ready" bson:"ready" validate:""`
+			Started      bool         `yaml:"started" json:"started" bson:"started" validate:""`
+			RestartCount int          `yaml:"restartCount" json:"restartCount" bson:"restartCount" validate:""`
+			State        KubePodState `yaml:"state" json:"state" bson:"state" validate:""`
+		} `yaml:"initContainerStatuses" json:"initContainerStatuses" bson:"initContainerStatuses" validate:""`
+		Phase     string    `yaml:"phase" json:"phase" bson:"phase" validate:""`
+		PodIP     string    `yaml:"podIP" json:"podIP" bson:"podIP" validate:""`
+		StartTime time.Time `yaml:"startTime" json:"startTime" bson:"startTime" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+}
+
+type KubePodList struct {
+	Items []KubePod `yaml:"items" json:"items" bson:"items" validate:""`
+}
