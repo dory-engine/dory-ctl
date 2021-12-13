@@ -170,6 +170,7 @@ spec:
           - containerPort: {{ $port.port }}
           {{- end }}
           {{- else if $deploy.deployNodePort }}
+          ports:
           {{- range $_, $port := $deploy.deployNodePort }}
           - containerPort: {{ $port.port }}
           {{- end }}
