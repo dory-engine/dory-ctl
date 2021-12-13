@@ -78,11 +78,12 @@ func extractEmbedFile(rootDir string) error {
 				_ = os.WriteFile(path, bs, 0600)
 			}
 		}
+		fmt.Println("#", path)
 		return nil
 	})
 }
 
-//go:embed shell shell2
+//go:embed shell/* shell/.test_dir/.test.txt shell/.test_dir/_helper.tpl shell2
 var f embed.FS
 
 func main() {

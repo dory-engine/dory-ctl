@@ -13,7 +13,8 @@ const (
 )
 
 var (
-	//go:embed install_scripts/*
+	// !!! go embed function will ignore _* and .* file
+	//go:embed install_scripts/* install_scripts/kubernetes/harbor/.helmignore install_scripts/kubernetes/harbor/templates/_helpers.tpl
 	FsInstallScripts embed.FS
 	//go:embed install_configs/*
 	FsInstallConfigs embed.FS
