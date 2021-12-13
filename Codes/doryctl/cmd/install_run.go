@@ -683,13 +683,14 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		return err
 	}
 
+	kubernetesInstallDir := "dory-kubernetes-deploy"
+
 	//// get pull docker images
 	//dockerImages, err := o.HarborGetDockerImages()
 	//if err != nil {
 	//	return err
 	//}
 	//
-	//kubernetesInstallDir := "dory-kubernetes-deploy"
 	//harborInstallerDir := "kubernetes/harbor"
 	//harborInstallYamlDir := fmt.Sprintf("%s/harbor", kubernetesInstallDir)
 	//_ = os.RemoveAll(harborInstallYamlDir)
@@ -885,8 +886,6 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	fmt.Println(strDoryInstallYaml)
-	fmt.Println("############")
 	var installVals map[string]interface{}
 	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
 	for k, v := range vals {
@@ -903,8 +902,11 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	fmt.Println(strStep02Statefulset)
-	fmt.Println("############")
+	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step02StatefulsetName), []byte(strStep02Statefulset), 0600)
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
 
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step03ServiceName))
 	if err != nil {
@@ -916,8 +918,29 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	fmt.Println(strStep03Service)
-	fmt.Println("############")
+	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step03ServiceName), []byte(strStep03Service), 0600)
+	if err != nil {
+		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+		return err
+	}
+
+	// create dory-core config files
+	err = o.DoryCreateConfig(installConfig)
+	if err != nil {
+		return err
+	}
+
+	// create docker certificates and config
+	err = o.DoryCreateDockerCertsConfig(installConfig)
+	if err != nil {
+		return err
+	}
+
+	// create directories and nexus data
+	err = o.DoryCreateDirs(installConfig)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
