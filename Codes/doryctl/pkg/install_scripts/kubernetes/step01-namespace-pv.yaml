@@ -27,33 +27,33 @@ metadata:
     app: {{ $.currentNamespace }}
   annotations:
     volume.beta.kubernetes.io/storage-class: "{{ $.currentNamespace }}-pv"
-  spec:
-    capacity:
-      storage: 500Gi
-    accessModes:
-      - ReadWriteMany
-    {{- if $.kubernetes.pvConfigLocal.localPath }}
-    hostPath:
-      path: {{ $.kubernetes.pvConfigLocal.localPath }}/{{ $.currentNamespace }}
-      type: DirectoryOrCreate
-    {{- else if $.kubernetes.pvConfigCephfs.cephPath }}
-    cephfs:
-      path: {{ $.kubernetes.pvConfigCephfs.cephPath }}/{{ $.currentNamespace }}
-      user: {{ $.kubernetes.pvConfigCephfs.cephUser }}
-      monitors:
-      {{- range $_, $monitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
-      - {{ $monitor | quote }}
-      {{- end }}
-      secretRef:
-        name: cephfs-secret
-        namespace: {{ $.kubernetes.project.projectInfo.projectName }}
-      readOnly: false
-    {{- else if $.kubernetes.pvConfigNfs.nfsServer }}
-    nfs:
-      path: {{ $.kubernetes.pvConfigNfs.nfsPath }}/{{ $.currentNamespace }}
-      server: {{ $.kubernetes.pvConfigNfs.nfsServer }}
-      readOnly: false
+spec:
+  capacity:
+    storage: 500Gi
+  accessModes:
+    - ReadWriteMany
+  {{- if $.kubernetes.pvConfigLocal.localPath }}
+  hostPath:
+    path: {{ $.kubernetes.pvConfigLocal.localPath }}/{{ $.currentNamespace }}
+    type: DirectoryOrCreate
+  {{- else if $.kubernetes.pvConfigCephfs.cephPath }}
+  cephfs:
+    path: {{ $.kubernetes.pvConfigCephfs.cephPath }}/{{ $.currentNamespace }}
+    user: {{ $.kubernetes.pvConfigCephfs.cephUser }}
+    monitors:
+    {{- range $_, $monitor := $.kubernetes.pvConfigCephfs.cephMonitors }}
+    - {{ $monitor | quote }}
     {{- end }}
+    secretRef:
+      name: cephfs-secret
+      namespace: {{ $.kubernetes.project.projectInfo.projectName }}
+    readOnly: false
+  {{- else if $.kubernetes.pvConfigNfs.nfsServer }}
+  nfs:
+    path: {{ $.kubernetes.pvConfigNfs.nfsPath }}/{{ $.currentNamespace }}
+    server: {{ $.kubernetes.pvConfigNfs.nfsServer }}
+    readOnly: false
+  {{- end }}
 
 {{- if $.kubernetes.pvConfigCephfs.cephPath }}
 ---
