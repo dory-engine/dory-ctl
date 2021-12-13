@@ -13,8 +13,8 @@ const (
 )
 
 var (
-	//go:embed install_scripts
+	//go:embed install_scripts/*
 	FsInstallScripts embed.FS
-	//go:embed install_configs
+	//go:embed install_configs/*
 	FsInstallConfigs embed.FS
 )
