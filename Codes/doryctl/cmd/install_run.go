@@ -884,6 +884,9 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		return err
 	}
 	fmt.Println(strDoryInstallYaml)
+	var installVals map[string]interface{}
+	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
+	fmt.Println(installVals)
 
 	return err
 }

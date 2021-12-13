@@ -1,7 +1,5 @@
 namespace: {{ $.dory.namespace }}
-
 deploysSpec:
-
   {{- if eq $.dory.gitRepo.type "gitea" }}
     {{ $giteaDbPwd := randAlphaNum 16 }}
   - deployName: {{ $.dory.gitRepo.type }}
@@ -106,6 +104,7 @@ deploysSpec:
       livenessDelaySeconds: 300
       livenessPeriodSeconds: 30
   {{- end }}
+
 
   {{- if eq $.dory.artifactRepo.type "nexus" }}
   - deployName: {{ $.dory.artifactRepo.type }}
