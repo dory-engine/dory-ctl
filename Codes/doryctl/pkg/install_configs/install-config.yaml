@@ -30,6 +30,10 @@ dory:
   # 假如安装模式为kubernetes，表示dory组件所安装的名字空间
   # 假如安装模式为docker，表示dory组件存放的子目录
   namespace: "dory"
+  {{- if eq $.mode "kubernetes" }}
+  # 设置dory组件部署在哪些节点上，对应kubernetes的nodeSelector
+  nodeSelector: {}
+  {{- end }}
   # 代码仓库设置
   gitRepo:
     # 代码仓库类型，选项: gitea, gitlab

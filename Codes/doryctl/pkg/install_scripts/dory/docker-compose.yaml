@@ -11,10 +11,10 @@ services:
       USER_UID: 1000
       USER_GID: 1000
       GITEA__database__DB_TYPE: "mysql"
-      GITEA__database__HOST: "gitea-mysql:3306"
-      GITEA__database__NAME: "gitea"
-      GITEA__database__USER: "gitea"
-      GITEA__database__PASSWD: "{{ $giteaDbPwd }}"
+      GITEA__database__HOST: {{ $.dory.gitRepo.type }}-mysql:3306
+      GITEA__database__NAME: {{ $.dory.gitRepo.type | quote }}
+      GITEA__database__USER: {{ $.dory.gitRepo.type | quote }}
+      GITEA__database__PASSWD: {{ $giteaDbPwd | quote }}
     ports:
       - {{ $.dory.gitRepo.port }}:3000
     restart: always
@@ -27,15 +27,13 @@ services:
     volumes:
       - ./{{ $.dory.gitRepo.type }}-mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "{{ randAlphaNum 16 }}"
-      MYSQL_DATABASE: "gitea"
-      MYSQL_USER: "gitea"
-      MYSQL_PASSWORD: "{{ $giteaDbPwd }}"
+      MYSQL_ROOT_PASSWORD: {{ randAlphaNum 16 | quote }}
+      MYSQL_DATABASE: {{ $.dory.gitRepo.type | quote }}
+      MYSQL_USER: {{ $.dory.gitRepo.type | quote }}
+      MYSQL_PASSWORD: {{ $giteaDbPwd | quote }}
     command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_allowed_packet=268435456"
     restart: always
-  {{- end }}
-
-  {{- if eq $.dory.gitRepo.type "gitlab" }}
+  {{- else if eq $.dory.gitRepo.type "gitlab" }}
   {{ $.dory.gitRepo.type }}:
     image: {{ $.dory.gitRepo.image }}
     container_name: {{ $.dory.gitRepo.type }}
@@ -51,11 +49,11 @@ services:
   {{- end }}
 
   {{- if eq $.dory.artifactRepo.type "nexus" }}
-  nexus:
+  {{ $.dory.artifactRepo.type }}:
     image: {{ $.dory.artifactRepo.image }}
-    container_name: nexus
+    container_name: {{ $.dory.artifactRepo.type }}
     volumes:
-      - ./nexus:/nexus-data
+      - ./{{ $.dory.artifactRepo.type }}:/nexus-data
     ports:
       - {{ $.dory.artifactRepo.port }}:8081
       - {{ $.dory.artifactRepo.portHub }}:1443
@@ -71,10 +69,10 @@ services:
       - ./openldap/data:/var/lib/ldap
       - ./openldap/config:/etc/ldap/slapd.d
     environment:
-      LDAP_ADMIN_PASSWORD: "{{ $.dory.openldap.password }}"
-      LDAP_CONFIG_PASSWORD: "{{ randAlphaNum 16 }}"
-      LDAP_DOMAIN: "{{ $.dory.openldap.domain }}"
-      LDAP_BASE_DN: "{{ $.dory.openldap.baseDN }}"
+      LDAP_ADMIN_PASSWORD: {{ $.dory.openldap.password | quote }}
+      LDAP_CONFIG_PASSWORD: {{ randAlphaNum 16 | quote }}
+      LDAP_DOMAIN: {{ $.dory.openldap.domain | quote }}
+      LDAP_BASE_DN: {{ $.dory.openldap.baseDN | quote }}
       LDAP_TLS_VERIFY_CLIENT: try
     restart: always
 
@@ -104,7 +102,7 @@ services:
       - ./mongo-core-dory:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: "root"
-      MONGO_INITDB_ROOT_PASSWORD: "{{ $.dory.mongo.password }}"
+      MONGO_INITDB_ROOT_PASSWORD: {{ $.dory.mongo.password | quote }}
     restart: always
 
   {{- $list := (repeat $.dory.docker.dockerNumber "x " | trim | split " ") }}
@@ -136,7 +134,7 @@ services:
       - ./dory-core/config:/dory-core/config
       - ./dory-core/dory-data:/dory-core/dory-data
       - ./dory-core/tmp:/dory-core/tmp
-      - ./docker/certs:/certs
+      - ./{{ $.dory.docker.dockerName }}/certs:/certs
     command: "/dory-core/dory-core"
     working_dir: /dory-core
     user: "1000:1000"

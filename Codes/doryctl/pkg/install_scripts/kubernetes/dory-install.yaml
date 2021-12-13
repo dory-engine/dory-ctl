@@ -1,0 +1,366 @@
+namespace: {{ $.dory.namespace }}
+
+deploysSpec:
+
+  {{- if eq $.dory.gitRepo.type "gitea" }}
+    {{ $giteaDbPwd := randAlphaNum 16 }}
+  - deployName: {{ $.dory.gitRepo.type }}
+    deployImage: {{ $.dory.gitRepo.image }}
+    deployNodePort:
+      - port: 3000
+        nodePort: {{ $.dory.gitRepo.port }}
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployEnvs:
+      - name: USER_UID
+        value: 1000
+      - name: USER_GID
+        value: 1000
+      - name: GITEA__database__DB_TYPE
+        value: mysql
+      - name: GITEA__database__HOST
+        value: {{ $.dory.gitRepo.type }}-mysql:3306
+      - name: GITEA__database__NAME
+        value: {{ $.dory.gitRepo.type | quote}}
+      - name: GITEA__database__USER
+        value: {{ $.dory.gitRepo.type | quote }}
+      - name: GITEA__database__PASSWD
+        value: {{ $giteaDbPwd | quote }}
+    deployVolumes:
+      - mountPath: /data
+        subPath: {{ $.dory.gitRepo.type }}
+    deployHealthCheck:
+      checkPort: 3000
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 300
+      livenessPeriodSeconds: 30
+    dependServices:
+      - dependName: {{ $.dory.gitRepo.type }}-mysql
+        dependPort: 3306
+        dependType: TCP
+
+  - deployName: {{ $.dory.gitRepo.type }}-mysql
+    deployImage: mysql:8.0.20
+    deployLocalPort:
+      - port: 3306
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployArgs: [ "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--max_allowed_packet=268435456" ]
+    deployEnvs:
+      - name: MYSQL_ROOT_PASSWORD
+        value: {{ randAlphaNum 16 | quote }}
+      - name: MYSQL_DATABASE
+        value: {{ $.dory.gitRepo.type | quote }}
+      - name: MYSQL_USER
+        value: {{ $.dory.gitRepo.type | quote }}
+      - name: MYSQL_PASSWORD
+        value: {{ $giteaDbPwd | quote }}
+    deployVolumes:
+      - mountPath: /var/lib/mysql
+        subPath: {{ $.dory.gitRepo.type }}-mysql
+    deployHealthCheck:
+      checkPort: 3306
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+
+  {{- else if eq $.dory.gitRepo.type "gitlab" }}
+  - deployName: {{ $.dory.gitRepo.type }}
+    deployImage: {{ $.dory.gitRepo.image }}
+    deployNodePort:
+      - port: 80
+        nodePort: {{ $.dory.gitRepo.port }}
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployEnvs:
+      - name: GITLAB_OMNIBUS_CONFIG
+        value: nginx['client_max_body_size'] = '0'; gitlab_rails['lfs_enabled'] = true; prometheus_monitoring['enable'] = false;
+    deployVolumes:
+      - mountPath: /etc/gitlab
+        subPath: {{ $.dory.gitRepo.type }}/config
+      - mountPath: /var/log/gitlab
+      subPath: {{ $.dory.gitRepo.type }}/logs
+      - mountPath: /var/opt/gitlab
+      subPath: {{ $.dory.gitRepo.type }}/data
+    deployHealthCheck:
+      checkPort: 80
+      readinessDelaySeconds: 60
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 300
+      livenessPeriodSeconds: 30
+  {{- end }}
+
+  {{- if eq $.dory.artifactRepo.type "nexus" }}
+  - deployName: {{ $.dory.artifactRepo.type }}
+    deployImage: {{ $.dory.artifactRepo.image }}
+    deployNodePort:
+      - port: 8081
+        nodePort: {{ $.dory.artifactRepo.port }}
+      - port: 1443
+        nodePort: {{ $.dory.artifactRepo.portHub }}
+      - port: 1444
+        nodePort: {{ $.dory.artifactRepo.portGcr }}
+      - port: 1445
+        nodePort: {{ $.dory.artifactRepo.portQuay }}
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployVolumes:
+      - mountPath: /nexus-data
+        subPath: {{ $.dory.artifactRepo.type }}
+    deployHealthCheck:
+      checkPort: 8081
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+  {{- end }}
+
+  - deployName: openldap
+    deployImage: {{ $.dory.openldap.image }}
+    deployLocalPort:
+      - port: 389
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployEnvs:
+      - name: LDAP_ADMIN_PASSWORD
+        value: {{ $.dory.openldap.password | quote }}
+      - name: LDAP_CONFIG_PASSWORD
+        value: {{ randAlphaNum 16 | quote }}
+      - name: LDAP_DOMAIN
+        value: {{ $.dory.openldap.domain | quote }}
+      - name: LDAP_BASE_DN
+        value: {{ $.dory.openldap.baseDN | quote }}
+      - name: LDAP_TLS_VERIFY_CLIENT
+        value: try
+    deployVolumes:
+      - mountPath: /var/lib/ldap
+        subPath: openldap/data
+      - mountPath: /etc/ldap/slapd.d
+        subPath: openldap/config
+    deployHealthCheck:
+      checkPort: 389
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+
+  - deployName: ldapadmin
+    deployImage: {{ $.dory.openldap.imageAdmin }}
+    deployNodePort:
+      - port: 443
+        nodePort: {{ $.dory.openldap.port }}
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployEnvs:
+      - name: PHPLDAPADMIN_LDAP_HOSTS
+        value: "openldap"
+    deployHealthCheck:
+      checkPort: 443
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 60
+      livenessPeriodSeconds: 30
+    dependServices:
+      - dependName: openldap
+        dependPort: 389
+        dependType: TCP
+
+  - deployName: redis-core-dory
+    deployImage: {{ $.dory.redis.image }}
+    deployLocalPort:
+      - port: 6379
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployArgs:
+      - "--appendonly"
+      - "'yes'"
+      - "--requirepass"
+      - {{ $.dory.redis.password | quote }}
+    deployVolumes:
+      - mountPath: /data
+        subPath: redis-core-dory
+    deployHealthCheck:
+      checkPort: 6379
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+
+  - deployName: mongo-core-dory
+    deployImage: {{ $.dory.mongo.image }}
+    deployLocalPort:
+      - port: 27017
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployEnvs:
+      - name: MONGO_INITDB_ROOT_USERNAME
+        value: root
+      - name: MONGO_INITDB_ROOT_PASSWORD
+        value: {{ $.dory.mongo.password | quote }}
+    deployVolumes:
+      - mountPath: /data/db
+        subPath: mongo-core-dory
+    deployHealthCheck:
+      checkPort: 27017
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+
+  - deployName: {{ $.dory.docker.dockerName }}
+    deployImage: {{ $.dory.docker.image }}
+    deployLocalPort:
+      - port: 2376
+    deployReplicas: {{ $.dory.docker.dockerNumber }}
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployArgs:
+      - --host=tcp://0.0.0.0:2376
+      - --tlsverify
+      - --tlscacert=/certs/ca.crt
+      - --tlscert=/certs/tls.crt
+      - --tlskey=/certs/tls.key
+    deployEnvs:
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
+    deployVolumes:
+      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
+        subPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
+      - mountPath: /certs
+        secret:
+          secretName: dind-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
+            - key: tls.crt
+              path: tls.crt
+            - key: tls.key
+              path: tls.key
+      - mountPath: /root/.docker/config.json
+        subPath: {{ $.dory.docker.dockerName }}/root/config.json
+      - mountPath: /etc/docker/daemon.json
+        subPath: {{ $.dory.docker.dockerName }}/etc/daemon.json
+      - mountPath: /dory-core/dory-data
+        subPath: dory-core/dory-data
+    deployHealthCheck:
+      checkPort: 2376
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+    podManagementPolicy: Parallel
+    securityContext:
+      privileged: true
+    hostAliases:
+      - hostnames:
+          - {{ $.imageRepo.domainName }}
+        ip: {{ $.hostIP }}
+
+  - deployName: dory-core
+    deployImage: dorystack/dory-core:v1.5.0-alpine3.15.0
+    deployLocalPort:
+      - port: 9000
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployCmd: ['/dory-core/dory-core']
+    deployVolumes:
+      - mountPath: /dory-core/config
+        subPath: dory-core/config
+      - mountPath: /dory-core/dory-data
+        subPath: dory-core/dory-data
+      - mountPath: /dory-core/tmp
+        subPath: dory-core/tmp
+      - mountPath: /certs
+        secret:
+          secretName: dind-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
+            - key: tls.crt
+              path: tls.crt
+            - key: tls.key
+              path: tls.key
+    securityContext:
+      runAsGroup: 1000
+      runAsUser: 1000
+    hostAliases:
+      - ip: {{ $.hostIP}}
+        hostnames:
+          - {{ $.imageRepo.domainName }}
+
+  - deployName: dory-dashboard
+    deployImage: dorystack/dory-dashboard:v1.5.0
+    deployNodePort:
+      - port: 80
+        nodePort: {{ $.dory.dorycore.port }}
+    deployReplicas: 1
+    {{- if $.dory.nodeSelector }}
+    nodeSelector:
+      {{- range $k, $v := $.dory.nodeSelector }}
+      {{ $k }}: {{ $v }}
+      {{- end }}
+    {{- end }}
+    deployVolumes:
+      - mountPath: /usr/share/nginx/html
+        subPath: dory-dashboard/dist/
+    deployHealthCheck:
+      checkPort: 80
+      readinessDelaySeconds: 15
+      readinessPeriodSeconds: 5
+      livenessDelaySeconds: 90
+      livenessPeriodSeconds: 30
+    dependServices:
+      - dependName: dory-core
+        dependPort: 9000
+        dependType: TCP

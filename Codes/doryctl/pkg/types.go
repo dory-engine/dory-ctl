@@ -25,8 +25,9 @@ type InstallConfig struct {
 	HostIP      string `yaml:"hostIP" json:"hostIP" bson:"hostIP" validate:"required"`
 	ViewURL     string `yaml:"viewURL" json:"viewURL" bson:"viewURL" validate:"required"`
 	Dory        struct {
-		Namespace string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
-		GitRepo   struct {
+		Namespace    string            `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
+		NodeSelector map[string]string `yaml:"nodeSelector" json:"nodeSelector" bson:"nodeSelector" validate:""`
+		GitRepo      struct {
 			Type    string `yaml:"type" json:"type" bson:"type" validate:"required"`
 			Image   string `yaml:"image" json:"image" bson:"image" validate:"required"`
 			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:""`
