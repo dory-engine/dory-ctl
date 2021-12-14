@@ -240,6 +240,10 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 	dorycoreEnvK8sName := "env-k8s-test.yaml"
 	_ = os.RemoveAll(dorycoreConfigDir)
 	_ = os.MkdirAll(dorycoreConfigDir, 0700)
+	_ = os.RemoveAll(fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace))
+	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
+	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
+
 	// create config.yaml
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreConfigName))
 	if err != nil {
@@ -653,10 +657,6 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	// create dory docker-compose.yaml
 	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
-	_ = os.RemoveAll(fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace))
-	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 	dockerComposeDir := "dory"
 	dockerComposeName := "docker-compose.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
