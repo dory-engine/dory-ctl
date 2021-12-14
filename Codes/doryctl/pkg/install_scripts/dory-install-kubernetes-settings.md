@@ -27,14 +27,14 @@
     
 ### set all kubernetes nodes to connect {{ $.imageRepo.type }}
 
-- add following /etc/hosts record in all kubernetes nodes for {{ $.imageRepo.type }} domain name 
+- 1. add following /etc/hosts record in all kubernetes nodes for {{ $.imageRepo.type }} domain name 
 
 ```shell script
 vi /etc/hosts
 {{ $.hostIP }}  {{ $.imageRepo.domainName }}
 ```
 
-- copy {{ $.imageRepo.type }} certificates to all kubernetes nodes
+- 2. copy {{ $.imageRepo.type }} certificates to all kubernetes nodes
 
 ```shell script
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
@@ -42,8 +42,9 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 
 ### restart dory-core and dory-dashboard
 
+- 1. restart dory-core and dory-dashboard
+
 ```shell script
-# restart dory-core and dory-dashboard
 kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
 ```
 
