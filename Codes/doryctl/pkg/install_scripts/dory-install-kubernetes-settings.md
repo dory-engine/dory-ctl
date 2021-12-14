@@ -52,7 +52,7 @@ kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
 
 ### dory-dashboard
 
-- url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
+- url: {{ $.viewURL }}:{{ $.dory.dorycore.port }}
 - user: {{ $.dorycore.adminUser.username }}
 - password file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/dory-data/admin.password`
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core`
