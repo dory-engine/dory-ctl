@@ -2,6 +2,7 @@
 
 ## 需求
 
+- [ok] doryctl install 显示安装步骤
 - doryctl install reset 清空
 - [ok] doryctl install run 显示后续操作提示，打印账号信息
 - doryctl install check 显示创建k8s admin-user，以及获取token命令
