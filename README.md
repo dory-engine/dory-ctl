@@ -5,11 +5,8 @@
 - [ok] doryctl install 显示安装步骤
 - doryctl install reset 清空
 - [ok] doryctl install run 显示后续操作提示，打印账号信息
-- doryctl install check 显示创建k8s admin-user，以及获取token命令
+- [ok] doryctl install check 显示创建k8s admin-user，以及获取token命令
 - doryctl install manual 创建手工安装文件以及说明文档，可以自行修改进行定制化部署
-
-- kuberentes gitea启动异常（权限异常）
-- kubernetes docker的harbor证书异常
 
 ## doryctl install 安装dory-core组件
 
