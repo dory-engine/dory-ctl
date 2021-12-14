@@ -103,7 +103,6 @@ func (o *OptionsInstallRun) Run(args []string) error {
 	reader := bufio.NewReader(os.Stdin)
 	userInput, _ := reader.ReadString('\n')
 	userInput = strings.Trim(userInput, "\n")
-	fmt.Println(userInput)
 	if userInput != "YES" {
 		err = fmt.Errorf("user cancelled")
 		return err
@@ -255,7 +254,6 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 	dorycoreEnvK8sName := "env-k8s-test.yaml"
 	_ = os.RemoveAll(dorycoreConfigDir)
 	_ = os.MkdirAll(dorycoreConfigDir, 0700)
-	_ = os.RemoveAll(fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace))
 	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 
@@ -672,6 +670,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	// create dory docker-compose.yaml
 	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	_ = os.RemoveAll(doryDir)
+	_ = os.MkdirAll(doryDir, 0700)
 	dockerComposeDir := "dory"
 	dockerComposeName := "docker-compose.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
