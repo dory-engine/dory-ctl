@@ -26,7 +26,7 @@ func NewCmdInstallPrint() *cobra.Command {
 	msgExample := fmt.Sprintf(`  # print docker install settings YAML file
   doryctl install print --mode docker
   
-  #  print kubernetes install settings YAML file
+  # print kubernetes install settings YAML file
   doryctl install print --mode kubernetes`)
 
 	cmd := &cobra.Command{
