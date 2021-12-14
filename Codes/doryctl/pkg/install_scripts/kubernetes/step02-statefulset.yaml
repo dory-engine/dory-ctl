@@ -13,7 +13,7 @@ metadata:
     {{- end }}
     {{- end }}
 spec:
-  serviceName: {{ $deploy.deployName }}{{- if $deploy.deployNodePort }}-headless{{- end }}
+  serviceName: {{ $deploy.deployName }}-headless
   replicas: {{ $deploy.deployReplicas }}
   selector:
     matchLabels:
