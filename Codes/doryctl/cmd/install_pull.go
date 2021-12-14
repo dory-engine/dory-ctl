@@ -24,9 +24,9 @@ func NewCmdInstallPull() *cobra.Command {
 	msgUse := fmt.Sprintf("pull")
 	msgShort := fmt.Sprintf("pull all docker images")
 	msgLong := fmt.Sprintf(`pull all docker images required for installation`)
-	msgExample := fmt.Sprintf(`# pull all docker images required for installation
-%s install pull
-`, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`
+  # pull all docker images required for installation
+  doryctl install pull`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

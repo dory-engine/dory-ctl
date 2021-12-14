@@ -26,15 +26,15 @@ func NewCmdLogin() *cobra.Command {
 	msgUse := fmt.Sprintf("login")
 	msgShort := fmt.Sprintf("login to DoryEngine server")
 	msgLong := fmt.Sprintf(`Must login before use other %s commands`, pkg.BaseCmdName)
-	msgExample := fmt.Sprintf(`  # Login with username and password input prompt
-  %s login --serverURL http://dory.example.com:8080 --insecure=false
+	msgExample := fmt.Sprintf(`
+  # Login with username and password input prompt
+  doryctl login --serverURL http://dory.example.com:8080 --insecure=false
 
   # Login without password input prompt
-  %s login --serverURL http://dory.example.com:8080 --insecure=false --username test-user
+  doryctl login --serverURL http://dory.example.com:8080 --insecure=false --username test-user
 
   # Login without input prompt
-  %s login --serverURL http://dory.example.com:8080 --insecure=false --username test-user --password xxx
-`, pkg.BaseCmdName, pkg.BaseCmdName, pkg.BaseCmdName)
+  doryctl login --serverURL http://dory.example.com:8080 --insecure=false --username test-user --password xxx`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

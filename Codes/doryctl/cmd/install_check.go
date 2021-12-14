@@ -24,13 +24,12 @@ func NewCmdInstallCheck() *cobra.Command {
 	msgUse := fmt.Sprintf("check")
 	msgShort := fmt.Sprintf("check install prerequisite")
 	msgLong := fmt.Sprintf(`check docker or kubernetes install prerequisite`)
-	msgExample := fmt.Sprintf(`# check docker install prerequisite
-%s install check --mode docker
-
-#  check kubernetes install prerequisite
-%s install check --mode kubernetes
-
-`, pkg.BaseCmdName, pkg.BaseCmdName)
+	msgExample := fmt.Sprintf(`
+  # check docker install prerequisite
+  doryctl install check --mode docker
+  
+  #  check kubernetes install prerequisite
+  doryctl install check --mode kubernetes`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
