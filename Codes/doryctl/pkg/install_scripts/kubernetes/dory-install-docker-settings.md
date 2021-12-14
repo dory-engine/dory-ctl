@@ -45,7 +45,8 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 - 1. restart dory-core and dory-dashboard
 
 ```shell script
-kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
+cd {{ $.rootDir }}/{{ $.dory.namespace }}
+docker rm -f dory-core && docker-compose up -d
 ```
 
 ## connect your dory
