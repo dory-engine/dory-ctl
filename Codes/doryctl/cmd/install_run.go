@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/dorystack/doryctl/pkg"
 	"github.com/go-playground/validator/v10"
@@ -96,17 +97,18 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 	}
 
-	//LogWarning("Install dory will remove all current data, please backup first")
-	//LogWarning("Are you sure install now? [YES/NO]")
-	//
-	//reader := bufio.NewReader(os.Stdin)
-	//userInput, _ := reader.ReadString('\n')
-	//userInput = strings.Trim(userInput, "\n")
-	//fmt.Println("# userInput:", userInput)
-	//if userInput != "YES" {
-	//	err = fmt.Errorf("user cancelled")
-	//	return err
-	//}
+	if len(bs) == 0 {
+		LogWarning("Install dory will remove all current data, please backup first")
+		LogWarning("Are you sure install now? [YES/NO]")
+		reader := bufio.NewReader(os.Stdin)
+		userInput, _ := reader.ReadString('\n')
+		userInput = strings.Trim(userInput, "\n")
+		fmt.Println("# userInput:", userInput)
+		if userInput != "YES" {
+			err = fmt.Errorf("user cancelled")
+			return err
+		}
+	}
 
 	var installConfig pkg.InstallConfig
 	err = yaml.Unmarshal(bs, &installConfig)
