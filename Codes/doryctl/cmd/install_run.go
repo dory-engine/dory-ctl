@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/dorystack/doryctl/pkg"
 	"github.com/go-playground/validator/v10"
@@ -96,6 +97,16 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 	}
 
+	LogWarning("Install dory will remove all current data, please backup first")
+	LogWarning("Are you sure install now? [YES/NO]")
+
+	reader := bufio.NewReader(os.Stdin)
+	userInput, _ := reader.ReadString('\n')
+	if userInput != "YES" {
+		err = fmt.Errorf("user cancelled")
+		return err
+	}
+
 	var installConfig pkg.InstallConfig
 	err = yaml.Unmarshal(bs, &installConfig)
 	if err != nil {
@@ -116,11 +127,13 @@ func (o *OptionsInstallRun) Run(args []string) error {
 	}
 
 	if installConfig.InstallMode == "docker" {
+		LogInfo(fmt.Sprintf("dory install with %s begin", installConfig.InstallMode))
 		err = o.InstallWithDocker(installConfig)
 		if err != nil {
 			return err
 		}
 	} else if installConfig.InstallMode == "kubernetes" {
+		LogInfo(fmt.Sprintf("dory install with %s begin", installConfig.InstallMode))
 		err = o.InstallWithKubernetes(installConfig)
 		if err != nil {
 			return err
