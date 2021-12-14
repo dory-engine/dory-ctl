@@ -62,17 +62,17 @@ kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
 - url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 
-### {{ $.imageRepo.type }}
-
-- url: https://{{ $.imageRepo.domainName }}
-- user: admin / {{ $.imageRepo.password }} (admin user)
-- data located at: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
-
 ### {{ $.dory.artifactRepo.type }}
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
 - user: admin / Nexus_Pwd_321 (admin user)
 - user: public-user / public-user (public user)
+
+### {{ $.imageRepo.type }}
+
+- url: https://{{ $.imageRepo.domainName }}
+- user: admin / {{ $.imageRepo.password }} (admin user)
+- data located at: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
 
 ## about dory install files
 
