@@ -13,11 +13,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(bs))
+	fmt.Println("@", string(bs))
 
-	if len(bs) == 0 {
+	if len(bs) > 0 {
 		reader := bufio.NewReader(os.Stdin)
-		userInput, _ := reader.ReadString('\n')
+		userInput, _ := reader.ReadString('#')
 		userInput = strings.Trim(userInput, "\n")
 		fmt.Println("# userInput:", userInput)
 		if userInput != "YES" {
