@@ -337,6 +337,13 @@ deploys:
       - ip: {{ $.hostIP}}
         hostnames:
           - {{ $.imageRepo.domainName }}
+    dependServices:
+      - dependName: mongo-core-dory
+        dependPort: 27017
+        dependType: TCP
+      - dependName: redis-core-dory
+        dependPort: 6379
+        dependType: TCP
 
   - deployName: dory-dashboard
     deployImage: dorystack/dory-dashboard:v1.5.0
