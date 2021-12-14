@@ -114,5 +114,18 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 		}
 		LogSuccess("check helm installed success")
 	}
+
+	createK8sTokenCmd := `
+# create kubernetes admin serviceaccount
+kubectl create serviceaccount -n kube-system admin-user --dry-run=client -o yaml | kubectl apply -f -
+# create kubernetes admin clusterrolebinding
+kubectl create clusterrolebinding admin-user --clusterrole=cluster-admin --serviceaccount=kube-system:admin-user --dry-run=client -o yaml | kubectl apply -f -
+# get kubernetes admin token
+kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o jsonpath="{ .secrets[0].name }") -o jsonpath='{ .data.token }' | base64 -d
+`
+	LogWarning(fmt.Sprintf("########################################################"))
+	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO CREATE KUBERNETES TOKEN"))
+	LogWarning(fmt.Sprintf("KUBERNETES TOKEN WILL USE FOR DORY INSTALLATION"))
+	LogWarning(fmt.Sprintf("\n%s", createK8sTokenCmd))
 	return err
 }
