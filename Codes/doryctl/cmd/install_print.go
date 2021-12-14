@@ -23,7 +23,7 @@ func NewCmdInstallPrint() *cobra.Command {
 	msgUse := fmt.Sprintf("print")
 	msgShort := fmt.Sprintf("print install settings YAML file")
 	msgLong := fmt.Sprintf(`print docker or kubernetes install settings YAML file`)
-	msgExample := fmt.Sprintf(` # print docker install settings YAML file
+	msgExample := fmt.Sprintf(`  # print docker install settings YAML file
   doryctl install print --mode docker
   
   #  print kubernetes install settings YAML file
