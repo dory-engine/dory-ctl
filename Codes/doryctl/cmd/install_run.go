@@ -229,7 +229,7 @@ func (o *OptionsInstallRun) HarborPushDockerImages(installConfig pkg.InstallConf
 			err = fmt.Errorf("docker images push to harbor %s error: %s", idi.Source, err.Error())
 			return err
 		}
-		fmt.Println(fmt.Sprintf("# %s/%s pushed # progress: [%d/%d]", installConfig.ImageRepo.DomainName, idi.Target, i+1, len(pushDockerImages)))
+		LogInfo(fmt.Sprintf("# %s/%s pushed # progress: [%d/%d]", installConfig.ImageRepo.DomainName, idi.Target, i+1, len(pushDockerImages)))
 	}
 	LogSuccess(fmt.Sprintf("docker images push to harbor success"))
 	return err
