@@ -8,19 +8,14 @@
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 
 {{- if eq $.dory.gitRepo.type "gitea" }}
-- open gitea url finish gitea install, set admin username / password / email
-
-- login to gitea, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/user/settings/applications`, generate new token.
-
+- 1. open gitea url finish gitea install, set admin username / password / email
+- 2. login to gitea, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/user/settings/applications`, generate new token.
 {{- else if eq $.dory.gitRepo.type "gitlab" }}
-- gitlab password file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}/config/initial_root_password`
-
-- login to gitlab, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/-/profile/personal_access_tokens`, add a personal access token.
-
+- 1. gitlab password file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}/config/initial_root_password`
+- 2. login to gitlab, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/-/profile/personal_access_tokens`, add a personal access token.
 {{- end }}
-- copy admin `username / password / email / token` to update dory-core config file {{ $.dory.gitRepo.type }} settings
-
-- update dory-core config file:
+- 3. copy admin `username / password / email / token` to update dory-core config file {{ $.dory.gitRepo.type }} settings
+- 4. update dory-core config file:
   - config file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/config/config.yaml`
   - search `PLEASE_INPUT_BY_MANUAL` in config file
   - update following admin user settings: 
