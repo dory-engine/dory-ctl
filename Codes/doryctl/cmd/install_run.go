@@ -603,214 +603,214 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	doryResetDockerSettingsName := "dory-reset-docker-settings.md"
 	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, doryResetDockerSettingsName)
 
-	// create harbor certificates
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
-	_ = os.RemoveAll(harborDir)
-	_ = os.MkdirAll(harborDir, 0700)
-	harborScriptDir := "harbor"
-	harborScriptName := "harbor_certs.sh"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-
-	LogInfo("create harbor certificates begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installConfig.ImageRepo.CertsDir))
-
-	// get pull docker images
-	dockerImages, err := o.HarborGetDockerImages()
-	if err != nil {
-		return err
-	}
-
-	// extract harbor install files
-	err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
-	if err != nil {
-		err = fmt.Errorf("extract harbor install files error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
-
-	harborInstallerDir := "harbor/harbor"
-	harborYamlName := "harbor.yml"
-	_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
-	strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
-
-	harborPrepareName := "prepare"
-	_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
-	strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
-
-	_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
-	_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
-	_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
-	LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
-
-	// install harbor
-	LogInfo("install harbor begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-	err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	LogInfo("waiting harbor boot up for 10 seconds")
-	time.Sleep(time.Second * 10)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-
-	// auto login to harbor
-	err = o.HarborLoginDocker(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// create harbor project public, hub, gcr, quay
-	err = o.HarborCreateProject(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// docker images push to harbor
-	err = o.HarborPushDockerImages(installConfig, dockerImages)
-	if err != nil {
-		return err
-	}
-
-	//////////////////////////////////////////////////
-
-	// create dory docker-compose.yaml
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-	_ = os.RemoveAll(doryDir)
-	_ = os.MkdirAll(doryDir, 0700)
-	dockerComposeDir := "dory"
-	dockerComposeName := "docker-compose.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
-	if err != nil {
-		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-		return err
-	}
-	strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
-	if err != nil {
-		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
-
-	// create dory-core config files
-	err = o.DoryCreateConfig(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// create docker certificates and config
-	err = o.DoryCreateDockerCertsConfig(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// create directories and nexus data
-	err = o.DoryCreateDirs(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// run all dory services
-	LogInfo("run all dory services begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
-	if err != nil {
-		err = fmt.Errorf("run all dory services error: %s", err.Error())
-		return err
-	}
-	LogInfo("waiting all dory services boot up for 10 seconds")
-	time.Sleep(time.Second * 10)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
-	if err != nil {
-		err = fmt.Errorf("run all dory services error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
-
-	//////////////////////////////////////////////////
-
-	// create project-data-alpine in kubernetes
-	err = o.DoryCreateKubernetesDataPod(installConfig)
-	if err != nil {
-		return err
-	}
-
-	//////////////////////////////////////////////////
+	//// create harbor certificates
+	//harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
+	//_ = os.RemoveAll(harborDir)
+	//_ = os.MkdirAll(harborDir, 0700)
+	//harborScriptDir := "harbor"
+	//harborScriptName := "harbor_certs.sh"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//LogInfo("create harbor certificates begin")
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installConfig.ImageRepo.CertsDir))
+	//
+	//// get pull docker images
+	//dockerImages, err := o.HarborGetDockerImages()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// extract harbor install files
+	//err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("extract harbor install files error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
+	//
+	//harborInstallerDir := "harbor/harbor"
+	//harborYamlName := "harbor.yml"
+	//_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//harborPrepareName := "prepare"
+	//_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
+	//if err != nil {
+	//	err = fmt.Errorf("create prepare error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create prepare error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
+	//if err != nil {
+	//	err = fmt.Errorf("create prepare error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
+	//_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
+	//_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+	//LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
+	//
+	//// install harbor
+	//LogInfo("install harbor begin")
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
+	//err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//LogInfo("waiting harbor boot up for 10 seconds")
+	//time.Sleep(time.Second * 10)
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//// auto login to harbor
+	//err = o.HarborLoginDocker(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// create harbor project public, hub, gcr, quay
+	//err = o.HarborCreateProject(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// docker images push to harbor
+	//err = o.HarborPushDockerImages(installConfig, dockerImages)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	////////////////////////////////////////////////////
+	//
+	//// create dory docker-compose.yaml
+	//doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	//_ = os.RemoveAll(doryDir)
+	//_ = os.MkdirAll(doryDir, 0700)
+	//dockerComposeDir := "dory"
+	//dockerComposeName := "docker-compose.yaml"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
+	//
+	//// create dory-core config files
+	//err = o.DoryCreateConfig(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// create docker certificates and config
+	//err = o.DoryCreateDockerCertsConfig(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// create directories and nexus data
+	//err = o.DoryCreateDirs(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// run all dory services
+	//LogInfo("run all dory services begin")
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
+	//if err != nil {
+	//	err = fmt.Errorf("run all dory services error: %s", err.Error())
+	//	return err
+	//}
+	//LogInfo("waiting all dory services boot up for 10 seconds")
+	//time.Sleep(time.Second * 10)
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
+	//if err != nil {
+	//	err = fmt.Errorf("run all dory services error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
+	//
+	////////////////////////////////////////////////////
+	//
+	//// create project-data-alpine in kubernetes
+	//err = o.DoryCreateKubernetesDataPod(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	////////////////////////////////////////////////////
 
 	// create dory install docker settings readme
 	doryInstallDockerSettingsName := "dory-install-docker-settings.md"
@@ -841,325 +841,325 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	doryResetKubernetesSettingsName := "dory-reset-kubernetes-settings.md"
 	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, doryResetKubernetesSettingsName)
 
-	// get pull docker images
-	dockerImages, err := o.HarborGetDockerImages()
-	if err != nil {
-		return err
-	}
-
-	harborInstallerDir := "kubernetes/harbor"
-	harborInstallYamlDir := fmt.Sprintf("%s/harbor", kubernetesInstallDir)
-	_ = os.RemoveAll(harborInstallYamlDir)
-	_ = os.MkdirAll(harborInstallYamlDir, 0700)
-
-	// extract harbor helm files
-	err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/%s", pkg.DirInstallScripts, harborInstallerDir), harborInstallYamlDir)
-	if err != nil {
-		err = fmt.Errorf("extract harbor helm files error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("extract harbor helm files %s success", harborInstallYamlDir))
-
-	harborValuesYamlName := "values.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborValuesYamlName))
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
-	strHarborValuesYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallYamlDir, harborValuesYamlName), []byte(strHarborValuesYaml), 0600)
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create %s/%s success", harborInstallYamlDir, harborValuesYamlName))
-
-	// create harbor namespace and pv pvc
-	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
-	step01NamespacePvName := "step01-namespace-pv.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-
-	LogInfo(fmt.Sprintf("create harbor namespace and pv pvc begin"))
-	cmdClearPv := fmt.Sprintf(`(kubectl delete namespace %s || true) && \
-		(kubectl delete pv %s-pv || true)`, installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace)
-	_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
-	_ = os.RemoveAll(harborDir)
-	_ = os.MkdirAll(harborDir, 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create harbor namespace and pv pvc success"))
-
-	// create harbor directory and chown
-	_ = os.MkdirAll(fmt.Sprintf("%s/database", harborDir), 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/jobservice", harborDir), 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/redis", harborDir), 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/registry", harborDir), 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/database", harborDir), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 10000:10000 %s/jobservice", harborDir), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/redis", harborDir), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 10000:10000 %s/registry", harborDir), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create harbor directory and chown %s success", harborDir))
-
-	// install harbor in kubernetes
-	LogInfo(fmt.Sprintf("install harbor in kubernetes begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s harbor", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor in kubernetes error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("install harbor in kubernetes success"))
-
-	// waiting for harbor to ready
-	err = o.KubernetesCheckPodStatus(installConfig, "harbor")
-	if err != nil {
-		return err
-	}
-
-	// update docker harbor certificates
-	harborUpdateCertsName := "harbor_update_docker_certs.sh"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, harborUpdateCertsName))
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-	strHarborUpdateCerts, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-
-	LogInfo(fmt.Sprintf("update docker harbor certificates begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborUpdateCertsName), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-
-	// auto login to harbor
-	err = o.HarborLoginDocker(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// create harbor project public, hub, gcr, quay
-	err = o.HarborCreateProject(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// docker images push to harbor
-	err = o.HarborPushDockerImages(installConfig, dockerImages)
-	if err != nil {
-		return err
-	}
-
-	//////////////////////////////////////////////////
-
-	// create dory namespace and pv pvc
-	vals["currentNamespace"] = installConfig.Dory.Namespace
-	step01NamespacePvName = "step01-namespace-pv.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
-	if err != nil {
-		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	strStep01NamespacePv, err = pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
-	if err != nil {
-		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-
-	LogInfo(fmt.Sprintf("create dory namespace and pv pvc begin"))
-	cmdClearPv = fmt.Sprintf(`(kubectl delete namespace %s || true) && \
-		(kubectl delete pv %s-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
-	_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-	_ = os.RemoveAll(doryDir)
-	_ = os.MkdirAll(doryDir, 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create dory namespace and pv pvc success"))
-
-	// create dory install yaml
-	doryInstallYamlName := "dory-install.yaml"
-	step02StatefulsetName := "step02-statefulset.yaml"
-	step03ServiceName := "step03-service.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, doryInstallYamlName))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	strDoryInstallYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	var installVals map[string]interface{}
-	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
-	for k, v := range vals {
-		installVals[k] = v
-	}
-
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step02StatefulsetName))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	strStep02Statefulset, err := pkg.ParseTplFromVals(installVals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step02StatefulsetName), []byte(strStep02Statefulset), 0600)
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step03ServiceName))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	strStep03Service, err := pkg.ParseTplFromVals(installVals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step03ServiceName), []byte(strStep03Service), 0600)
-	if err != nil {
-		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
-		return err
-	}
-
-	// create dory-core config files
-	err = o.DoryCreateConfig(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// create docker certificates and config
-	err = o.DoryCreateDockerCertsConfig(installConfig)
-	if err != nil {
-		return err
-	}
-	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
-
-	// put docker certificates in kubernetes
-	LogInfo("put docker certificates in kubernetes begin")
-	cmdSecret := fmt.Sprintf(`kubectl -n %s create secret generic %s-tls --from-file=certs/ca.crt --from-file=certs/tls.crt --from-file=certs/tls.key --dry-run=client -o yaml | kubectl apply -f -`, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
-	_, _, err = pkg.CommandExec(cmdSecret, dockerDir)
-	if err != nil {
-		err = fmt.Errorf("put docker certificates in kubernetes error: %s", err.Error())
-		return err
-	}
-	dockerScriptName := "docker_certs.sh"
-	_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName))
-	_ = os.RemoveAll(fmt.Sprintf("%s/certs", dockerDir))
-	LogSuccess(fmt.Sprintf("put docker certificates in kubernetes success"))
-
-	// put harbor certificates in docker directory
-	LogInfo("put harbor certificates in docker directory begin")
-	_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, installConfig.ImageRepo.DomainName))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("cp -r /etc/docker/certs.d/%s %s", installConfig.ImageRepo.DomainName, dockerDir), dockerDir)
-	if err != nil {
-		err = fmt.Errorf("put harbor certificates in docker directory error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("put harbor certificates in docker directory success"))
-
-	// create directories and nexus data
-	err = o.DoryCreateDirs(installConfig)
-	if err != nil {
-		return err
-	}
-
-	// deploy all dory services in kubernetes
-	LogInfo("deploy all dory services in kubernetes begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), kubernetesInstallDir)
-	if err != nil {
-		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("deploy all dory services in kubernetes success"))
-
-	// waiting for dory to ready
-	err = o.KubernetesCheckPodStatus(installConfig, "dory")
-	if err != nil {
-		return err
-	}
-
-	//////////////////////////////////////////////////
-
-	// create project-data-alpine in kubernetes
-	err = o.DoryCreateKubernetesDataPod(installConfig)
-	if err != nil {
-		return err
-	}
+	//// get pull docker images
+	//dockerImages, err := o.HarborGetDockerImages()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//harborInstallerDir := "kubernetes/harbor"
+	//harborInstallYamlDir := fmt.Sprintf("%s/harbor", kubernetesInstallDir)
+	//_ = os.RemoveAll(harborInstallYamlDir)
+	//_ = os.MkdirAll(harborInstallYamlDir, 0700)
+	//
+	//// extract harbor helm files
+	//err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/%s", pkg.DirInstallScripts, harborInstallerDir), harborInstallYamlDir)
+	//if err != nil {
+	//	err = fmt.Errorf("extract harbor helm files error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("extract harbor helm files %s success", harborInstallYamlDir))
+	//
+	//harborValuesYamlName := "values.yaml"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborValuesYamlName))
+	//if err != nil {
+	//	err = fmt.Errorf("create values.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborValuesYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create values.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallYamlDir, harborValuesYamlName), []byte(strHarborValuesYaml), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create values.yaml error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create %s/%s success", harborInstallYamlDir, harborValuesYamlName))
+	//
+	//// create harbor namespace and pv pvc
+	//vals["currentNamespace"] = installConfig.ImageRepo.Namespace
+	//step01NamespacePvName := "step01-namespace-pv.yaml"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//LogInfo(fmt.Sprintf("create harbor namespace and pv pvc begin"))
+	//cmdClearPv := fmt.Sprintf(`(kubectl delete namespace %s || true) && \
+	//	(kubectl delete pv %s-pv || true)`, installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace)
+	//_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
+	//_ = os.RemoveAll(harborDir)
+	//_ = os.MkdirAll(harborDir, 0700)
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create harbor namespace and pv pvc success"))
+	//
+	//// create harbor directory and chown
+	//_ = os.MkdirAll(fmt.Sprintf("%s/database", harborDir), 0700)
+	//_ = os.MkdirAll(fmt.Sprintf("%s/jobservice", harborDir), 0700)
+	//_ = os.MkdirAll(fmt.Sprintf("%s/redis", harborDir), 0700)
+	//_ = os.MkdirAll(fmt.Sprintf("%s/registry", harborDir), 0700)
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/database", harborDir), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 10000:10000 %s/jobservice", harborDir), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/redis", harborDir), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 10000:10000 %s/registry", harborDir), harborDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create harbor directory and chown error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create harbor directory and chown %s success", harborDir))
+	//
+	//// install harbor in kubernetes
+	//LogInfo(fmt.Sprintf("install harbor in kubernetes begin"))
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s harbor", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("install harbor in kubernetes error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("install harbor in kubernetes success"))
+	//
+	//// waiting for harbor to ready
+	//err = o.KubernetesCheckPodStatus(installConfig, "harbor")
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// update docker harbor certificates
+	//harborUpdateCertsName := "harbor_update_docker_certs.sh"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, harborUpdateCertsName))
+	//if err != nil {
+	//	err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//strHarborUpdateCerts, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//LogInfo(fmt.Sprintf("update docker harbor certificates begin"))
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborUpdateCertsName), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//// auto login to harbor
+	//err = o.HarborLoginDocker(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// create harbor project public, hub, gcr, quay
+	//err = o.HarborCreateProject(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// docker images push to harbor
+	//err = o.HarborPushDockerImages(installConfig, dockerImages)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	////////////////////////////////////////////////////
+	//
+	//// create dory namespace and pv pvc
+	//vals["currentNamespace"] = installConfig.Dory.Namespace
+	//step01NamespacePvName = "step01-namespace-pv.yaml"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//strStep01NamespacePv, err = pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//LogInfo(fmt.Sprintf("create dory namespace and pv pvc begin"))
+	//cmdClearPv = fmt.Sprintf(`(kubectl delete namespace %s || true) && \
+	//	(kubectl delete pv %s-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
+	//_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
+	//_ = os.RemoveAll(doryDir)
+	//_ = os.MkdirAll(doryDir, 0700)
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("create dory namespace and pv pvc success"))
+	//
+	//// create dory install yaml
+	//doryInstallYamlName := "dory-install.yaml"
+	//step02StatefulsetName := "step02-statefulset.yaml"
+	//step03ServiceName := "step03-service.yaml"
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, doryInstallYamlName))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//strDoryInstallYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//var installVals map[string]interface{}
+	//_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
+	//for k, v := range vals {
+	//	installVals[k] = v
+	//}
+	//
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step02StatefulsetName))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//strStep02Statefulset, err := pkg.ParseTplFromVals(installVals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step02StatefulsetName), []byte(strStep02Statefulset), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step03ServiceName))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//strStep03Service, err := pkg.ParseTplFromVals(installVals, string(bs))
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step03ServiceName), []byte(strStep03Service), 0600)
+	//if err != nil {
+	//	err = fmt.Errorf("create dory install yaml error: %s", err.Error())
+	//	return err
+	//}
+	//
+	//// create dory-core config files
+	//err = o.DoryCreateConfig(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// create docker certificates and config
+	//err = o.DoryCreateDockerCertsConfig(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+	//
+	//// put docker certificates in kubernetes
+	//LogInfo("put docker certificates in kubernetes begin")
+	//cmdSecret := fmt.Sprintf(`kubectl -n %s create secret generic %s-tls --from-file=certs/ca.crt --from-file=certs/tls.crt --from-file=certs/tls.key --dry-run=client -o yaml | kubectl apply -f -`, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+	//_, _, err = pkg.CommandExec(cmdSecret, dockerDir)
+	//if err != nil {
+	//	err = fmt.Errorf("put docker certificates in kubernetes error: %s", err.Error())
+	//	return err
+	//}
+	//dockerScriptName := "docker_certs.sh"
+	//_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName))
+	//_ = os.RemoveAll(fmt.Sprintf("%s/certs", dockerDir))
+	//LogSuccess(fmt.Sprintf("put docker certificates in kubernetes success"))
+	//
+	//// put harbor certificates in docker directory
+	//LogInfo("put harbor certificates in docker directory begin")
+	//_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, installConfig.ImageRepo.DomainName))
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("cp -r /etc/docker/certs.d/%s %s", installConfig.ImageRepo.DomainName, dockerDir), dockerDir)
+	//if err != nil {
+	//	err = fmt.Errorf("put harbor certificates in docker directory error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("put harbor certificates in docker directory success"))
+	//
+	//// create directories and nexus data
+	//err = o.DoryCreateDirs(installConfig)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// deploy all dory services in kubernetes
+	//LogInfo("deploy all dory services in kubernetes begin")
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
+	//	return err
+	//}
+	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), kubernetesInstallDir)
+	//if err != nil {
+	//	err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
+	//	return err
+	//}
+	//LogSuccess(fmt.Sprintf("deploy all dory services in kubernetes success"))
+	//
+	//// waiting for dory to ready
+	//err = o.KubernetesCheckPodStatus(installConfig, "dory")
+	//if err != nil {
+	//	return err
+	//}
+	//
+	////////////////////////////////////////////////////
+	//
+	//// create project-data-alpine in kubernetes
+	//err = o.DoryCreateKubernetesDataPod(installConfig)
+	//if err != nil {
+	//	return err
+	//}
 
 	//////////////////////////////////////////////////
 
