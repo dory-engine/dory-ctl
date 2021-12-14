@@ -11,7 +11,6 @@ func NewCmdInstall() *cobra.Command {
 	msgShort := fmt.Sprintf("install dory-core with docker or kubernetes")
 	msgLong := fmt.Sprintf(`install dory-core and relative components with docker-compose or kubernetes`)
 	msgExample := fmt.Sprintf(`##############################
-
 please follow these steps to install dory-core with docker:
 
 # 1. check prerequisite for install with docker
@@ -30,7 +29,6 @@ vi dory-install-docker.yaml
 doryctl install run -f dory-install-docker.yaml
 
 ##############################
-
 # please follow these steps to install dory-core with kubernetes:
 
 # 1. check prerequisite for install with kubernetes
