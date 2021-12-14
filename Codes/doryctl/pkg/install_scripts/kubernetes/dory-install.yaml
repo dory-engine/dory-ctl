@@ -269,8 +269,6 @@ deploys:
       - name: DOCKER_TLS_CERTDIR
         value: ""
     deployVolumes:
-      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
-        subPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
       - mountPath: /certs
         secret:
           secretName: {{ $.dory.docker.dockerName }}-tls
@@ -287,6 +285,8 @@ deploys:
         subPath: {{ $.dory.docker.dockerName }}/daemon.json
       - mountPath: /dory-core/dory-data
         subPath: dory-core/dory-data
+      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
+        subPath: {{ $.dory.docker.dockerName }}/{{ $.imageRepo.domainName }}
     deployHealthCheck:
       checkPort: 2376
       readinessDelaySeconds: 15

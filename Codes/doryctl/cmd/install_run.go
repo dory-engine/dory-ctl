@@ -362,6 +362,7 @@ func (o *OptionsInstallRun) DoryCreateDirs(installConfig pkg.InstallConfig) erro
 	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 
 	// get nexus init data
+	LogInfo(fmt.Sprintf("get nexus init data begin"))
 	_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), doryDir)
 	if err != nil {
 		err = fmt.Errorf("get nexus init data error: %s", err.Error())
@@ -377,6 +378,10 @@ func (o *OptionsInstallRun) DoryCreateDirs(installConfig pkg.InstallConfig) erro
 	// create directory and chown
 	_ = os.RemoveAll(fmt.Sprintf("%s/mongo-core-dory", doryDir))
 	_ = os.MkdirAll(fmt.Sprintf("%s/mongo-core-dory", doryDir), 0700)
+
+	_ = os.RemoveAll(fmt.Sprintf("%s/%s", doryDir, installConfig.Dory.GitRepo.Type))
+	_ = os.MkdirAll(fmt.Sprintf("%s/%s", doryDir, installConfig.Dory.GitRepo.Type), 0755)
+
 	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/mongo-core-dory", doryDir), doryDir)
 	if err != nil {
 		err = fmt.Errorf("create directory and chown error: %s", err.Error())
@@ -1007,6 +1012,16 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName))
 	_ = os.RemoveAll(fmt.Sprintf("%s/certs", dockerDir))
 	LogSuccess(fmt.Sprintf("put docker certificates in kubernetes success"))
+
+	// put harbor certificates in docker directory
+	LogInfo("put harbor certificates in docker directory begin")
+	_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, installConfig.ImageRepo.DomainName))
+	_, _, err = pkg.CommandExec(fmt.Sprintf("cp -r /etc/docker/certs.d/%s %s", installConfig.ImageRepo.DomainName, dockerDir), dockerDir)
+	if err != nil {
+		err = fmt.Errorf("put harbor certificates in docker directory error: %s", err.Error())
+		return err
+	}
+	LogSuccess(fmt.Sprintf("put harbor certificates in docker directory success"))
 
 	// create directories and nexus data
 	err = o.DoryCreateDirs(installConfig)
