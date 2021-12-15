@@ -60,7 +60,7 @@ docker pull {{ $image.source }}
 docker tag {{ $image.source }} {{ $.imageRepo.domainName }}/{{ $image.target }}
 docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
 
-{{- end }
+{{- end }}
 ```
 
 ## install dory services with docker-compose
