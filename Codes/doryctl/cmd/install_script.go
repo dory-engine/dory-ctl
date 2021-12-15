@@ -257,7 +257,7 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 	return err
 }
 
-func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.InstallConfig) error {
+func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.InstallConfig, rootDir string) error {
 	var err error
 	var bs []byte
 
@@ -269,7 +269,7 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 		return err
 	}
 
-	dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
+	dockerDir := fmt.Sprintf("%s/%s/%s", rootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
 	_ = os.RemoveAll(dockerDir)
 	_ = os.MkdirAll(dockerDir, 0700)
 	dockerScriptDir := "dory/docker"
@@ -289,14 +289,6 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 		err = fmt.Errorf("create docker certificates error: %s", err.Error())
 		return err
 	}
-
-	LogInfo("create docker certificates begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", dockerScriptName), dockerDir)
-	if err != nil {
-		err = fmt.Errorf("create docker certificates error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create docker certificates %s/certs success", dockerDir))
 
 	dockerDaemonJsonName := "daemon.json"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerScriptDir, dockerDaemonJsonName))
@@ -674,12 +666,12 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	//// create docker certificates and config
-	//err = o.DoryCreateDockerCertsConfig(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
+	// create docker certificates and config
+	err = o.DoryCreateDockerCertsConfig(installConfig, dockerInstallDir)
+	if err != nil {
+		return err
+	}
+
 	//// create directories and nexus data
 	//err = o.DoryCreateDirs(installConfig)
 	//if err != nil {
