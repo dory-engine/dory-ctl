@@ -613,14 +613,6 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	LogInfo("create harbor certificates begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborScriptName), harborDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create harbor certificates %s/%s success", harborDir, installConfig.ImageRepo.CertsDir))
-
 	//// get pull docker images
 	//dockerImages, err := o.HarborGetDockerImages()
 	//if err != nil {
