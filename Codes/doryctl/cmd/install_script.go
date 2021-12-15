@@ -152,31 +152,6 @@ func (o *OptionsInstallScript) HarborGetDockerImages() (pkg.InstallDockerImages,
 	return dockerImages, err
 }
 
-func (o *OptionsInstallScript) HarborLoginDocker(installConfig pkg.InstallConfig) error {
-	var err error
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
-
-	// update /etc/hosts
-	_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", installConfig.ImageRepo.DomainName), harborDir)
-	if err != nil {
-		// harbor domain name not exists
-		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", installConfig.HostIP, installConfig.ImageRepo.DomainName), harborDir)
-		if err != nil {
-			err = fmt.Errorf("install harbor error: %s", err.Error())
-			return err
-		}
-		LogInfo("add harbor domain name to /etc/hosts")
-	}
-	LogInfo("docker login to harbor")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username admin --password %s %s", installConfig.ImageRepo.Password, installConfig.ImageRepo.DomainName), harborDir)
-	if err != nil {
-		err = fmt.Errorf("install harbor error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("install harbor at %s success", harborDir))
-	return err
-}
-
 func (o *OptionsInstallScript) HarborCreateProject(installConfig pkg.InstallConfig) error {
 	var err error
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
@@ -667,92 +642,38 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
 	_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
 	LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
-	//
-	//// install harbor
-	//LogInfo("install harbor begin")
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("./install.sh"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("sleep 5 && docker-compose stop && docker-compose rm -f"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//bs, err = os.ReadFile(fmt.Sprintf("%s/docker-compose.yml", harborDir))
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//strHarborComposeYaml := strings.Replace(string(bs), harborDir, ".", -1)
-	//err = os.WriteFile(fmt.Sprintf("%s/docker-compose.yml", harborDir), []byte(strHarborComposeYaml), 0600)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//LogInfo("waiting harbor boot up for 10 seconds")
-	//time.Sleep(time.Second * 10)
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), harborDir)
-	//if err != nil {
-	//	err = fmt.Errorf("install harbor error: %s", err.Error())
-	//	return err
-	//}
-	//
-	//// auto login to harbor
-	//err = o.HarborLoginDocker(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// create harbor project public, hub, gcr, quay
-	//err = o.HarborCreateProject(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// docker images push to harbor
-	//err = o.HarborPushDockerImages(installConfig, dockerImages)
-	//if err != nil {
-	//	return err
-	//}
-	//
+
 	////////////////////////////////////////////////////
-	//
-	//// create dory docker-compose.yaml
-	//doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-	//_ = os.RemoveAll(doryDir)
-	//_ = os.MkdirAll(doryDir, 0700)
-	//dockerComposeDir := "dory"
-	//dockerComposeName := "docker-compose.yaml"
-	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
-	//if err != nil {
-	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-	//	return err
-	//}
-	//strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
-	//if err != nil {
-	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-	//	return err
-	//}
-	//err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
-	//if err != nil {
-	//	err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
-	//	return err
-	//}
-	//LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
-	//
+
+	// create dory docker-compose.yaml
+	doryDir := fmt.Sprintf("%s/%s", dockerInstallDir, installConfig.Dory.Namespace)
+	_ = os.RemoveAll(doryDir)
+	_ = os.MkdirAll(doryDir, 0700)
+	dockerComposeDir := "dory"
+	dockerComposeName := "docker-compose.yaml"
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerComposeDir, dockerComposeName))
+	if err != nil {
+		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+		return err
+	}
+	strCompose, err := pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, dockerComposeName), []byte(strCompose), 0600)
+	if err != nil {
+		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
+		return err
+	}
+	LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
+
 	//// create dory-core config files
 	//err = o.DoryCreateConfig(installConfig)
 	//if err != nil {
 	//	return err
 	//}
-	//
+
 	//// create docker certificates and config
 	//err = o.DoryCreateDockerCertsConfig(installConfig)
 	//if err != nil {
