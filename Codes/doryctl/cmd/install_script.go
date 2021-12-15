@@ -610,45 +610,27 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		return err
 	}
 
-	////////////////////////////////////////////////////
-	//
-	//// create dory namespace and pv pvc
-	//vals["currentNamespace"] = installConfig.Dory.Namespace
-	//step01NamespacePvName = "step01-namespace-pv.yaml"
-	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
-	//if err != nil {
-	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-	//	return err
-	//}
-	//strStep01NamespacePv, err = pkg.ParseTplFromVals(vals, string(bs))
-	//if err != nil {
-	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-	//	return err
-	//}
-	//err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
-	//if err != nil {
-	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-	//	return err
-	//}
-	//
-	//LogInfo(fmt.Sprintf("create dory namespace and pv pvc begin"))
-	//cmdClearPv = fmt.Sprintf(`(kubectl delete namespace %s || true) && \
-	//	(kubectl delete pv %s-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
-	//_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
-	//if err != nil {
-	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-	//	return err
-	//}
-	//doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-	//_ = os.RemoveAll(doryDir)
-	//_ = os.MkdirAll(doryDir, 0700)
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
-	//if err != nil {
-	//	err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
-	//	return err
-	//}
-	//LogSuccess(fmt.Sprintf("create dory namespace and pv pvc success"))
-	//
+	//////////////////////////////////////////////////
+
+	// create dory namespace and pv pvc
+	vals["currentNamespace"] = installConfig.Dory.Namespace
+	step01NamespacePvName = "step01-namespace-pv.yaml"
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	strStep01NamespacePv, err = pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	if err != nil {
+		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+
 	//// create dory install yaml
 	//doryInstallYamlName := "dory-install.yaml"
 	//step02StatefulsetName := "step02-statefulset.yaml"
