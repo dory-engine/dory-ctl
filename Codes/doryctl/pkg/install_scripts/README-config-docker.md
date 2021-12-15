@@ -1,4 +1,4 @@
-# after installation
+# config dory after install in docker
 
 ## dory-core settings after installed
 

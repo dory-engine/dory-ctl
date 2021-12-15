@@ -496,7 +496,7 @@ func (o *OptionsInstallRun) KubernetesCheckPodStatus(installConfig pkg.InstallCo
 	return err
 }
 
-func (o *OptionsInstallRun) DoryCreateInstallReadme(installConfig pkg.InstallConfig, readmeInstallDir, doryInstallSettingsName string) error {
+func (o *OptionsInstallRun) DoryCreateConfigReadme(installConfig pkg.InstallConfig, readmeInstallDir, readmeName string) error {
 	var err error
 	var bs []byte
 
@@ -508,30 +508,30 @@ func (o *OptionsInstallRun) DoryCreateInstallReadme(installConfig pkg.InstallCon
 		return err
 	}
 
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, doryInstallSettingsName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory config readme error: %s", err.Error())
 		return err
 	}
 	strDoryInstallSettings, err := pkg.ParseTplFromVals(vals, string(bs))
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory config readme error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/README-%s.md", readmeInstallDir, installConfig.InstallMode), []byte(strDoryInstallSettings), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", readmeInstallDir, readmeName), []byte(strDoryInstallSettings), 0600)
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory config readme error: %s", err.Error())
 		return err
 	}
 	LogWarning(fmt.Sprintf("####################################################"))
 	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO FINISH DORY INSTALL"))
-	LogWarning(fmt.Sprintf("README located at: %s/README-%s.md", readmeInstallDir, installConfig.InstallMode))
+	LogWarning(fmt.Sprintf("README located at: %s/%s", readmeInstallDir, readmeName))
 	LogWarning(fmt.Sprintf("\n\n%s", strDoryInstallSettings))
 
 	return err
 }
 
-func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfig, readmeResetDir, doryResetSettingsName string) error {
+func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfig, readmeResetDir, readmeName string) error {
 	var err error
 	var bs []byte
 
@@ -543,24 +543,24 @@ func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfi
 		return err
 	}
 
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, doryResetSettingsName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
 	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory reset readme error: %s", err.Error())
 		return err
 	}
 	strDoryResetSettings, err := pkg.ParseTplFromVals(vals, string(bs))
 	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory reset readme error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/README-reset-%s.md", readmeResetDir, installConfig.InstallMode), []byte(strDoryResetSettings), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", readmeResetDir, readmeName), []byte(strDoryResetSettings), 0600)
 	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
+		err = fmt.Errorf("create dory reset readme error: %s", err.Error())
 		return err
 	}
 	LogWarning(fmt.Sprintf("####################################################"))
 	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO REMOVE DORY INSTALL"))
-	LogWarning(fmt.Sprintf("README.md located at: %s/README-reset-%s.md", readmeResetDir, installConfig.InstallMode))
+	LogWarning(fmt.Sprintf("README.md located at: %s/%s", readmeResetDir, readmeName))
 	LogWarning(fmt.Sprintf("\n\n%s", strDoryResetSettings))
 
 	return err
@@ -582,8 +582,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	_ = os.RemoveAll(dockerInstallDir)
 	_ = os.MkdirAll(dockerInstallDir, 0700)
 
-	doryResetDockerSettingsName := "dory-reset-docker-settings.md"
-	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, doryResetDockerSettingsName)
+	readmeDockerResetName := "README-reset-docker.md"
+	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, readmeDockerResetName)
 
 	// create harbor certificates
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
@@ -794,9 +794,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	//////////////////////////////////////////////////
 
-	// create dory install docker settings readme
-	doryInstallDockerSettingsName := "dory-install-docker-settings.md"
-	err = o.DoryCreateInstallReadme(installConfig, dockerInstallDir, doryInstallDockerSettingsName)
+	readmeDockerConfigName := "README-config-docker.md"
+	err = o.DoryCreateConfigReadme(installConfig, dockerInstallDir, readmeDockerConfigName)
 	if err != nil {
 		return err
 	}
@@ -820,8 +819,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	_ = os.RemoveAll(kubernetesInstallDir)
 	_ = os.MkdirAll(kubernetesInstallDir, 0700)
 
-	doryResetKubernetesSettingsName := "dory-reset-kubernetes-settings.md"
-	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, doryResetKubernetesSettingsName)
+	readmeKubernetesResetName := "README-reset-kubernetes.md"
+	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, readmeKubernetesResetName)
 
 	// get pull docker images
 	dockerImages, err := o.HarborGetDockerImages()
@@ -1149,9 +1148,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	//////////////////////////////////////////////////
 
-	// create dory install kubernetes settings readme
-	doryInstallKubernetesSettingsName := "dory-install-kubernetes-settings.md"
-	err = o.DoryCreateInstallReadme(installConfig, kubernetesInstallDir, doryInstallKubernetesSettingsName)
+	readmeKubernetesConfigName := "README-config-kubernetes.md"
+	err = o.DoryCreateConfigReadme(installConfig, kubernetesInstallDir, readmeKubernetesConfigName)
 	if err != nil {
 		return err
 	}

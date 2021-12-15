@@ -27,7 +27,7 @@ func NewCmdInstallScript() *cobra.Command {
 
 	msgUse := fmt.Sprintf("script")
 	msgShort := fmt.Sprintf("create dory-core install scripts and config files")
-	msgLong := fmt.Sprintf(`create dory-core install scripts and config files, run the scripts by manual`)
+	msgLong := fmt.Sprintf(`create dory-core install scripts and config files, run the scripts by manual, for experts`)
 	msgExample := fmt.Sprintf(`  # create dory-core install scripts and config files with docker-compose or kubernetes
   doryctl install script -f install-config.yaml
   or
@@ -310,7 +310,7 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 	return err
 }
 
-func (o *OptionsInstallScript) DoryCreateInstallReadme(installConfig pkg.InstallConfig, readmeInstallDir, doryInstallSettingsName string) error {
+func (o *OptionsInstallScript) DoryCreateReadme(installConfig pkg.InstallConfig, readmeInstallDir, readmeName string) error {
 	var err error
 	var bs []byte
 
@@ -318,64 +318,25 @@ func (o *OptionsInstallScript) DoryCreateInstallReadme(installConfig pkg.Install
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
+		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, doryInstallSettingsName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create %s error: %s", readmeName, err.Error())
 		return err
 	}
 	strDoryInstallSettings, err := pkg.ParseTplFromVals(vals, string(bs))
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create %s error: %s", readmeName, err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/README-%s.md", readmeInstallDir, installConfig.InstallMode), []byte(strDoryInstallSettings), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", readmeInstallDir, readmeName), []byte(strDoryInstallSettings), 0600)
 	if err != nil {
-		err = fmt.Errorf("create dory install settings readme error: %s", err.Error())
+		err = fmt.Errorf("create %s error: %s", readmeName, err.Error())
 		return err
 	}
-	LogWarning(fmt.Sprintf("####################################################"))
-	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO FINISH DORY INSTALL"))
-	LogWarning(fmt.Sprintf("README located at: %s/README-%s.md", readmeInstallDir, installConfig.InstallMode))
-	LogWarning(fmt.Sprintf("\n\n%s", strDoryInstallSettings))
-
-	return err
-}
-
-func (o *OptionsInstallScript) DoryCreateResetReadme(installConfig pkg.InstallConfig, readmeResetDir, doryResetSettingsName string) error {
-	var err error
-	var bs []byte
-
-	bs, _ = yaml.Marshal(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
-	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
-		return err
-	}
-
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, doryResetSettingsName))
-	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
-		return err
-	}
-	strDoryResetSettings, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/README-reset-%s.md", readmeResetDir, installConfig.InstallMode), []byte(strDoryResetSettings), 0600)
-	if err != nil {
-		err = fmt.Errorf("create dory reset settings readme error: %s", err.Error())
-		return err
-	}
-	LogWarning(fmt.Sprintf("####################################################"))
-	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO REMOVE DORY INSTALL"))
-	LogWarning(fmt.Sprintf("README.md located at: %s/README-reset-%s.md", readmeResetDir, installConfig.InstallMode))
-	LogWarning(fmt.Sprintf("\n\n%s", strDoryResetSettings))
 
 	return err
 }
@@ -392,12 +353,24 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
+	// get pull docker images
+	dockerImages, err := o.HarborGetDockerImages()
+	if err != nil {
+		return err
+	}
+	bs, _ = yaml.Marshal(dockerImages)
+	m := map[string]interface{}{}
+	_ = yaml.Unmarshal(bs, &m)
+	for k, v := range m {
+		vals[k] = v
+	}
+
 	dockerInstallDir := "dory-install-docker"
 	_ = os.RemoveAll(dockerInstallDir)
 	_ = os.MkdirAll(dockerInstallDir, 0700)
 
-	doryResetDockerSettingsName := "dory-reset-docker-settings.md"
-	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, doryResetDockerSettingsName)
+	readmeDockerResetName := "README-reset-docker.md"
+	defer o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerResetName)
 
 	// create harbor certificates
 	harborDir := fmt.Sprintf("%s/%s", dockerInstallDir, installConfig.ImageRepo.Namespace)
@@ -514,12 +487,22 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 
 	//////////////////////////////////////////////////
 
-	// create dory install docker settings readme
-	doryInstallDockerSettingsName := "dory-install-docker-settings.md"
-	err = o.DoryCreateInstallReadme(installConfig, dockerInstallDir, doryInstallDockerSettingsName)
+	readmeDockerConfigName := "README-config-docker.md"
+	err = o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerConfigName)
 	if err != nil {
 		return err
 	}
+
+	readmeDockerInstallName := "README-install-docker.md"
+	err = o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerInstallName)
+	if err != nil {
+		return err
+	}
+
+	LogWarning(fmt.Sprintf("all scripts and config files located at: %s", dockerInstallDir))
+	LogWarning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", dockerInstallDir, readmeDockerInstallName))
+	LogWarning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", dockerInstallDir, readmeDockerConfigName))
+	LogWarning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", dockerInstallDir, readmeDockerResetName))
 
 	return err
 }
@@ -536,12 +519,24 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		return err
 	}
 
+	// get pull docker images
+	dockerImages, err := o.HarborGetDockerImages()
+	if err != nil {
+		return err
+	}
+	bs, _ = yaml.Marshal(dockerImages)
+	m := map[string]interface{}{}
+	_ = yaml.Unmarshal(bs, &m)
+	for k, v := range m {
+		vals[k] = v
+	}
+
 	kubernetesInstallDir := "dory-install-kubernetes"
 	_ = os.RemoveAll(kubernetesInstallDir)
 	_ = os.MkdirAll(kubernetesInstallDir, 0700)
 
-	doryResetKubernetesSettingsName := "dory-reset-kubernetes-settings.md"
-	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, doryResetKubernetesSettingsName)
+	readmeKubernetesResetName := "README-reset-kubernetes.md"
+	defer o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesResetName)
 
 	harborInstallerDir := "kubernetes/harbor"
 	harborInstallYamlDir := fmt.Sprintf("%s/harbor", kubernetesInstallDir)
@@ -710,12 +705,21 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 
 	//////////////////////////////////////////////////
 
-	// create dory install kubernetes settings readme
-	doryInstallKubernetesSettingsName := "dory-install-kubernetes-settings.md"
-	err = o.DoryCreateInstallReadme(installConfig, kubernetesInstallDir, doryInstallKubernetesSettingsName)
+	readmeKubernetesConfigName := "README-config-kubernetes.md"
+	err = o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesConfigName)
 	if err != nil {
 		return err
 	}
 
+	readmeKubernetesInstallName := "README-install-kubernetes.md"
+	err = o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesInstallName)
+	if err != nil {
+		return err
+	}
+
+	LogWarning(fmt.Sprintf("all scripts and config files located at: %s", kubernetesInstallDir))
+	LogWarning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", kubernetesInstallDir, readmeKubernetesInstallName))
+	LogWarning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", kubernetesInstallDir, readmeKubernetesConfigName))
+	LogWarning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", kubernetesInstallDir, readmeKubernetesResetName))
 	return err
 }
