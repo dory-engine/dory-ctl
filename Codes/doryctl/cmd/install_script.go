@@ -613,7 +613,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	//////////////////////////////////////////////////
 
 	// create dory namespace and pv pvc
-	doryInstallDir := fmt.Sprintf("%s/%s", kubernetesInstallDir)
+	doryInstallDir := fmt.Sprintf("%s/%s", kubernetesInstallDir, installConfig.Dory.Namespace)
 	_ = os.MkdirAll(doryInstallDir, 0700)
 	vals["currentNamespace"] = installConfig.Dory.Namespace
 	step01NamespacePvName = "step01-namespace-pv.yaml"
