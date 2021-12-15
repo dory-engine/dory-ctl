@@ -170,8 +170,6 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 	dorycoreEnvK8sName := "env-k8s-test.yaml"
 	_ = os.RemoveAll(dorycoreConfigDir)
 	_ = os.MkdirAll(dorycoreConfigDir, 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/dory-data", dorycoreDir), 0700)
-	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 
 	// create config.yaml
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreConfigName))
@@ -697,73 +695,23 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	if err != nil {
 		return err
 	}
-	//dockerDir := fmt.Sprintf("%s/%s/%s", installConfig.RootDir, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
-	//
-	//// put docker certificates in kubernetes
-	//LogInfo("put docker certificates in kubernetes begin")
-	//cmdSecret := fmt.Sprintf(`kubectl -n %s create secret generic %s-tls --from-file=certs/ca.crt --from-file=certs/tls.crt --from-file=certs/tls.key --dry-run=client -o yaml | kubectl apply -f -`, installConfig.Dory.Namespace, installConfig.Dory.Docker.DockerName)
-	//_, _, err = pkg.CommandExec(cmdSecret, dockerDir)
-	//if err != nil {
-	//	err = fmt.Errorf("put docker certificates in kubernetes error: %s", err.Error())
-	//	return err
-	//}
-	//dockerScriptName := "docker_certs.sh"
-	//_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, dockerScriptName))
-	//_ = os.RemoveAll(fmt.Sprintf("%s/certs", dockerDir))
-	//LogSuccess(fmt.Sprintf("put docker certificates in kubernetes success"))
-	//
-	//// put harbor certificates in docker directory
-	//LogInfo("put harbor certificates in docker directory begin")
-	//_ = os.RemoveAll(fmt.Sprintf("%s/%s", dockerDir, installConfig.ImageRepo.DomainName))
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("cp -r /etc/docker/certs.d/%s %s", installConfig.ImageRepo.DomainName, dockerDir), dockerDir)
-	//if err != nil {
-	//	err = fmt.Errorf("put harbor certificates in docker directory error: %s", err.Error())
-	//	return err
-	//}
-	//LogSuccess(fmt.Sprintf("put harbor certificates in docker directory success"))
-	//
-	//// create directories and nexus data
-	//err = o.DoryCreateDirs(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// deploy all dory services in kubernetes
-	//LogInfo("deploy all dory services in kubernetes begin")
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), kubernetesInstallDir)
-	//if err != nil {
-	//	err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
-	//	return err
-	//}
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), kubernetesInstallDir)
-	//if err != nil {
-	//	err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
-	//	return err
-	//}
-	//LogSuccess(fmt.Sprintf("deploy all dory services in kubernetes success"))
-	//
-	//// waiting for dory to ready
-	//err = o.KubernetesCheckPodStatus(installConfig, "dory")
-	//if err != nil {
-	//	return err
-	//}
-	//
-	////////////////////////////////////////////////////
-	//
-	//// create project-data-alpine in kubernetes
-	//err = o.DoryCreateKubernetesDataPod(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	////////////////////////////////////////////////////
-	//
-	//// create dory install kubernetes settings readme
-	//doryInstallKubernetesSettingsName := "dory-install-kubernetes-settings.md"
-	//err = o.DoryCreateInstallReadme(installConfig, kubernetesInstallDir, doryInstallKubernetesSettingsName)
-	//if err != nil {
-	//	return err
-	//}
+
+	//////////////////////////////////////////////////
+
+	// create project-data-alpine in kubernetes
+	err = o.DoryCreateKubernetesDataPod(installConfig, kubernetesInstallDir)
+	if err != nil {
+		return err
+	}
+
+	//////////////////////////////////////////////////
+
+	// create dory install kubernetes settings readme
+	doryInstallKubernetesSettingsName := "dory-install-kubernetes-settings.md"
+	err = o.DoryCreateInstallReadme(installConfig, kubernetesInstallDir, doryInstallKubernetesSettingsName)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
