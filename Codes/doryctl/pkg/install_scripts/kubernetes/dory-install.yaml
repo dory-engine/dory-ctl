@@ -96,7 +96,7 @@ deploys:
       - mountPath: /var/log/gitlab
         subPath: {{ $.dory.gitRepo.type }}/logs
       - mountPath: /var/opt/gitlab
-      subPath: {{ $.dory.gitRepo.type }}/data
+        subPath: {{ $.dory.gitRepo.type }}/data
     deployHealthCheck:
       checkPort: 80
       readinessDelaySeconds: 60
