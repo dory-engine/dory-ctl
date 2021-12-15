@@ -7,7 +7,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -16,7 +15,6 @@ import (
 type OptionsInstallRun struct {
 	*OptionsCommon
 	FileName string
-	Stdin    []byte
 }
 
 func NewOptionsInstallRun() *OptionsInstallRun {
@@ -61,17 +59,6 @@ func (o *OptionsInstallRun) Validate(args []string) error {
 		err = fmt.Errorf("[ERROR] -f required")
 		return err
 	}
-	if o.FileName == "-" {
-		bs, err := io.ReadAll(os.Stdin)
-		if err != nil {
-			return err
-		}
-		o.Stdin = bs
-		if len(o.Stdin) == 0 {
-			err = fmt.Errorf("[ERROR] -f - required os.stdin\n example: echo 'xxx' | %s install run -f -", pkg.BaseCmdName)
-			return err
-		}
-	}
 	return err
 }
 
@@ -87,14 +74,10 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		}
 	}()
 
-	if o.FileName == "-" {
-		bs = o.Stdin
-	} else {
-		bs, err = os.ReadFile(o.FileName)
-		if err != nil {
-			err = fmt.Errorf("install run error: %s", err.Error())
-			return err
-		}
+	bs, err = os.ReadFile(o.FileName)
+	if err != nil {
+		err = fmt.Errorf("install run error: %s", err.Error())
+		return err
 	}
 
 	LogWarning("Install dory will remove all current data, please backup first")

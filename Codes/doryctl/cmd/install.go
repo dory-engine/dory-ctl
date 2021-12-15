@@ -64,5 +64,6 @@ func NewCmdInstall() *cobra.Command {
 	cmd.AddCommand(NewCmdInstallPrint())
 	cmd.AddCommand(NewCmdInstallPull())
 	cmd.AddCommand(NewCmdInstallRun())
+	cmd.AddCommand(NewCmdInstallScript())
 	return cmd
 }
