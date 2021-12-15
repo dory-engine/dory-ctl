@@ -1035,7 +1035,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	var installVals map[string]interface{}
+	installVals := map[string]interface{}{}
 	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
 	for k, v := range vals {
 		installVals[k] = v
