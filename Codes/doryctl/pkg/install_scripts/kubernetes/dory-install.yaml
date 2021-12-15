@@ -94,7 +94,7 @@ deploys:
       - mountPath: /etc/gitlab
         subPath: {{ $.dory.gitRepo.type }}/config
       - mountPath: /var/log/gitlab
-      subPath: {{ $.dory.gitRepo.type }}/logs
+        subPath: {{ $.dory.gitRepo.type }}/logs
       - mountPath: /var/opt/gitlab
       subPath: {{ $.dory.gitRepo.type }}/data
     deployHealthCheck:
