@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
-	"time"
 )
 
 type OptionsInstallScript struct {
@@ -252,7 +251,6 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 		err = fmt.Errorf("create dory-core config files error: %s", err.Error())
 		return err
 	}
-	LogSuccess(fmt.Sprintf("create dory-core config files %s success", dorycoreConfigDir))
 
 	return err
 }
@@ -323,7 +321,6 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 		err = fmt.Errorf("create docker config files error: %s", err.Error())
 		return err
 	}
-	LogSuccess(fmt.Sprintf("create docker config files %s success", dockerDir))
 
 	return err
 }
@@ -358,51 +355,6 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 		return err
 	}
 
-	return err
-}
-
-func (o *OptionsInstallScript) KubernetesCheckPodStatus(installConfig pkg.InstallConfig, namespaceMode string) error {
-	var err error
-	// waiting for dory to ready
-	var ready bool
-	var namespace string
-	if namespaceMode == "harbor" {
-		namespace = installConfig.ImageRepo.Namespace
-	} else if namespaceMode == "dory" {
-		namespace = installConfig.Dory.Namespace
-	} else {
-		err = fmt.Errorf("namespaceMode must be harbor or dory")
-		return err
-	}
-	for {
-		ready = true
-		LogInfo(fmt.Sprintf("waiting 5 seconds for %s to ready", namespaceMode))
-		time.Sleep(time.Second * 5)
-		pods, err := installConfig.KubernetesPodsGet(namespace)
-		if err != nil {
-			err = fmt.Errorf("waiting for %s to ready error: %s", namespaceMode, err.Error())
-			return err
-		}
-		for _, pod := range pods {
-			ok := true
-			for _, containerStatus := range pod.Status.ContainerStatuses {
-				if !containerStatus.Ready {
-					ok = false
-					break
-				}
-			}
-			ready = ready && ok
-		}
-		_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl -n %s get pods -o wide", namespace), ".")
-		if err != nil {
-			err = fmt.Errorf("waiting for %s to ready error: %s", namespaceMode, err.Error())
-			return err
-		}
-		if ready {
-			break
-		}
-	}
-	LogSuccess(fmt.Sprintf("waiting for %s to ready success", namespaceMode))
 	return err
 }
 
@@ -517,19 +469,12 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	//// get pull docker images
-	//dockerImages, err := o.HarborGetDockerImages()
-	//if err != nil {
-	//	return err
-	//}
-
 	// extract harbor install files
 	err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
 	if err != nil {
 		err = fmt.Errorf("extract harbor install files error: %s", err.Error())
 		return err
 	}
-	LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
 
 	harborInstallerDir := "harbor/harbor"
 	harborYamlName := "harbor.yml"
@@ -570,7 +515,6 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
 	_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
 	_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
-	LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
 
 	////////////////////////////////////////////////////
 
@@ -595,7 +539,6 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		err = fmt.Errorf("create dory docker-compose.yaml error: %s", err.Error())
 		return err
 	}
-	LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
 
 	// create dory-core config files
 	err = o.DoryCreateConfig(installConfig, dockerInstallDir)
