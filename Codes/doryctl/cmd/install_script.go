@@ -575,6 +575,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	}
 
 	// create harbor namespace and pv pvc
+	harborInstallDir := fmt.Sprintf("%s/%s", kubernetesInstallDir, installConfig.ImageRepo.Namespace)
 	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
 	step01NamespacePvName := "step01-namespace-pv.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
@@ -587,7 +588,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
 	if err != nil {
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
@@ -604,7 +605,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
 	if err != nil {
 		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
 		return err
