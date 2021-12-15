@@ -647,6 +647,8 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		return err
 	}
 	installVals := map[string]interface{}{}
+	fmt.Println(strDoryInstallYaml)
+	fmt.Println("#######")
 	_ = yaml.Unmarshal([]byte(strDoryInstallYaml), &installVals)
 	fmt.Println(installVals)
 	for k, v := range vals {
