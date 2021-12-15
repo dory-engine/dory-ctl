@@ -198,7 +198,7 @@ func (o *OptionsInstallScript) HarborPushDockerImages(installConfig pkg.InstallC
 	return err
 }
 
-func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig) error {
+func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig, rootDir string) error {
 	var err error
 	var bs []byte
 
@@ -210,7 +210,7 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", installConfig.RootDir, installConfig.Dory.Namespace)
+	dorycoreDir := fmt.Sprintf("%s/%s/dory-core", rootDir, installConfig.Dory.Namespace)
 	dorycoreConfigDir := fmt.Sprintf("%s/config", dorycoreDir)
 	dorycoreScriptDir := "dory/dory-core"
 	dorycoreConfigName := "config.yaml"
@@ -668,11 +668,11 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	}
 	LogSuccess(fmt.Sprintf("create %s/%s success", doryDir, dockerComposeName))
 
-	//// create dory-core config files
-	//err = o.DoryCreateConfig(installConfig)
-	//if err != nil {
-	//	return err
-	//}
+	// create dory-core config files
+	err = o.DoryCreateConfig(installConfig, dockerInstallDir)
+	if err != nil {
+		return err
+	}
 
 	//// create docker certificates and config
 	//err = o.DoryCreateDockerCertsConfig(installConfig)
