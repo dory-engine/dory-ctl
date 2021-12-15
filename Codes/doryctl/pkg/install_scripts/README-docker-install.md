@@ -2,9 +2,9 @@
 
 ## summary
 
-1. please follow `README-install-docker.md` to install dory by manual
-2. please follow `README-config-docker.md` to config dory by manual after install
-3. if install fail, please follow `README-reset-docker.md` to stop all dory services and install again
+1. please follow `README-docker-install.md` to install dory by manual
+2. please follow `README-docker-config.md` to config dory by manual after install
+3. if install fail, please follow `README-docker-reset.md` to stop all dory services and install again
 
 ## copy all scripts and config files to install root directory
 

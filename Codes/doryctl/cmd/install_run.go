@@ -582,7 +582,7 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	_ = os.RemoveAll(dockerInstallDir)
 	_ = os.MkdirAll(dockerInstallDir, 0700)
 
-	readmeDockerResetName := "README-reset-docker.md"
+	readmeDockerResetName := "README-docker-reset.md"
 	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, readmeDockerResetName)
 
 	// create harbor certificates
@@ -794,7 +794,7 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	//////////////////////////////////////////////////
 
-	readmeDockerConfigName := "README-config-docker.md"
+	readmeDockerConfigName := "README-docker-config.md"
 	err = o.DoryCreateConfigReadme(installConfig, dockerInstallDir, readmeDockerConfigName)
 	if err != nil {
 		return err
@@ -819,7 +819,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	_ = os.RemoveAll(kubernetesInstallDir)
 	_ = os.MkdirAll(kubernetesInstallDir, 0700)
 
-	readmeKubernetesResetName := "README-reset-kubernetes.md"
+	readmeKubernetesResetName := "README-kubernetes-reset.md"
 	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, readmeKubernetesResetName)
 
 	// get pull docker images
@@ -1148,7 +1148,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	//////////////////////////////////////////////////
 
-	readmeKubernetesConfigName := "README-config-kubernetes.md"
+	readmeKubernetesConfigName := "README-kubernetes-config.md"
 	err = o.DoryCreateConfigReadme(installConfig, kubernetesInstallDir, readmeKubernetesConfigName)
 	if err != nil {
 		return err

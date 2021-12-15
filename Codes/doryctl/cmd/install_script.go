@@ -369,7 +369,7 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	_ = os.RemoveAll(dockerInstallDir)
 	_ = os.MkdirAll(dockerInstallDir, 0700)
 
-	readmeDockerResetName := "README-reset-docker.md"
+	readmeDockerResetName := "README-docker-reset.md"
 	defer o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerResetName)
 
 	// create harbor certificates
@@ -487,13 +487,13 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 
 	//////////////////////////////////////////////////
 
-	readmeDockerConfigName := "README-config-docker.md"
+	readmeDockerConfigName := "README-docker-config.md"
 	err = o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerConfigName)
 	if err != nil {
 		return err
 	}
 
-	readmeDockerInstallName := "README-install-docker.md"
+	readmeDockerInstallName := "README-docker-install.md"
 	err = o.DoryCreateReadme(installConfig, dockerInstallDir, readmeDockerInstallName)
 	if err != nil {
 		return err
@@ -535,7 +535,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	_ = os.RemoveAll(kubernetesInstallDir)
 	_ = os.MkdirAll(kubernetesInstallDir, 0700)
 
-	readmeKubernetesResetName := "README-reset-kubernetes.md"
+	readmeKubernetesResetName := "README-kubernetes-reset.md"
 	defer o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesResetName)
 
 	harborInstallerDir := "kubernetes/harbor"
@@ -705,13 +705,13 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 
 	//////////////////////////////////////////////////
 
-	readmeKubernetesConfigName := "README-config-kubernetes.md"
+	readmeKubernetesConfigName := "README-kubernetes-config.md"
 	err = o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesConfigName)
 	if err != nil {
 		return err
 	}
 
-	readmeKubernetesInstallName := "README-install-kubernetes.md"
+	readmeKubernetesInstallName := "README-kubernetes-install.md"
 	err = o.DoryCreateReadme(installConfig, kubernetesInstallDir, readmeKubernetesInstallName)
 	if err != nil {
 		return err
