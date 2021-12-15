@@ -627,47 +627,46 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	}
 	LogSuccess(fmt.Sprintf("extract harbor install files %s success", harborDir))
 
-	//harborInstallerDir := "harbor/harbor"
-	//harborYamlName := "harbor.yml"
-	//_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
-	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
-	//if err != nil {
-	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-	//	return err
-	//}
-	//strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	//if err != nil {
-	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-	//	return err
-	//}
-	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
-	//if err != nil {
-	//	err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-	//	return err
-	//}
-	//
-	//harborPrepareName := "prepare"
-	//_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
-	//bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
-	//if err != nil {
-	//	err = fmt.Errorf("create prepare error: %s", err.Error())
-	//	return err
-	//}
-	//strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
-	//if err != nil {
-	//	err = fmt.Errorf("create prepare error: %s", err.Error())
-	//	return err
-	//}
-	//err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
-	//if err != nil {
-	//	err = fmt.Errorf("create prepare error: %s", err.Error())
-	//	return err
-	//}
-	//
-	//_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
-	//_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
-	//_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
-	//LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
+	harborInstallerDir := "harbor/harbor"
+	harborYamlName := "harbor.yml"
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
+	if err != nil {
+		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+		return err
+	}
+	strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
+	if err != nil {
+		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+		return err
+	}
+
+	harborPrepareName := "prepare"
+	_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
+	if err != nil {
+		err = fmt.Errorf("create prepare error: %s", err.Error())
+		return err
+	}
+	strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
+	if err != nil {
+		err = fmt.Errorf("create prepare error: %s", err.Error())
+		return err
+	}
+	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
+	if err != nil {
+		err = fmt.Errorf("create prepare error: %s", err.Error())
+		return err
+	}
+
+	_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
+	_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
+	_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+	LogSuccess(fmt.Sprintf("create %s/%s success", harborDir, harborYamlName))
 	//
 	//// install harbor
 	//LogInfo("install harbor begin")
