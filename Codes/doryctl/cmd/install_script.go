@@ -93,7 +93,7 @@ func (o *OptionsInstallScript) Run(args []string) error {
 	} else {
 		bs, err = os.ReadFile(o.FileName)
 		if err != nil {
-			err = fmt.Errorf("install run error: %s", err.Error())
+			err = fmt.Errorf("install script error: %s", err.Error())
 			return err
 		}
 	}
@@ -101,19 +101,19 @@ func (o *OptionsInstallScript) Run(args []string) error {
 	var installConfig pkg.InstallConfig
 	err = yaml.Unmarshal(bs, &installConfig)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 	validate := validator.New()
 	err = validate.Struct(installConfig)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
 	err = installConfig.VerifyInstallConfig()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -128,7 +128,7 @@ func (o *OptionsInstallScript) Run(args []string) error {
 			return err
 		}
 	} else {
-		err = fmt.Errorf("install run error: installMode not correct, must be docker or kubernetes")
+		err = fmt.Errorf("install script error: installMode not correct, must be docker or kubernetes")
 		return err
 	}
 	return err
@@ -206,7 +206,7 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -265,7 +265,7 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -328,53 +328,7 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 	return err
 }
 
-func (o *OptionsInstallScript) DoryCreateDirs(installConfig pkg.InstallConfig) error {
-	var err error
-
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
-
-	// get nexus init data
-	LogInfo(fmt.Sprintf("get nexus init data begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), doryDir)
-	if err != nil {
-		err = fmt.Errorf("get nexus init data error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker cp nexus-data-init:/nexus-data/nexus . && docker rm -f nexus-data-init"), doryDir)
-	if err != nil {
-		err = fmt.Errorf("get nexus init data error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("get nexus init data %s success", doryDir))
-
-	// create directory and chown
-	_ = os.RemoveAll(fmt.Sprintf("%s/mongo-core-dory", doryDir))
-	_ = os.MkdirAll(fmt.Sprintf("%s/mongo-core-dory", doryDir), 0700)
-
-	_ = os.RemoveAll(fmt.Sprintf("%s/%s", doryDir, installConfig.Dory.GitRepo.Type))
-	_ = os.MkdirAll(fmt.Sprintf("%s/%s", doryDir, installConfig.Dory.GitRepo.Type), 0755)
-
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 999:999 %s/mongo-core-dory", doryDir), doryDir)
-	if err != nil {
-		err = fmt.Errorf("create directory and chown error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 200:200 %s/nexus", doryDir), doryDir)
-	if err != nil {
-		err = fmt.Errorf("create directory and chown error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sudo chown -R 1000:1000 %s/dory-core", doryDir), doryDir)
-	if err != nil {
-		err = fmt.Errorf("create directory and chown error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create directory and chown %s success", doryDir))
-
-	return err
-}
-
-func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.InstallConfig) error {
+func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.InstallConfig, rootDir string) error {
 	var err error
 	var bs []byte
 
@@ -382,11 +336,9 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
-
-	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 
 	kubernetesDir := "kubernetes"
 	projectDataAlpineName := "project-data-alpine.yaml"
@@ -400,26 +352,11 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 		err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", doryDir, projectDataAlpineName), []byte(strProjectDataAlpine), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", rootDir, projectDataAlpineName), []byte(strProjectDataAlpine), 0600)
 	if err != nil {
 		err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
 		return err
 	}
-	LogInfo(fmt.Sprintf("clear project-data-alpine pv begin"))
-	cmdClearPv := fmt.Sprintf(`(kubectl -n %s delete sts project-data-alpine || true) && \
-		(kubectl -n %s delete pvc project-data-pvc || true) && \
-		(kubectl delete pv project-data-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
-	_, _, err = pkg.CommandExec(cmdClearPv, doryDir)
-	if err != nil {
-		err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
-		return err
-	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", projectDataAlpineName), doryDir)
-	if err != nil {
-		err = fmt.Errorf("create project-data-alpine in kubernetes error: %s", err.Error())
-		return err
-	}
-	LogSuccess(fmt.Sprintf("create project-data-alpine in kubernetes success"))
 
 	return err
 }
@@ -477,7 +414,7 @@ func (o *OptionsInstallScript) DoryCreateInstallReadme(installConfig pkg.Install
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -512,7 +449,7 @@ func (o *OptionsInstallScript) DoryCreateResetReadme(installConfig pkg.InstallCo
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -547,7 +484,7 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -672,44 +609,22 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	//// create directories and nexus data
-	//err = o.DoryCreateDirs(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// run all dory services
-	//LogInfo("run all dory services begin")
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose up -d"), doryDir)
-	//if err != nil {
-	//	err = fmt.Errorf("run all dory services error: %s", err.Error())
-	//	return err
-	//}
-	//LogInfo("waiting all dory services boot up for 10 seconds")
-	//time.Sleep(time.Second * 10)
-	//_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose ps"), doryDir)
-	//if err != nil {
-	//	err = fmt.Errorf("run all dory services error: %s", err.Error())
-	//	return err
-	//}
-	//LogSuccess(fmt.Sprintf("run all dory services %s success", doryDir))
-	//
-	////////////////////////////////////////////////////
-	//
-	//// create project-data-alpine in kubernetes
-	//err = o.DoryCreateKubernetesDataPod(installConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	////////////////////////////////////////////////////
-	//
-	//// create dory install docker settings readme
-	//doryInstallDockerSettingsName := "dory-install-docker-settings.md"
-	//err = o.DoryCreateInstallReadme(installConfig, dockerInstallDir, doryInstallDockerSettingsName)
-	//if err != nil {
-	//	return err
-	//}
+	//////////////////////////////////////////////////
+
+	// create project-data-alpine in kubernetes
+	err = o.DoryCreateKubernetesDataPod(installConfig, dockerInstallDir)
+	if err != nil {
+		return err
+	}
+
+	//////////////////////////////////////////////////
+
+	// create dory install docker settings readme
+	doryInstallDockerSettingsName := "dory-install-docker-settings.md"
+	err = o.DoryCreateInstallReadme(installConfig, dockerInstallDir, doryInstallDockerSettingsName)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -722,7 +637,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
+		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
