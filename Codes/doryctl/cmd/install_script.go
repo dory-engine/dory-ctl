@@ -48,7 +48,7 @@ func NewCmdInstallScript() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.FileName, "file", "f", "", "install settings YAML file")
-	cmd.Flags().StringVarP(&o.FileName, "output", "o", "", "output README, script and config files directory")
+	cmd.Flags().StringVarP(&o.OutputDir, "output", "o", "", "output README, script and config files directory")
 	return cmd
 }
 
