@@ -14,7 +14,8 @@ import (
 
 type OptionsInstallRun struct {
 	*OptionsCommon
-	FileName string
+	FileName  string
+	OutputDir string
 }
 
 func NewOptionsInstallRun() *OptionsInstallRun {
@@ -30,7 +31,7 @@ func NewCmdInstallRun() *cobra.Command {
 	msgShort := fmt.Sprintf("run install dory-core with docker or kubernetes")
 	msgLong := fmt.Sprintf(`run install dory-core and relative components with docker-compose or kubernetes`)
 	msgExample := fmt.Sprintf(`  # run install dory-core and relative components with docker-compose or kubernetes
-  doryctl install run -f install-config.yaml`)
+  doryctl install run -f install-config.yaml -o readme-install`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -45,6 +46,7 @@ func NewCmdInstallRun() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.FileName, "file", "f", "", "install settings YAML file")
+	cmd.Flags().StringVarP(&o.FileName, "output", "o", "", "output README files directory")
 	return cmd
 }
 
@@ -57,6 +59,10 @@ func (o *OptionsInstallRun) Validate(args []string) error {
 	var err error
 	if o.FileName == "" {
 		err = fmt.Errorf("[ERROR] -f required")
+		return err
+	}
+	if o.OutputDir == "" {
+		err = fmt.Errorf("[ERROR] -o required")
 		return err
 	}
 	return err
@@ -578,12 +584,11 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 		return err
 	}
 
-	dockerInstallDir := "dory-install-docker"
-	_ = os.RemoveAll(dockerInstallDir)
-	_ = os.MkdirAll(dockerInstallDir, 0700)
+	outputDir := o.OutputDir
+	_ = os.MkdirAll(outputDir, 0700)
 
 	readmeDockerResetName := "README-docker-reset.md"
-	defer o.DoryCreateResetReadme(installConfig, dockerInstallDir, readmeDockerResetName)
+	defer o.DoryCreateResetReadme(installConfig, outputDir, readmeDockerResetName)
 
 	// create harbor certificates
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
@@ -795,7 +800,7 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	//////////////////////////////////////////////////
 
 	readmeDockerConfigName := "README-docker-config.md"
-	err = o.DoryCreateConfigReadme(installConfig, dockerInstallDir, readmeDockerConfigName)
+	err = o.DoryCreateConfigReadme(installConfig, outputDir, readmeDockerConfigName)
 	if err != nil {
 		return err
 	}
@@ -815,12 +820,11 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		return err
 	}
 
-	kubernetesInstallDir := "dory-install-kubernetes"
-	_ = os.RemoveAll(kubernetesInstallDir)
-	_ = os.MkdirAll(kubernetesInstallDir, 0700)
+	outputDir := o.OutputDir
+	_ = os.MkdirAll(outputDir, 0700)
 
 	readmeKubernetesResetName := "README-kubernetes-reset.md"
-	defer o.DoryCreateResetReadme(installConfig, kubernetesInstallDir, readmeKubernetesResetName)
+	defer o.DoryCreateResetReadme(installConfig, outputDir, readmeKubernetesResetName)
 
 	// get pull docker images
 	dockerImages, err := o.HarborGetDockerImages()
@@ -829,7 +833,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	}
 
 	harborInstallerDir := "kubernetes/harbor"
-	harborInstallYamlDir := fmt.Sprintf("%s/harbor", kubernetesInstallDir)
+	harborInstallYamlDir := fmt.Sprintf("%s/harbor", outputDir)
 	_ = os.RemoveAll(harborInstallYamlDir)
 	_ = os.MkdirAll(harborInstallYamlDir, 0700)
 
@@ -872,7 +876,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", outputDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
 	if err != nil {
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
@@ -881,7 +885,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	LogInfo(fmt.Sprintf("create harbor namespace and pv pvc begin"))
 	cmdClearPv := fmt.Sprintf(`(kubectl delete namespace %s || true) && \
 		(kubectl delete pv %s-pv || true)`, installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace)
-	_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(cmdClearPv, outputDir)
 	if err != nil {
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
@@ -889,7 +893,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
 	_ = os.RemoveAll(harborDir)
 	_ = os.MkdirAll(harborDir, 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), outputDir)
 	if err != nil {
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
@@ -925,7 +929,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// install harbor in kubernetes
 	LogInfo(fmt.Sprintf("install harbor in kubernetes begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s harbor", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s harbor", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace), outputDir)
 	if err != nil {
 		err = fmt.Errorf("install harbor in kubernetes error: %s", err.Error())
 		return err
@@ -950,14 +954,14 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", outputDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
 	if err != nil {
 		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
 		return err
 	}
 
 	LogInfo(fmt.Sprintf("update docker harbor certificates begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborUpdateCertsName), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("sh %s", harborUpdateCertsName), outputDir)
 	if err != nil {
 		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
 		return err
@@ -996,7 +1000,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", outputDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
 	if err != nil {
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err
@@ -1005,7 +1009,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	LogInfo(fmt.Sprintf("create dory namespace and pv pvc begin"))
 	cmdClearPv = fmt.Sprintf(`(kubectl delete namespace %s || true) && \
 		(kubectl delete pv %s-pv || true)`, installConfig.Dory.Namespace, installConfig.Dory.Namespace)
-	_, _, err = pkg.CommandExec(cmdClearPv, kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(cmdClearPv, outputDir)
 	if err != nil {
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err
@@ -1013,7 +1017,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	doryDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.Dory.Namespace)
 	_ = os.RemoveAll(doryDir)
 	_ = os.MkdirAll(doryDir, 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), outputDir)
 	if err != nil {
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err
@@ -1054,7 +1058,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step02StatefulsetName), []byte(strStep02Statefulset), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", outputDir, step02StatefulsetName), []byte(strStep02Statefulset), 0600)
 	if err != nil {
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
@@ -1070,7 +1074,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
 	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", kubernetesInstallDir, step03ServiceName), []byte(strStep03Service), 0600)
+	err = os.WriteFile(fmt.Sprintf("%s/%s", outputDir, step03ServiceName), []byte(strStep03Service), 0600)
 	if err != nil {
 		err = fmt.Errorf("create dory install yaml error: %s", err.Error())
 		return err
@@ -1120,12 +1124,12 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// deploy all dory services in kubernetes
 	LogInfo("deploy all dory services in kubernetes begin")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step02StatefulsetName), outputDir)
 	if err != nil {
 		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
 		return err
 	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), kubernetesInstallDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step03ServiceName), outputDir)
 	if err != nil {
 		err = fmt.Errorf("deploy all dory services in kubernetes error: %s", err.Error())
 		return err
@@ -1149,7 +1153,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	//////////////////////////////////////////////////
 
 	readmeKubernetesConfigName := "README-kubernetes-config.md"
-	err = o.DoryCreateConfigReadme(installConfig, kubernetesInstallDir, readmeKubernetesConfigName)
+	err = o.DoryCreateConfigReadme(installConfig, outputDir, readmeKubernetesConfigName)
 	if err != nil {
 		return err
 	}

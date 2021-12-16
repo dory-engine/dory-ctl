@@ -20,13 +20,13 @@ func NewCmdInstall() *cobra.Command {
   doryctl install pull
   
   # 3. print docker install mode config settings
-  doryctl install print --mode docker > dory-install-docker.yaml
+  doryctl install print --mode docker > install-config-docker.yaml
   
   # 4. update install config file by manual
-  vi dory-install-docker.yaml
+  vi install-config-docker.yaml
   
   # 5. install dory with docker
-  doryctl install run -f dory-install-docker.yaml
+  doryctl install run -f install-config-docker.yaml -o readme-docker
   
   ##############################
   # please follow these steps to install dory-core with kubernetes:
@@ -38,13 +38,13 @@ func NewCmdInstall() *cobra.Command {
   doryctl install pull
   
   # 3. print kubernetes install mode config settings
-  doryctl install print --mode kubernetes > dory-install-kubernetes.yaml
+  doryctl install print --mode kubernetes > install-config-kubernetes.yaml
   
   # 4. update install config file by manual
-  vi dory-install-kubernetes.yaml
+  vi install-config-kubernetes.yaml
   
   # 5. install dory with kubernetes
-  doryctl install run -f dory-install-kubernetes.yaml`)
+  doryctl install run -f install-config-kubernetes.yaml -o readme-kubernetes`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
