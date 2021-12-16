@@ -108,7 +108,7 @@ spec:
             - tail
             - -f
             - /dev/null
-          image: {{ $.imageRepo.domainName }}/public/alpine:3.15.0-dory
+          image: alpine:3.15.0
           imagePullPolicy: IfNotPresent
           name: project-data-alpine
           volumeMounts:

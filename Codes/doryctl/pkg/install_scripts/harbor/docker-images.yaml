@@ -5,10 +5,10 @@ dockerImages:
     target: public/alpine:3.14.3-dory
   - source: dorystack/alpine:3.15.0-dory
     target: public/alpine:3.15.0-dory
-  - source: golang:1.14.15
-    target: hub/golang:1.14.15
-  - source: golang:1.17.5
-    target: hub/golang:1.17.5
+  - source: dorystack/golang:1.14.15-alpine3.13-dory
+    target: public/golang:1.14.15-alpine3.13-dory
+  - source: dorystack/golang:1.17.3-alpine3.15-dory
+    target: public/golang:1.17.3-alpine3.15-dory
   - source: dorystack/gradle:6.7.0-jdk14-dory
     target: public/gradle:6.7.0-jdk14-dory
   - source: dorystack/gradle:7.3.0-jdk11-dory
