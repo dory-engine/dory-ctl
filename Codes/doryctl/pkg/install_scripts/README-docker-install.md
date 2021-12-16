@@ -56,10 +56,11 @@ curl -k -X POST -H 'accept: application/json' -d '{"project_name": "quay", "publ
 
 # push docker images to {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
-docker pull {{ $image.source }}
 docker tag {{ $image.source }} {{ $.imageRepo.domainName }}/{{ $image.target }}
-docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
+{{- end }}
 
+{{- range $_, $image := $.dockerImages }}
+docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
 {{- end }}
 ```
 
