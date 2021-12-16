@@ -6,40 +6,48 @@
 2. please follow `README-kubernetes-config.md` to config dory by manual after install
 3. if install fail, please follow `README-kubernetes-reset.md` to stop all dory services and install again
 
-## copy all scripts and config files to install root directory
+## create install root directories
 
 ```shell script
-copy all scripts and config files to install root directory
-mkdir -p {{ $.rootDir }}
-cp -rp * {{ $.rootDir }}
+# create {{ $.imageRepo.type }} root directory
+mkdir -p {{ $.rootDir }}/{{ $.imageRepo.namespace }}/database
+mkdir -p {{ $.rootDir }}/{{ $.imageRepo.namespace }}/jobservice
+mkdir -p {{ $.rootDir }}/{{ $.imageRepo.namespace }}/redis
+mkdir -p {{ $.rootDir }}/{{ $.imageRepo.namespace }}/registry
+chown -R 999:999 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/database
+chown -R 10000:10000 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/jobservice
+chown -R 999:999 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/redis
+chown -R 10000:10000 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/registry
+
+# create dory root directory
+mkdir -p {{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/dory-data
+mkdir -p {{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/tmp
+mkdir -p {{ $.rootDir }}/{{ $.imageRepo.namespace }}
+cp -rp {{ $.dory.namespace }}/{{ $.dory.docker.dockerName }} {{ $.rootDir }}/{{ $.dory.namespace }}/
+cp -rp {{ $.dory.namespace }}/dory-core {{ $.rootDir }}/{{ $.dory.namespace }}/
+chown -R 1000:1000 {{ $.rootDir }}/{{ $.dory.namespace }}/dory-core
+mkdir -p {{ $.rootDir }}/{{ $.dory.namespace }}/mongo-core-dory
+chown -R 999:999 {{ $.rootDir }}/{{ $.dory.namespace }}/mongo-core-dory
+
 ```
 
 ## install {{ $.imageRepo.type }} with kubernetes
 
 ```shell script
-# create {{ $.imageRepo.type }} certificates
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
-sh harbor_certs.sh
-ls -alh
+# create {{ $.imageRepo.type }} namespace and pv
+kubectl delete ns {{ $.imageRepo.namespace }}
+kubectl delete pv {{ $.imageRepo.namespace }}-pv
+kubectl apply -f {{ $.imageRepo.namespace }}/step01-namespace-pv.yaml
 
 # install {{ $.imageRepo.type }}
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
-chmod a+x common.sh install.sh prepare
-sh install.sh
-ls -alh
+helm install -n {{ $.imageRepo.namespace }} {{ $.imageRepo.namespace }} {{ $.imageRepo.type }}
 
-# stop and update {{ $.imageRepo.type }} kubernetes.yml
-sleep 5 && kubernetes stop && kubernetes rm -f
-export HARBOR_CONFIG_ROOT_PATH=$(echo "{{ $.rootDir }}/{{ $.imageRepo.namespace }}" | sed 's#\/#\\\/#g')
-sed -i "s/${HARBOR_CONFIG_ROOT_PATH}/./g" kubernetes.yml
-cat kubernetes.yml
+# waiting for all {{ $.imageRepo.type }} services ready
+kubectl -n {{ $.imageRepo.namespace }} get pods -o wide
 
-# restart {{ $.imageRepo.type }}
-kubernetes up -d
-sleep 10
-
-# check {{ $.imageRepo.type }} status
-kubernetes ps
+# get {{ $.imageRepo.type }} and copy to /etc/docker/certs.d
+sh {{ $.imageRepo.namespace }}/harbor_update_docker_certs.sh
+ls -alh /etc/docker/certs.d/{{ $.imageRepo.domainName }}
 
 # on current host and all kubernetes nodes add {{ $.imageRepo.type }} domain name in /etc/hosts
 vi /etc/hosts
@@ -66,36 +74,35 @@ docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
 ## install dory services with kubernetes
 
 ```shell script
+# create {{ $.dory.namespace }} namespace and pv
+kubectl delete ns {{ $.dory.namespace }}
+kubectl delete pv {{ $.dory.namespace }}-pv
+kubectl apply -f {{ $.dory.namespace }}/step01-namespace-pv.yaml
+
 # create docker certificates
-cd {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
-sh docker_certs.sh
-ls -alh
+sh {{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}/docker_certs.sh
+kubectl -n {{ $.dory.namespace }} create secret generic {{ $.dory.docker.dockerName }}-tls --from-file=certs/ca.crt --from-file=certs/tls.crt --from-file=certs/tls.key --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n {{ $.dory.namespace }} describe secret {{ $.dory.docker.dockerName }}-tls
+rm -rf certs
+
+# copy harbor certificates in docker directory
+cp -rp /etc/docker/certs.d/{{ $.imageRepo.domainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
+
 
 # create nexus init data, nexus init data is in a docker image
-cd {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init || true
 docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat
-docker cp nexus-data-init:/nexus-data/nexus .
+docker cp nexus-data-init:/nexus-data/nexus {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init
-chown -R 200:200 nexus
-ls -alh nexus
-
-# create dory services directory and chown
-cd {{ $.rootDir }}/{{ $.dory.namespace }}
-mkdir -p mongo-core-dory
-chown -R 999:999 mongo-core-dory
-mkdir -p dory-core/dory-data
-mkdir -p dory-core/tmp
-chown -R 1000:000 dory-core
+chown -R 200:200 {{ $.rootDir }}/{{ $.dory.namespace }}/nexus
+ls -alh {{ $.rootDir }}/{{ $.dory.namespace }}/nexus
 
 # start all dory services with kubernetes
-cd {{ $.rootDir }}/{{ $.dory.namespace }}
-ls -alh
-kubernetes stop && kubernetes rm -f && kubernetes up -d
+kubectl apply -f {{ $.dory.namespace }}/step02-statefulset.yaml
+kubectl apply -f {{ $.dory.namespace }}/step03-service.yaml
 
 # check dory services status
-sleep 10
-kubernetes ps
+kubectl -n {{ $.dory.namespace }} get sts,service,pods
 ```
 
 ## create project-data-alpine pod in kubernetes
@@ -103,7 +110,6 @@ kubernetes ps
 ```shell script
 # project-data-alpine pod is used for create project directory in kuberentes
 # create project-data-alpine pod in kubernetes
-cd {{ $.rootDir }}
 kubectl apply -f project-data-alpine.yaml
 kubectl -n {{ $.dory.namespace }} get pods
 ```

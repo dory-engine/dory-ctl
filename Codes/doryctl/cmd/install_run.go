@@ -929,7 +929,7 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	// install harbor in kubernetes
 	LogInfo(fmt.Sprintf("install harbor in kubernetes begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s harbor", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace), outputDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("helm install -n %s %s %s", installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Namespace, installConfig.ImageRepo.Type), outputDir)
 	if err != nil {
 		err = fmt.Errorf("install harbor in kubernetes error: %s", err.Error())
 		return err
