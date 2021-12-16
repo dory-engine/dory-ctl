@@ -12,6 +12,8 @@ helm -n {{ $.imageRepo.namespace }} uninstall {{ $.imageRepo.namespace }}
 
 ```shell script
 # cd to readme directory
+kubectl delete -f {{ $.dory.namespace }}
+kubectl delete -f {{ $.imageRepo.namespace }}
 kubectl delete -f .
 ```
 
