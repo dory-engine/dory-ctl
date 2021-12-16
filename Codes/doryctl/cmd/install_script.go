@@ -328,6 +328,18 @@ func (o *OptionsInstallScript) DoryCreateReadme(installConfig pkg.InstallConfig,
 		return err
 	}
 
+	// get pull docker images
+	dockerImages, err := o.HarborGetDockerImages()
+	if err != nil {
+		return err
+	}
+	bs, _ = yaml.Marshal(dockerImages)
+	m := map[string]interface{}{}
+	_ = yaml.Unmarshal(bs, &m)
+	for k, v := range m {
+		vals[k] = v
+	}
+
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
 	if err != nil {
 		err = fmt.Errorf("create %s error: %s", readmeName, err.Error())
@@ -358,20 +370,6 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
-
-	// get pull docker images
-	dockerImages, err := o.HarborGetDockerImages()
-	if err != nil {
-		return err
-	}
-	bs, _ = yaml.Marshal(dockerImages)
-	m := map[string]interface{}{}
-	_ = yaml.Unmarshal(bs, &m)
-	for k, v := range m {
-		vals[k] = v
-	}
-	bs, _ = yaml.Marshal(vals)
-	fmt.Println(string(bs))
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
@@ -525,20 +523,6 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
-
-	// get pull docker images
-	dockerImages, err := o.HarborGetDockerImages()
-	if err != nil {
-		return err
-	}
-	bs, _ = yaml.Marshal(dockerImages)
-	m := map[string]interface{}{}
-	_ = yaml.Unmarshal(bs, &m)
-	for k, v := range m {
-		vals[k] = v
-	}
-	bs, _ = yaml.Marshal(vals)
-	fmt.Println(string(bs))
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
