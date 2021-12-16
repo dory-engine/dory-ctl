@@ -573,6 +573,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 
 	// create harbor namespace and pv pvc
 	harborInstallDir := fmt.Sprintf("%s/%s", outputDir, installConfig.ImageRepo.Namespace)
+	_ = os.MkdirAll(harborInstallDir, 0700)
 	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
 	step01NamespacePvName := "step01-namespace-pv.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
