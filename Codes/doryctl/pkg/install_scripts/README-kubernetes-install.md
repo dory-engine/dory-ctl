@@ -18,6 +18,7 @@ chown -R 999:999 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/database
 chown -R 10000:10000 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/jobservice
 chown -R 999:999 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/redis
 chown -R 10000:10000 {{ $.rootDir }}/{{ $.imageRepo.namespace }}/registry
+ls -alh {{ $.rootDir }}/{{ $.imageRepo.namespace }}
 
 # create dory root directory
 mkdir -p {{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/dory-data
@@ -28,6 +29,7 @@ cp -rp {{ $.dory.namespace }}/dory-core {{ $.rootDir }}/{{ $.dory.namespace }}/
 chown -R 1000:1000 {{ $.rootDir }}/{{ $.dory.namespace }}/dory-core
 mkdir -p {{ $.rootDir }}/{{ $.dory.namespace }}/mongo-core-dory
 chown -R 999:999 {{ $.rootDir }}/{{ $.dory.namespace }}/mongo-core-dory
+ls -alh {{ $.rootDir }}/{{ $.dory.namespace }}
 
 ```
 
@@ -41,6 +43,7 @@ kubectl apply -f {{ $.imageRepo.namespace }}/step01-namespace-pv.yaml
 
 # install {{ $.imageRepo.type }}
 helm install -n {{ $.imageRepo.namespace }} {{ $.imageRepo.namespace }} {{ $.imageRepo.type }}
+helm -n {{ $.imageRepo.namespace }} list
 
 # waiting for all {{ $.imageRepo.type }} services ready
 kubectl -n {{ $.imageRepo.namespace }} get pods -o wide
@@ -57,10 +60,10 @@ vi /etc/hosts
 docker login --username admin --password {{ $.imageRepo.password }} {{ $.imageRepo.domainName }}
 
 # create public, hub, gcr, quay projects in {{ $.imageRepo.type }}
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
 
 # push docker images to {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
@@ -103,7 +106,7 @@ kubectl apply -f {{ $.dory.namespace }}/step02-statefulset.yaml
 kubectl apply -f {{ $.dory.namespace }}/step03-service.yaml
 
 # check dory services status
-kubectl -n {{ $.dory.namespace }} get sts,service,pods
+kubectl -n {{ $.dory.namespace }} get pods -o wide
 ```
 
 ## create project-data-alpine pod in kubernetes

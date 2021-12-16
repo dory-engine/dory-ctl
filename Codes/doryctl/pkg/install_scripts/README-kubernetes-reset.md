@@ -11,7 +11,7 @@ helm -n {{ $.imageRepo.namespace }} uninstall {{ $.imageRepo.namespace }}
 ### stop and remove dory services
 
 ```shell script
-cd dory-install-kubernetes
+# cd to readme directory
 kubectl delete -f .
 ```
 
