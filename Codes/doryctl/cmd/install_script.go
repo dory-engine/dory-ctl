@@ -370,6 +370,8 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	for k, v := range m {
 		vals[k] = v
 	}
+	bs, _ = yaml.Marshal(vals)
+	fmt.Println(string(bs))
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
@@ -535,6 +537,8 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	for k, v := range m {
 		vals[k] = v
 	}
+	bs, _ = yaml.Marshal(vals)
+	fmt.Println(string(bs))
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
