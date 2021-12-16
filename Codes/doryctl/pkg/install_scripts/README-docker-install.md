@@ -9,7 +9,7 @@
 ## copy all scripts and config files to install root directory
 
 ```shell script
-copy all scripts and config files to install root directory
+# copy all scripts and config files to install root directory
 mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
