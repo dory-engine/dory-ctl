@@ -8,8 +8,8 @@
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 
 {{- if eq $.dory.gitRepo.type "gitea" }}
-- 1. open gitea url finish gitea install, set admin username / password / email
-- 2. login to gitea, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/user/settings/applications`, generate new token.
+- 1. open gitea url finish gitea install, at `Administrator Account Settings ` set admin username / password / email
+- 2. login to gitea, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/user/settings/applications`, at `Generate New Token` generate a new token.
 {{- else if eq $.dory.gitRepo.type "gitlab" }}
 - 1. gitlab password file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}/config/initial_root_password`
 - 2. login to gitlab, open `{{ $.viewURL }}:{{ $.dory.gitRepo.port }}/-/profile/personal_access_tokens`, add a personal access token.
