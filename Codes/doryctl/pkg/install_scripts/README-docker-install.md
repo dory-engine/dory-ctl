@@ -55,6 +55,7 @@ curl -k -X POST -H 'accept: application/json' -d '{"project_name": "gcr", "publi
 curl -k -X POST -H 'accept: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
 
 # push docker images to {{ $.imageRepo.type }}
+{{ $.dockerImages }}
 {{- range $_, $image := $.dockerImages }}
 docker pull {{ $image.source }}
 docker tag {{ $image.source }} {{ $.imageRepo.domainName }}/{{ $image.target }}
