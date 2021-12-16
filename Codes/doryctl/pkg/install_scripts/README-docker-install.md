@@ -49,10 +49,10 @@ vi /etc/hosts
 docker login --username admin --password {{ $.imageRepo.password }} {{ $.imageRepo.domainName }}
 
 # create public, hub, gcr, quay projects in {{ $.imageRepo.type }}
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'accept: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
 
 # push docker images to {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
@@ -87,7 +87,8 @@ mkdir -p mongo-core-dory
 chown -R 999:999 mongo-core-dory
 mkdir -p dory-core/dory-data
 mkdir -p dory-core/tmp
-chown -R 1000:000 dory-core
+chown -R 1000:1000 dory-core
+ls -alh
 
 # start all dory services with docker-compose
 cd {{ $.rootDir }}/{{ $.dory.namespace }}
@@ -108,3 +109,7 @@ cd {{ $.rootDir }}
 kubectl apply -f project-data-alpine.yaml
 kubectl -n {{ $.dory.namespace }} get pods
 ```
+
+## dory not config yet
+
+2. please follow `README-docker-config.md` to config dory by manual after install

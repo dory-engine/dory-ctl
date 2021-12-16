@@ -114,3 +114,7 @@ kubectl -n {{ $.dory.namespace }} get sts,service,pods
 kubectl apply -f project-data-alpine.yaml
 kubectl -n {{ $.dory.namespace }} get pods
 ```
+
+## dory not config yet
+
+2. please follow `README-kubernetes-config.md` to config dory by manual after install
