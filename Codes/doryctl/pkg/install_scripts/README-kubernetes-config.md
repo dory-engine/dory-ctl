@@ -2,7 +2,7 @@
 
 ## dory-core settings after installed
 
-### finish {{ $.dory.gitRepo.type }} install
+### finish {{ $.dory.gitRepo.type }} install and update dory config.yaml
 
 - url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
@@ -25,6 +25,20 @@
     - gitRepoConfigs.password
     - gitRepoConfigs.token
     
+### update {{ $.dory.artifactRepo.type }} admin password and update dory config.yaml
+
+- url: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
+- user: admin / Nexus_Pwd_321 (admin user)
+- data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.artifactRepo.type }}`
+
+- 1. open {{ $.dory.artifactRepo.type }} url, login as admin user
+- 2. change admin passwordm, open `{{ $.viewURL }}:{{ $.dory.artifactRepo.port }}/#user/account` and change password
+- 3. update dory-core config file:
+  - config file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/config/config.yaml`
+  - search `Nexus_Pwd_321` in config file
+  - update following admin user password: 
+    - artifactRepoConfigs.password
+ 
 ### set all kubernetes nodes to connect {{ $.imageRepo.type }}
 
 - 1. add following {{ $.imageRepo.type }} domain name in /etc/hosts record for all kubernetes nodes  
@@ -65,7 +79,6 @@ kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
 ### {{ $.dory.artifactRepo.type }}
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
-- user: admin / Nexus_Pwd_321 (admin user)
 - user: public-user / public-user (public user)
 
 ### {{ $.imageRepo.type }}
@@ -73,7 +86,3 @@ kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
 - url: https://{{ $.imageRepo.domainName }}
 - user: admin / {{ $.imageRepo.password }} (admin user)
 - data located at: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
-
-## about dory install files
-
-- all dory kubernetes install files located at: `dory-install-kubernetes`
