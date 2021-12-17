@@ -12,9 +12,11 @@ helm -n {{ $.imageRepo.namespace }} uninstall {{ $.imageRepo.namespace }}
 
 ```shell script
 # cd to readme directory
-kubectl delete -f {{ $.dory.namespace }}
-kubectl delete -f {{ $.imageRepo.namespace }}
-kubectl delete -f .
+kubectl delete namespace {{ $.dory.namespace }}
+kubectl delete namespace {{ $.imageRepo.namespace }}
+kubectl delete pv {{ $.dory.namespace }}-pv
+kubectl delete pv {{ $.imageRepo.namespace }}-pv
+kubectl delete pv project-data-pv
 ```
 
 ## about dory services data
