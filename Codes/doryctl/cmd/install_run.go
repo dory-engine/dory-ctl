@@ -532,7 +532,8 @@ func (o *OptionsInstallRun) DoryCreateConfigReadme(installConfig pkg.InstallConf
 	LogWarning(fmt.Sprintf("####################################################"))
 	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO FINISH DORY INSTALL"))
 	LogWarning(fmt.Sprintf("README located at: %s/%s", readmeInstallDir, readmeName))
-	LogWarning(fmt.Sprintf("\n\n%s", strDoryInstallSettings))
+	LogWarning(fmt.Sprintf("####################################################"))
+	LogWarning(fmt.Sprintf("\n%s", strDoryInstallSettings))
 
 	return err
 }
@@ -567,7 +568,8 @@ func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfi
 	LogWarning(fmt.Sprintf("####################################################"))
 	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO REMOVE DORY INSTALL"))
 	LogWarning(fmt.Sprintf("README.md located at: %s/%s", readmeResetDir, readmeName))
-	LogWarning(fmt.Sprintf("\n\n%s", strDoryResetSettings))
+	LogWarning(fmt.Sprintf("####################################################"))
+	LogWarning(fmt.Sprintf("\n%s", strDoryResetSettings))
 
 	return err
 }
