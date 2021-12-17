@@ -365,11 +365,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: go-1.17
-          image: "hub/golang:1.17.5"
+          image: "public/golang:1.17.3-alpine3.15-dory"
         - buildEnvName: go-1.14
-          image: "hub/golang:1.14.15"
+          image: "public/golang:1.14.15-alpine3.13-dory"
         - buildEnvName: go
-          image: "hub/golang:1.17.5"
+          image: "public/golang:1.17.3-alpine3.15-dory"
       # 构建环境的类型
     - name: python
       # 是否把caches目录装载到容器的$HOME目录
