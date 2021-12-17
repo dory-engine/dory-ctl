@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/dorystack/doryctl/pkg"
+	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )

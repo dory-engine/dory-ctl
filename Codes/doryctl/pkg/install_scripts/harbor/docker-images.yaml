@@ -1,33 +1,33 @@
 dockerImages:
   - source: busybox:latest
     target: public/busybox:latest
-  - source: dorystack/alpine:3.14.3-dory
+  - source: doryengine/alpine:3.14.3-dory
     target: public/alpine:3.14.3-dory
-  - source: dorystack/alpine:3.15.0-dory
+  - source: doryengine/alpine:3.15.0-dory
     target: public/alpine:3.15.0-dory
-  - source: dorystack/golang:1.14.15-alpine3.13-dory
+  - source: doryengine/golang:1.14.15-alpine3.13-dory
     target: public/golang:1.14.15-alpine3.13-dory
-  - source: dorystack/golang:1.17.3-alpine3.15-dory
+  - source: doryengine/golang:1.17.3-alpine3.15-dory
     target: public/golang:1.17.3-alpine3.15-dory
-  - source: dorystack/gradle:6.7.0-jdk14-dory
+  - source: doryengine/gradle:6.7.0-jdk14-dory
     target: public/gradle:6.7.0-jdk14-dory
-  - source: dorystack/gradle:7.3.0-jdk11-dory
+  - source: doryengine/gradle:7.3.0-jdk11-dory
     target: public/gradle:7.3.0-jdk11-dory
-  - source: dorystack/gradle:7.3.0-jdk17-dory
+  - source: doryengine/gradle:7.3.0-jdk17-dory
     target: public/gradle:7.3.0-jdk17-dory
-  - source: dorystack/gradle:7.3.0-jdk8-dory
+  - source: doryengine/gradle:7.3.0-jdk8-dory
     target: public/gradle:7.3.0-jdk8-dory
-  - source: dorystack/maven:3.6.3-jdk-14-dory
+  - source: doryengine/maven:3.6.3-jdk-14-dory
     target: public/maven:3.6.3-jdk-14-dory
-  - source: dorystack/maven:3.8.3-openjdk-17-dory
+  - source: doryengine/maven:3.8.3-openjdk-17-dory
     target: public/maven:3.8.3-openjdk-17-dory
-  - source: dorystack/maven:3.8.4-jdk-11-dory
+  - source: doryengine/maven:3.8.4-jdk-11-dory
     target: public/maven:3.8.4-jdk-11-dory
-  - source: dorystack/maven:3.8.4-jdk-8-dory
+  - source: doryengine/maven:3.8.4-jdk-8-dory
     target: public/maven:3.8.4-jdk-8-dory
-  - source: dorystack/python:3.10.0-alpine3.15-dory
+  - source: doryengine/python:3.10.0-alpine3.15-dory
     target: public/python:3.10.0-alpine3.15-dory
-  - source: dorystack/python:3.9.9-alpine3.15-dory
+  - source: doryengine/python:3.9.9-alpine3.15-dory
     target: public/python:3.9.9-alpine3.15-dory
   - source: node:13.14-alpine3.11
     target: hub/node:13.14-alpine3.11

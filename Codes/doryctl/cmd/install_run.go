@@ -3,7 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/dorystack/doryctl/pkg"
+	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -368,7 +368,7 @@ func (o *OptionsInstallRun) DoryCreateDirs(installConfig pkg.InstallConfig) erro
 
 	// get nexus init data
 	LogInfo(fmt.Sprintf("get nexus init data begin"))
-	_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat"), doryDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("(docker rm -f nexus-data-init || true) && docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.0 cat"), doryDir)
 	if err != nil {
 		err = fmt.Errorf("get nexus init data error: %s", err.Error())
 		return err

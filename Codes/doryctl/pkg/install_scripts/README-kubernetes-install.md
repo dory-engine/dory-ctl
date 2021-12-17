@@ -95,7 +95,7 @@ cp -rp /etc/docker/certs.d/{{ $.imageRepo.domainName }} {{ $.rootDir }}/{{ $.dor
 
 # create nexus init data, nexus init data is in a docker image
 docker rm -f nexus-data-init || true
-docker run -d -t --name nexus-data-init dorystack/nexus-data-init:alpine-3.15.0 cat
+docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.0 cat
 docker cp nexus-data-init:/nexus-data/nexus {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init
 chown -R 200:200 {{ $.rootDir }}/{{ $.dory.namespace }}/nexus

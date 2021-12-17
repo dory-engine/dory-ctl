@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dorystack/doryctl/cmd"
+	"github.com/dory-engine/dory-ctl/cmd"
 	"github.com/spf13/cobra"
 )
 

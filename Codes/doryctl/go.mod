@@ -1,4 +1,4 @@
-module github.com/dorystack/doryctl
+module github.com/dory-engine/dory-ctl
 
 go 1.16
 
