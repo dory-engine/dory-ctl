@@ -1,7 +1,7 @@
 # 执行编译
 cd /root/devops-dory-ctl/Codes/doryctl
 git pull
-date && time go build
+date && time go build -o doryctl
 ls -alh
 
 # # 复制所有到new1-dory
