@@ -126,7 +126,7 @@ kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o 
 	LogWarning(fmt.Sprintf("PLEASE FOLLOW THE INSTRUCTION TO CREATE KUBERNETES TOKEN"))
 	LogWarning(fmt.Sprintf("KUBERNETES TOKEN WILL USE FOR DORY INSTALLATION"))
 	LogWarning(fmt.Sprintf("########################################################"))
-	LogWarning(createK8sTokenCmd)
+	LogWarning(fmt.Sprintf("\n%s", createK8sTokenCmd))
 
 	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/README-kubernetes-check.md", pkg.DirInstallScripts))
 	if err != nil {
@@ -137,7 +137,7 @@ kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o 
 	LogWarning(fmt.Sprintf("########################################################"))
 	LogWarning(fmt.Sprintf("KUBERNETES PREREQUISITE INSTALLATION INFO"))
 	LogWarning(fmt.Sprintf("########################################################"))
-	LogWarning(strReadme)
+	LogWarning(fmt.Sprintf("\n%s", strReadme))
 
 	return err
 }
