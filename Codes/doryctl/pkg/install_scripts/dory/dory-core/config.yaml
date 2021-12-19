@@ -215,7 +215,7 @@ artifactRepoConfigs:
     # 制品仓库管理员账号
     username: admin
     # 制品仓库管理员密码
-    password: Nexus_Pwd_321
+    password: "Nexus_Pwd_321"
     # 制品仓库public role名称
     publicRole: public-role
     # 制品仓库拉取dockerhub的主机地址端口，kubernetes环境拉取镜像的时候访问该仓库的地址（建议使用外部ip+端口）
