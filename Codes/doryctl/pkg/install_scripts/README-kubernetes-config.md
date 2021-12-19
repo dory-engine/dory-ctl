@@ -60,6 +60,9 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 
 ```shell script
 kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
+
+# waiting for dory-core-0 dory-dashboard-0 ready
+kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 ```
 
 ## connect your dory
