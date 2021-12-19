@@ -11,7 +11,7 @@ token: {{ $.kubernetes.token | quote }}
 # 用于在集群中创建项目的数据目录的pod配置
 projectDataPod:
   # pod所在名字空间
-  namespace: dory
+  namespace: {{ $.dory.namespace }}
   # pod
   pod: project-data-alpine-0
   # pod中项目共享目录的路径
