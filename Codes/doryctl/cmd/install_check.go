@@ -128,7 +128,7 @@ kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o 
 	LogWarning(fmt.Sprintf("########################################################"))
 	LogWarning(fmt.Sprintf("\n%s", createK8sTokenCmd))
 
-	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/README-kubernetes-check.md", pkg.DirInstallScripts))
+	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/README-check.md", pkg.DirInstallScripts))
 	if err != nil {
 		err = fmt.Errorf("get readme error: %s", err.Error())
 		return err
