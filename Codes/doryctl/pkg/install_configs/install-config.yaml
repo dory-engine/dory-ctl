@@ -32,6 +32,7 @@ dory:
   namespace: "dory"
   {{- if eq $.mode "kubernetes" }}
   # 设置dory组件部署在哪些节点上，对应kubernetes的nodeSelector
+  # 例如: "type: master"
   nodeSelector: {}
   {{- end }}
   # 代码仓库设置
