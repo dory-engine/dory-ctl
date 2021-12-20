@@ -145,7 +145,7 @@ dorycore:
     # smtp enable SSL
     ssl: false
     # smtp sender display name
-    from: "DORY-管理员 <13812341234@139.com>"
+    from: "DORY-ADMIN <13812341234@139.com>"
 # kubernetes environment settings, which project applications will deploy in
 kubernetes:
   # kubernetes api server ip address
