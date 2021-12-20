@@ -1,4 +1,4 @@
-# config dory after install in docker
+# config dory after install in kubernetes
 
 ## dory-core settings after installed
 
@@ -32,7 +32,7 @@
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.artifactRepo.type }}`
 
 - 1. open {{ $.dory.artifactRepo.type }} url, login as admin user
-- 2. change admin passwordm, open `{{ $.viewURL }}:{{ $.dory.artifactRepo.port }}/#user/account` and change password
+- 2. change admin password, open `{{ $.viewURL }}:{{ $.dory.artifactRepo.port }}/#user/account` and change password
 - 3. update dory-core config file:
   - config file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/config/config.yaml`
   - search `Nexus_Pwd_321` in config file
@@ -59,8 +59,10 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 - 1. restart dory-core and dory-dashboard
 
 ```shell script
-cd {{ $.rootDir }}/{{ $.dory.namespace }}
-docker rm -f dory-core && docker-compose up -d
+kubectl -n {{ $.dory.namespace }} delete pods dory-core-0 dory-dashboard-0
+
+# waiting for dory-core-0 dory-dashboard-0 ready
+kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 ```
 
 ## connect your dory

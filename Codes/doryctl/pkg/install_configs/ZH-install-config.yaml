@@ -59,7 +59,7 @@ dory:
     portGcr: 30005
     # quay镜像代理暴露的服务端口
     portQuay: 30006
-  # openldap账号中心设置
+  # openldap账号中心设置，dory-core使用openldap存储用户账号
   openldap:
     # 镜像名
     image: osixia/openldap:develop-dev
@@ -89,7 +89,7 @@ dory:
   docker:
     # 镜像名
     image: docker:20.10.11-dind
-    # docker executor在docker-compose中部署的服务名
+    # docker executor在docker-compose或者kubernetes中部署的服务名
     dockerName: docker
     # 启动多少个docker executor实例
     dockerNumber: 2
@@ -145,23 +145,23 @@ dorycore:
     ssl: false
     # 邮件发送人名字
     from: "DORY-管理员 <13812341234@139.com>"
-# kubernetes环境配置
+# kubernetes环境配置，项目应用会部署在该环境
 kubernetes:
   # kubernetes环境的 apiserver 地址
   host: "10.1.0.2"
   # kubernetes环境的 apiserver 端口
   port: 6443
-  # kubernetes环境的 apiserver token
+  # kubernetes环境的 apiserver 管理权限token
   token: "xxx"
 
   # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:
-  #   # 本地存储路径
+  #   # 本地存储路径（绝对路径）
   #   localPath: "/data/k8s-vols"
 
   # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
   pvConfigNfs:
-    # nfs存储路径
+    # nfs存储路径（绝对路径）
     nfsPath: "/data/nfs-vols/tmp"
     # nfs服务器地址
     nfsServer: "10.2.0.10"

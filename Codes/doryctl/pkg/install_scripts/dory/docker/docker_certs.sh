@@ -1,6 +1,4 @@
-# 设置docker的服务名
 export DORY_DOCKER_NAME={{ $.dory.docker.dockerName }}
-# 设置docker所在的名字空间
 export DORY_DOCKER_NAMESPACE={{ $.dory.namespace }}
 
 sudo rm -rf certs/

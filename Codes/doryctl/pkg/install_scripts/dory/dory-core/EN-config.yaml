@@ -1,162 +1,167 @@
 app:
-  # 应用run数据存储的根目录
+  # dory data directory (relative path)
   workDir: dory-data
-  # docker容器中workDir所在的父目录
+  # dory run in which docker's directory (absolute path)
   dockerParentWorkDir: /dory-core
-  # 项目定义的版本库存放目录
+  # project definition version control files directory (relative path)
   defDir: dory-data/project-defs
-  # 应用的构建缓存相对路径，相对于dory-core程序的位置
+  # project build caches directory (relative path)
   cacheDir: dory-data/caches
-  # 应用使用什么uid运行
+  # system UID dory run with
   userID: 1000
-  # 应用的restful服务端口
+  # restful api service port
   apiPort: 9000
-  # gitlab webhook call back服务名，kubernetes中dory-core的服务名
+  # dory service name
   serviceName: dory-core
-  # 应用的log level，可选: error warning info debug
+  # log output level, options: error, warning, info, debug
   logLevel: debug
-  # 是否允许跨域
+  # CORS(Cross-Origin Resource Sharing) enable
   cors: true
-  # jwt配置
+  # jwt settings
   jwt:
-    # jwt签名
+    # jwt sign
     sign: {{ randAlphaNum 64 | quote }}
-    # jwt有效期，单位(秒)
+    # jwt expire seconds
     expireSeconds: 3600
-    # jwt刷新时间，必须小于jwt有效期，单位(秒)
-    # jwt最短有效期为 expireSeconds - refreshSeconds
+    # jwt refresh seconds, must less than expireSeconds
+    # jwt token minimum validity period equal: expireSeconds - refreshSeconds
     refreshSeconds: 60
-  # 用户密码长度要求
+  # user password minimum length
   passwordLength: 8
-  # 忘记密码有效期，单位(小时)
+  # forget password reset token validity period hours
   resetTokenExpireHours: 24
-  # 管理用户名，初始化的管理员用户名
-  # 如果不存在自动创建账号，密码位于workDir目录的admin.password
-  # 如果存在自动设置管理员权限
+  # initial admin user settings
+  # if user not exists in openldap, it will create automatically
+  # if user exists in openldap, set user to be admin
   adminUser:
-    # 账号名称，格式例如: dory-admin
+    # admin user name, format like: dory-admin
     username: {{ $.dorycore.adminUser.username }}
-    # 显示名字，格式例如: DORY-管理员
+    # admin user display name, format like: DORY-ADMIN
     name: {{ $.dorycore.adminUser.name }}
-    # 邮箱
+    # admin user mail
     mail: {{ $.dorycore.adminUser.mail }}
-    # 手机号码
+    # admin user mobile phone number
     mobile: {{ $.dorycore.adminUser.mobile }}
-  # 项目的nodePort可用端口段
+  # which node port range project applications can use
   nodePortRange:
+    # node port range start
     nodePortRangeStart: 30100
+    # node port range end
     nodePortRangeEnd: 32750
-  # 流水线处于运行状态的周期监控设置，单位(秒)
+  # pipeline running status watcher settings (seconds)
   runningWatcherInterval:
-    # 监控时间间隔
+    # watcher check interval (seconds)
     watcherInterval: 1
-    # 超过多长时间没有更新running状态表示流水线失败，runningExpireInterval必须大于watcherInterval
+    # running status expire interval, must greater than watcherInterval (seconds)
     runningExpireInterval: 2
-  # 上传附件的最大尺寸，单位(M)
+  # attachment maximum size (M)
   attachmentMaxSize: 4
-  # 每间隔多长时间进行一次crontab计划任务检查，单位(秒)
+  # crontab pipeline job check interval (seconds)
   crontabCheckInterval: 5
-  # 流水线执行完是否删除流水线工作空间目录
+  # clear work space after pipeline run finish
   clearWorkspace: true
-  # 测试报告存放目录
+  # test report directory (relative path)
   testReportDir: dory-data/testReport
-  # 测试报告查看URI
+  # test report view path
   testReportUri: /assets/testReport
-  # 默认头像目录URI
+  # default avatar view path
   avatarDefaultUri: /avatar/default
-  # 默认头像完整路径URI
+  # default avatar full view path
   avatarDefaultUriFull: /avatar/default/avatar.png
-  # 用户头像存放目录
+  # user avatar directory (relative path)
   avatarDir: dory-data/avatar
-  # 用户头像URI
+  # user avatar view path
   avatarUri: /avatar/user
-  # 用户头像的URL前缀
+  # user avatar url prefix
   avatarUrlPrefix: ""
-  # 接口请求超时设置，单位(秒)
+  # request timeout seconds
   requestTimeoutSeconds: 5
-  # deployment检查时间间隔，单位秒
+  # deploy check interval (seconds)
   deployCheckInterval: 5
-  # deployment检查次数
+  # deploy check maximum times
   deployCheckCountLimit: 30
-  # 默认环境名，添加环境的时候使用默认环境的配置参数添加环境
+  # default kubernetes environment name
   defaultEnvName: test
+# smtp send mail settings
 mail:
-  # smtp服务器地址
+  # smtp server host
   host: {{ $.dorycore.mail.host | quote }}
-  # smtp端口
+  # smtp port
   port: {{ $.dorycore.mail.port }}
-  # smtp账号
+  # smtp user account
   username: {{ $.dorycore.mail.username | quote }}
-  # smtp密码
+  # smtp password
   password: {{ $.dorycore.mail.password | quote }}
-  # smtp是否启用ssl
+  # smtp enable SSL
   ssl: {{ $.dorycore.mail.ssl }}
-  # 邮件发送人名字
+  # smtp sender display name
   from: {{ $.dorycore.mail.from | quote }}
-  # 邮件超时设置，单位秒
+  # smtp mail sender timeout settings (seconds)
   timeoutSeconds: 15
-  # 邮件中打开的服务器地址
+  # reset password view url in mail
   url: {{ $.viewURL }}:{{ $.dory.dorycore.port }}/resetPwd
+# redis cache settings
 redis:
-  # redis主机
+  # redis host
   host: redis-core-dory
-  # redis端口
+  # redis port
   port: 6379
-  # redis密码
+  # redis password
   password: {{ $.dory.redis.password | quote }}
+# mongodb settings
 mongodb:
-  # mongo主机
+  # mongo host
   host: mongo-core-dory
-  # mongo端口
+  # mongo port
   port: 27017
-  # mongo用户名
+  # mongo user name
   username: root
-  # mongo密码
+  # mongo password
   password: {{ $.dory.mongo.password | quote }}
-  # mongo数据库名称
+  # mongo database name
   database: dorydb
-# docker executor 配置
+# docker executor settings
 docker:
   {{- if eq $.installMode "kubernetes" }}
-  # docker executor 部署在kubernetes中请设置（选填）
+  # if docker executors self signed certificates in kubernetes secret, these settings required
   kubernetes:
-    # kubernetes环境的 apiserver 地址
+    # kubernetes api server ip address
     host: {{ $.kubernetes.host | quote }}
-    # kubernetes环境的 apiserver 端口
+    # kubernetes api server port
     port: {{ $.kubernetes.port }}
-    # kubernetes环境的 apiserver token
+    # kubernetes api server admin token
     token: {{ $.kubernetes.token | quote }}
-    # docker executor 证书存放的secret
+    # docker executors self signed certificates store in which kubernetes secret
     secretTls: "{{ $.dory.docker.dockerName }}-tls"
-    # docker executor 所在的名字空间
+    # docker executors self signed certificates secret in which kubernetes namespace
     namespace: {{ $.dory.namespace | quote }}
   {{- else if eq $.installMode "docker" }}
-  # docker executor 部署在docker中请设置（选填）
+  # if docker executors self signed certificates store in directory, these settings required
   localCert:
-    # ca cert存放的路径
+    # ca cert path in docker executor (absolute path)
     caCrtPath: "/certs/ca.crt"
-    # tls cert存放的路径
+    # tls cert path in docker executor (absolute path)
     tlsCrtPath: "/certs/tls.crt"
-    # tls key存放的路径
+    # tls key path in docker executor (absolute path)
     tlsKeyPath: "/certs/tls.key"
-  # docker executor 的数量，docker executor 部署在docker中请设置（选填）
+  # docker executors number, if docker executors run in docker required
   dockerNumber: {{ $.dory.docker.dockerNumber }}
   {{- end }}
-  # docker executor 的服务名，访问docker executor的方式为 xxx-0.xxx，例如docker-0.docker
+  # docker executor service name
   docker: {{ $.dory.docker.dockerName | quote }}
-  # docker executor 的端口
+  # docker executor port
   dockerPort: 2376
-# ldap账号中心配置
+# ldap account center settings
 ldap:
-  # LDAP基础域配置
+  # LDAP base DN setting
   baseDN: {{ $.dory.openldap.baseDN | quote}}
-  # LDAP服务器访问地址配置
+  # LDAP server connect url
   server: "ldap://openldap:389"
-  # LDAP管理员账号全称
+  # LDAP admin user
   adminCN: "cn=admin,{{ $.dory.openldap.baseDN }}"
-  # LDAP管理员账号密码
+  # LDAP admin password
   password: {{ $.dory.openldap.password | quote}}
-# 代码仓库配置，支持gitlab和gitea
+# git repository settings, support gitlab and gitea
 gitRepoConfigs:
   # 代码仓库类型，选项: gitlab, gitea
   - kind: {{ $.dory.gitRepo.type }}
@@ -328,18 +333,11 @@ buildDockerEnvs:
           image: "public/maven:3.8.4-jdk-8-dory"
         - buildEnvName: maven
           image: "public/maven:3.8.3-openjdk-17-dory"
-      # 构建环境的类型
     - name: npm
-      # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: false
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: []
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: ["rm -rf node_modules"]
       buildEnvs:
         - buildEnvName: npm-node17
@@ -350,9 +348,7 @@ buildDockerEnvs:
           image: "hub/node:13.14-alpine3.11"
         - buildEnvName: npm
           image: "hub/node:17.0.1-alpine3.14"
-      # 构建环境的类型
     - name: go
-      # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: false
       # 是否启用外部代理服务器拉取依赖
       enableProxy: false
@@ -372,16 +368,10 @@ buildDockerEnvs:
           image: "public/golang:1.17.3-alpine3.15-dory"
       # 构建环境的类型
     - name: python
-      # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: false
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: []
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: python-3.10
@@ -390,18 +380,11 @@ buildDockerEnvs:
           image: "public/python:3.9.9-alpine3.15-dory"
         - buildEnvName: python
           image: "public/python:3.10.0-alpine3.15-dory"
-      # 构建环境的类型
     - name: gradle
-      # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: true
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: []
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: gradle-jdk17
@@ -414,18 +397,11 @@ buildDockerEnvs:
           image: "public/gradle:7.3.0-jdk8-dory"
         - buildEnvName: gradle
           image: "public/gradle:7.3.0-jdk17-dory"
-      # 构建环境的类型
     - name: alpine
-      # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: false
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: []
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: alpine-3.15

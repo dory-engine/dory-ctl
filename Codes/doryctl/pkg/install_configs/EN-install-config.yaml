@@ -1,0 +1,182 @@
+# installation mode, options: docker, kubernetes
+# docker mode: install dory service with docker-compose
+# kubernetes mode: install dory service in kubernetes cluster
+{{- if eq $.mode "docker" }}
+installMode: docker
+{{- else if eq $.mode "kubernetes" }}
+installMode: kubernetes
+{{- end }}
+# all dory components data will write in the root directory (use absolute path)
+# if install mode is docker: use this host local path
+# if install mode is kubernetes: if kubernetes cluster with multiple nodes, please use shared storage (nfs or cephfs), make sure shared storage is mounted in this host path
+{{- if eq $.mode "docker" }}
+rootDir: "/data/tmp"
+{{- else if eq $.mode "kubernetes" }}
+rootDir: "/mnt/nfs/tmp"
+{{- end }}
+# this host ip address, dory use this ip address to connect container image repository and build dependency repository
+# if install mode is docker: please use this host ip address, don't use loopback ip address like 127.0.0.1
+# if install mode is kubernetes: please use the kubernetes master node ip address (in single master way) or load balancer ip address / virtual ip address (in multiple masters way)
+{{- if eq $.mode "docker" }}
+hostIP: "10.2.0.10"
+{{- else if eq $.mode "kubernetes" }}
+hostIP: "10.1.0.2"
+{{- end }}
+# all dory services view url, please don't include port
+# use kubernetes node port or docker expose port to access dory services
+viewURL: http://new2.imdory.com
+# dory services deployment settings
+dory:
+  # which namespace will dory service deploy in
+  # if install mode is docker: it means which subdirectory dory's data store in
+  # if install mode is kubernetes: it means which namespace dory service will deploy in
+  namespace: "dory"
+  {{- if eq $.mode "kubernetes" }}
+  # set which nodes will dory services deploy in, corresponding to kubernetes' nodeSelector settings
+  # example: "type: master"
+  nodeSelector: {}
+  {{- end }}
+  # git repository settings
+  gitRepo:
+    # git repository type, options: gitea, gitlab
+    type: gitea
+    # git repository image name
+    image: gitea/gitea:1.15.6
+    # git repository database image name, if type is gitea this setting required
+    imageDB: mysql:8.0.20
+    # expose service port (kubernetes node port)
+    port: 30001
+  # artifact and dependency repository settings
+  artifactRepo:
+    # artifact and dependency repository type, options: nexus
+    type: nexus
+    # artifact and dependency repository image name
+    image: sonatype/nexus3:3.37.0
+    # artifact and dependency repository expose service port (kubernetes node port)
+    port: 30003
+    # docker.io image proxy expose service port (kubernetes node port)
+    portHub: 30004
+    # gcr.io image proxy expose service port (kubernetes node port)
+    portGcr: 30005
+    # quay.io image proxy expose service port (kubernetes node port)
+    portQuay: 30006
+  # openldap account center settings, dory-core use openldap to store user accounts
+  openldap:
+    # openldap image name
+    image: osixia/openldap:develop-dev
+    # ldapadmin image name, used for manage openldap
+    imageAdmin: osixia/phpldapadmin:stable-amd64
+    # ldapadmin expose service port (kubernetes node port)
+    port: 30007
+    # openldap admin password, leave it empty to random create one
+    password: ""
+    # openldap account domain settings
+    domain: "dory.local"
+    # openldap baseDN settings
+    baseDN: "dc=dory,dc=local"
+  # redis cache settings
+  redis:
+    # redis cache image name
+    image: redis:6.2.6-alpine3.15
+    # redis cache password, leave it empty to random create one
+    password: ""
+  # mongodb settings
+  mongo:
+    # mongodb image name
+    image: mongo:4.4.10-focal
+    # mongodb password, leave it empty to random create one
+    password: ""
+  # docker executors deploy settings
+  docker:
+    # docker executor image name
+    image: docker:20.10.11-dind
+    # service name of docker executor (in docker-compose or kubernetes)
+    dockerName: docker
+    # how many docker executors will deploy in docker-compose or with kubernetes
+    dockerNumber: 2
+  # dory-core service deploy settings
+  dorycore:
+    # dory-dashboard expose service port (kubernetes node port)
+    port: 30010
+# image repository settings
+imageRepo:
+  # which namespace will image repository deploy in
+  # if install mode is docker: it means which subdirectory image repository's data store in
+  # if install mode is kubernetes: it means which namespace image repository will deploy in
+  namespace: harbor
+  # image repository type, options: harbor
+  type: harbor
+  # image repository domain name, used for create image repository self signed certificates
+  domainName: harbor2.new.imdory.com
+  # image repository (harbor) version, support v2.2.x - v2.4.x
+  version: v2.4.0
+  # image repository admin user password, leave it empty to random create one
+  password: ""
+  {{- if eq $.mode "docker" }}
+  # which subdirectory image repository self signed certificates store in
+  # if install mode is docker: required
+  certsDir: certs
+  # which subdirectory image repository data store in
+  # if install mode is docker: required
+  dataDir: data
+  {{- end }}
+# dorycore application settings
+dorycore:
+  # admin user settings
+  adminUser:
+    # admin user name, format like: dory-admin
+    username: dory-admin
+    # admin user display name, format like: DORY-ADMIN
+    name: DORY-管理员
+    # admin user mail
+    mail: dory-admin@139.com
+    # admin user mobile phone number
+    mobile: 13812341234
+  # smtp send mail settings
+  mail:
+    # smtp server host
+    host: "smtp.139.com"
+    # smtp port
+    port: 25
+    # smtp user account
+    username: "13812341234@139.com"
+    # smtp password
+    password: "13812341234"
+    # smtp enable SSL
+    ssl: false
+    # smtp sender display name
+    from: "DORY-管理员 <13812341234@139.com>"
+# kubernetes environment settings, which project applications will deploy in
+kubernetes:
+  # kubernetes api server ip address
+  host: "10.1.0.2"
+  # kubernetes api server port
+  port: 6443
+  # kubernetes api server admin token
+  token: "xxx"
+
+  # # if persistent volume use local storage, please set it, otherwise remove it
+  # pvConfigLocal:
+  #   # local path (absolute path)
+  #   localPath: "/data/k8s-vols"
+
+  # if persistent volume use nfs shared storage, please set it, otherwise remove it
+  pvConfigNfs:
+    # nfs storage path (absolute path)
+    nfsPath: "/data/nfs-vols/tmp"
+    # nfs server ip address
+    nfsServer: "10.2.0.10"
+
+  # # if persistent volume use cephfs shared storage, please set it, otherwise remove it
+  # pvConfigCephfs:
+  #   # cephfs storage path
+  #   cephPath: "/k8s-deploy"
+  #   # ceph connect account
+  #   cephUser: admin
+  #   # ceph connect secret
+  #   cephSecret: "xxx"
+  #   # ceph monitors ip address
+  #   cephMonitors:
+  #   - "192.168.0.1:6789"
+  #   - "192.168.0.2:6789"
+  #   - "192.168.0.3:6789"

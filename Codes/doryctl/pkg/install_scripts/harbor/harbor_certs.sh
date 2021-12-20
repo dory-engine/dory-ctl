@@ -1,6 +1,4 @@
-# 设置harbor域名
 export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepo.domainName }}
-# 设置证书存放的相对路径
 export HARBOR_CONFIG_CERT_PATH={{ $.imageRepo.certsDir }}
 
 rm -rf ${HARBOR_CONFIG_CERT_PATH}/
@@ -27,7 +25,7 @@ openssl x509 -inform PEM -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt -out ${HARBOR_CONF
 # echo "[CMD] openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt"
 # openssl x509 -noout -text -in ${HARBOR_CONFIG_DOMAIN_NAME}.crt
 
-# 更新/etc/docker/certs.d/对应的harbor证书
+# update /etc/docker/certs.d/ harbor certificates
 echo "update docker harbor certificates"
 rm -rf /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/
 mkdir -p /etc/docker/certs.d/${HARBOR_CONFIG_DOMAIN_NAME}/

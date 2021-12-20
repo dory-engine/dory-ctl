@@ -1,5 +1,21 @@
 # kubernetes prerequisite
 
+## create kubernetes admin token
+
+- kubernetes admin token is for dory to deploy project applications in kubernetes cluster, you must set it in dory's config file
+
+```shell script
+# create kubernetes admin serviceaccount
+kubectl create serviceaccount -n kube-system admin-user --dry-run=client -o yaml | kubectl apply -f -
+
+# create kubernetes admin clusterrolebinding
+kubectl create clusterrolebinding admin-user --clusterrole=cluster-admin --serviceaccount=kube-system:admin-user --dry-run=client -o yaml | kubectl apply -f -
+
+# get kubernetes admin token
+# kubernetes token is for dory installation config
+kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o jsonpath="{ .secrets[0].name }") -o jsonpath='{ .data.token }' | base64 -d
+```
+
 ## kubernetes-dashboard
 
 - to manager your project pods in kubernetes, we recommend to use `kubernetes-dashboard`

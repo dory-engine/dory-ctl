@@ -19,26 +19,39 @@ projectDataPod:
 
 # harbor配置，用于kubernetes集群拉取harbor镜像
 harborConfig:
+  # harbor域名
   hostname: {{ $.imageRepo.domainName | quote }}
-  # ip地址使用集群vip
+  # ip地址
   ip: {{ $.hostIP | quote }}
+  # 端口
   port: 443
+  # 管理员用户名
   username: admin
+  # 管理员密码
   password: {{ $.imageRepo.password | quote }}
+  # 管理员邮箱
   email: admin@example.com
 
-# nexus配置，用于kubernetes集群拉取的debug容器yum源设置和docker proxy设置
+# nexus配置，用于kubernetes集群拉取编译构建依赖和以及拉取容器镜像
 # 注意，需要设置kubernetes集群的insecure-registry
 nexusConfig:
+  # 访问的主机名或者ip地址
   hostname: {{ $.hostIP | quote }}
-  # ip地址使用集群vip
+  # ip地址
   ip: {{ $.hostIP | quote }}
+  # 端口
   port: {{ $.dory.artifactRepo.port }}
+  # docker.io镜像仓库代理端口
   portDocker: {{ $.dory.artifactRepo.portHub }}
+  # gcr.io镜像仓库代理端口
   portGcr: {{ $.dory.artifactRepo.portGcr }}
+  # quay.io镜像仓库代理端口
   portQuay: {{ $.dory.artifactRepo.portQuay }}
+  # 共用账号用户名
   username: public-user
+  # 共用账号密码
   password: public-user
+  # 共用账号邮箱
   email: public-user@139.com
 
 {{- if $.kubernetes.pvConfigLocal.localPath }}
