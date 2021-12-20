@@ -262,7 +262,7 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 		return err
 	}
 	// create env-k8s-test.yaml
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreEnvK8sName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s-%s", pkg.DirInstallScripts, dorycoreScriptDir, o.Language, dorycoreEnvK8sName))
 	if err != nil {
 		err = fmt.Errorf("create dory-core config files error: %s", err.Error())
 		return err
