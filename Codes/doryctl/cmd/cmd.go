@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/Xuanwo/go-locale"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -21,6 +23,8 @@ type OptionsCommon struct {
 	ConfigFile string
 	LogLevel   string
 	LogFile    string
+
+	Language string
 }
 
 func LogSuccess(msg string) {
@@ -49,6 +53,15 @@ func LogError(msg string) {
 
 func NewOptionsCommon() *OptionsCommon {
 	var o OptionsCommon
+	lang := "EN"
+	l, err := locale.Detect()
+	if err == nil {
+		b, _ := l.Base()
+		if strings.ToUpper(b.String()) == "ZH" {
+			lang = "ZH"
+		}
+	}
+	o.Language = lang
 	return &o
 }
 

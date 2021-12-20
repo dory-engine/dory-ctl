@@ -63,7 +63,7 @@ func (o *OptionsInstallPrint) Validate(args []string) error {
 func (o *OptionsInstallPrint) Run(args []string) error {
 	var err error
 
-	bs, err := pkg.FsInstallConfigs.ReadFile(fmt.Sprintf("%s/install-config.yaml", pkg.DirInstallConfigs))
+	bs, err := pkg.FsInstallConfigs.ReadFile(fmt.Sprintf("%s/%s-install-config.yaml", pkg.DirInstallConfigs, o.Language))
 	if err != nil {
 		return err
 	}

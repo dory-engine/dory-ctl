@@ -163,103 +163,103 @@ ldap:
   password: {{ $.dory.openldap.password | quote}}
 # git repository settings, support gitlab and gitea
 gitRepoConfigs:
-  # 代码仓库类型，选项: gitlab, gitea
+    # git repository type, options: gitlab, gitea
   - kind: {{ $.dory.gitRepo.type }}
-    # 代码仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
+    # git repository id name, format like: xxx-xxx
     repoName: {{ $.dory.gitRepo.type }}-dory
-    # 代码仓库外部查看url
+    # git repository browser access url
     viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
-    # 代码仓库的地址，dory访问该仓库的地址
+    # git repository internal access url by dory
     {{- if eq $.dory.gitRepo.type "gitea" }}
     url: http://gitea:3000
     {{- else if eq $.dory.gitRepo.type "gitlab" }}
     url: http://gitlab
     {{- end }}
-    # 代码仓库管理员账号
+    # git repository admin user name
     username: "PLEASE_INPUT_BY_MANUAL"
-    # 代码仓库管理员显示名
+    # git repository admin user display name
     name: "PLEASE_INPUT_BY_MANUAL"
-    # 代码仓库管理员显示mail
+    # git repository admin user mail
     mail: "PLEASE_INPUT_BY_MANUAL"
-    # 代码仓库管理员密码
+    # git repository admin user password
     password: "PLEASE_INPUT_BY_MANUAL"
-    # 代码仓库管理员token
+    # git repository admin user token
     token: "PLEASE_INPUT_BY_MANUAL"
-    # 默认tag名字
+    # default tag name
     tagDefault: "v0.1.0"
-    # hotfix分支名字
+    # hotfix branch name
     branchHotfix: hotfix
-# 镜像仓库配置，支持harbor
+# image repository settings, support harbor
 imageRepoConfigs:
-  # 镜像仓库类型，选项: harbor
+    # image repository type, options: harbor
   - kind: {{ $.imageRepo.type }}
-    # 镜像仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
+    # image repository id name, format like: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
-    # 镜像仓库外部查看url
+    # image repository browser access url
     viewUrl: https://{{ $.imageRepo.domainName }}
-    # 镜像仓库地址，使用https
+    # image repository domain name
     url: {{ $.imageRepo.domainName | quote }}
-    # 镜像仓库管理员账号
+    # image repository admin user name
     username: admin
-    # 镜像仓库管理员密码
+    # image repository admin user password
     password: {{ $.imageRepo.password | quote }}
-    # 镜像仓库 api访问地址，dory访问该仓库的地址
+    # image repository api access url by dory
     apiUrl: https://{{ $.imageRepo.domainName }}
-# 制品仓库配置，支持nexus
+# artifact and dependency repository settings, support nexus
 artifactRepoConfigs:
-  # 制品仓库类型，选项: nexus
+    # artifact and dependency repository type, options: nexus
   - kind: {{ $.dory.artifactRepo.type }}
-    # 制品仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
+    # artifact and dependency repository id name, format like: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
-    # 制品仓库外部查看url
+    # artifact and dependency repository browser access url
     viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
-    # 制品仓库地址，docker executor访问该仓库的地址（建议使用外部ip+端口）
+    # artifact and dependency repository access url by docker executors
     url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
-    # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址（建议使用外部ip）
+    # artifact and dependency repository access ip address, docker executors can connect this repository
     host: {{ $.hostIP | quote }}
-    # 制品仓库管理员账号
+    # artifact and dependency repository admin user name
     username: admin
-    # 制品仓库管理员密码
+    # artifact and dependency repository admin user password
     password: "Nexus_Pwd_321"
-    # 制品仓库public role名称
+    # artifact and dependency repository public user role name
     publicRole: public-role
-    # 制品仓库拉取dockerhub的主机地址端口，kubernetes环境拉取镜像的时候访问该仓库的地址（建议使用外部ip+端口）
+    # artifact and dependency repository docker.io docker image proxy url
     dockerHubUrl: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
-    # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址（建议使用外部ip+端口）
+    # artifact and dependency repository proxy url with public user authorization
     publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
-    # 拉取第三方开源依赖的公用账号名称
+    # public user name which can fetch public dependencies
     publicUser: public-user
-    # 拉取第三方开源依赖的公用账号密码
+    # public user password which can fetch public dependencies
     publicPassword: public-user
-    # maven第三方开源依赖的仓库相对路径
+    # maven repository proxy path
     maven: repository/maven-group-public/
-    # npm第三方开源依赖的仓库相对路径
+    # npm repository proxy path
     npm: repository/npm-group-public/
-    # pypi第三方开源依赖的仓库相对路径
+    # pypi repository proxy path
     pip: repository/pypi-group-public/simple
-    # gradle第三方开源依赖的仓库相对路径
+    # gradle repository proxy path
     gradle: repository/maven-group-public/
-    # go第三方开源依赖的仓库相对路径
+    # go repository proxy path
     go: repository/go-group-public
-# 公网代理服务器配置
+# internet proxy settings
 proxy:
-  # 公网代理地址
+  # internet proxy url
   url: http://nginx-proxy:1080
 
-# 开通项目的时候，默认会创建对应的分支和流水线配置
+# default pipeline settings, when create new project dory will use these settings to create default pipeline
 defaultPipeline:
-  # 分支名称
+  # branch name
   branchName: develop
-  # 是否通过push事件的webhook触发流水线
+  # push event trigger web hook to run pipeline enable
   webhookPushEvent: true
-  # tag标签的后缀
+  # tag suffix
   tagSuffix: "dev"
-  # 默认计划任务设置
+  # default pipeline crontab settings
   pipelineCrons: []
-  # 默认触发器设置
+  # default pipeline trigger settings
   pipelineTriggers: []
 
-# 演示项目打包镜像设置
+# demo project package source image settings
 demoProjectImageSettings:
   springDemoImage: "hub/openjdk:14-jdk-alpine3.10"
   nodeDemoImage: "hub/node:13.14-alpine3.11"
@@ -267,63 +267,63 @@ demoProjectImageSettings:
   goDemoImage: "public/alpine:3.15.0-dory"
   ginDemoImage: "public/alpine:3.15.0-dory"
 
-# 编译环境设置，对应的环境与docker镜像设置
+# build step languages and docker image settings
 buildDockerEnvs:
-  # 开通项目的时候，是否使用制品仓库拉取第三方开源依赖
+  # fetch build dependencies from artifact and dependency repository enable
   artifactRepoDependencyPull: true
-  # 默认第三方开源依赖地址，不启用制品仓库拉取第三方开源依赖情况下的依赖仓库地址设置
+  # default build dependencies settings, if not fetch build dependencies from artifact and dependency repository
   defaultBuildDependency:
-    # maven第三方开源依赖的仓库设置
+    # maven build dependencies settings
     maven:
-      # ~/.m2/settings.xml的仓库url
+        # ~/.m2/settings.xml repository url
       - url: http://maven.aliyun.com/nexus/content/groups/public/
-        # ~/.m2/settings.xml的仓库id
+        # ~/.m2/settings.xml repository id
         id: nexus
-        # ~/.m2/settings.xml的mirrorOf设置
+        # ~/.m2/settings.xml mirrorOf setting
         mirrorOf: central
-    # npm第三方开源依赖的仓库设置
+    # npm build dependencies settings
     npm:
-      # ~/.npmrc的仓库url
+      # ~/.npmrc repository url
       url: https://registry.npm.taobao.org
-    # pypi第三方开源依赖的仓库设置
+    # pypi build dependencies settings
     pip:
-      # ~/.pip/pip.conf的仓库url
+      # ~/.pip/pip.conf repository url
       url: https://mirrors.aliyun.com/pypi/simple/
-      # ~/.pip/pip.conf的trusted-host
+      # ~/.pip/pip.conf trusted-host setting
       trustedHost: mirrors.aliyun.com
-    # gradle第三方开源依赖的仓库设置
+    # gradle build dependencies settings
     gradle:
-      # ~/.gradle/init.gradle的仓库url
+        # ~/.gradle/init.gradle repository url
       - url: https://maven.aliyun.com/repository/jcenter
       - url: https://maven.aliyun.com/repository/google
       - url: https://maven.aliyun.com/repository/central
       - url: https://maven.aliyun.com/repository/gradle-plugin
-    # go第三方开源依赖的仓库设置
+    # go build dependencies settings
     go:
-      # ~/.config/go/env的仓库url
+      # ~/.config/go/env repository url
       url: https://mirrors.aliyun.com/goproxy
-  # 构建docker对应的构建用户的home目录
+  # build docker executor user home directory
   dockerHomeDir: "/home/dory"
-  # 构建环境设置
+  # build docker executor environment settings
   dockerEnvs:
-    # 构建环境的类型
+      # build environment name
     - name: maven
-      # 是否把caches目录装载到容器的$HOME目录
+      # mount build caches to build docker executor's $HOME directory
       mountHomeDir: true
-      # 是否启用外部代理服务器拉取依赖
+      # use internet proxy to fetch build dependencies
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
+      # mount extra build caches to build docker executor, if build caches not in $HOME directory
+      # for example: go language build cache is in /go/pkg, not in $HOME directory
       mountExtraCacheDirs: []
-      # 执行构建命令前执行什么命令
+      # run commands before build
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
+      # run commands after build
       commandsAfterCheck: []
-      # 构建环境设置，环境名称和构建环境对应的镜像
+      # build environments images settings
       buildEnvs:
-        # 构建环境名称
+          # build environment name
         - buildEnvName: maven-jdk17
-          # 构建环境容器镜像所在的镜像仓库相对路径
+          # build environment docker image, relative path in image repository
           image: "public/maven:3.8.3-openjdk-17-dory"
         - buildEnvName: maven-jdk14
           image: "public/maven:3.6.3-jdk-14-dory"
@@ -350,14 +350,9 @@ buildDockerEnvs:
           image: "hub/node:17.0.1-alpine3.14"
     - name: go
       mountHomeDir: false
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: ["/go/pkg"]
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: go-1.17
@@ -366,7 +361,6 @@ buildDockerEnvs:
           image: "public/golang:1.14.15-alpine3.13-dory"
         - buildEnvName: go
           image: "public/golang:1.17.3-alpine3.15-dory"
-      # 构建环境的类型
     - name: python
       mountHomeDir: false
       enableProxy: false

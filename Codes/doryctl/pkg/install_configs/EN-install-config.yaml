@@ -127,7 +127,7 @@ dorycore:
     # admin user name, format like: dory-admin
     username: dory-admin
     # admin user display name, format like: DORY-ADMIN
-    name: DORY-管理员
+    name: DORY-ADMIN
     # admin user mail
     mail: dory-admin@139.com
     # admin user mobile phone number

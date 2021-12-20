@@ -163,11 +163,11 @@ ldap:
   password: {{ $.dory.openldap.password | quote}}
 # 代码仓库配置，支持gitlab和gitea
 gitRepoConfigs:
-  # 代码仓库类型，选项: gitlab, gitea
+    # 代码仓库类型，选项: gitlab, gitea
   - kind: {{ $.dory.gitRepo.type }}
     # 代码仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.dory.gitRepo.type }}-dory
-    # 代码仓库外部查看url
+    # 代码仓库浏览器查看url
     viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
     # 代码仓库的地址，dory访问该仓库的地址
     {{- if eq $.dory.gitRepo.type "gitea" }}
@@ -191,11 +191,11 @@ gitRepoConfigs:
     branchHotfix: hotfix
 # 镜像仓库配置，支持harbor
 imageRepoConfigs:
-  # 镜像仓库类型，选项: harbor
+    # 镜像仓库类型，选项: harbor
   - kind: {{ $.imageRepo.type }}
     # 镜像仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
-    # 镜像仓库外部查看url
+    # 镜像仓库浏览器查看url
     viewUrl: https://{{ $.imageRepo.domainName }}
     # 镜像仓库地址，使用https
     url: {{ $.imageRepo.domainName | quote }}
@@ -207,11 +207,11 @@ imageRepoConfigs:
     apiUrl: https://{{ $.imageRepo.domainName }}
 # 制品仓库配置，支持nexus
 artifactRepoConfigs:
-  # 制品仓库类型，选项: nexus
+    # 制品仓库类型，选项: nexus
   - kind: {{ $.dory.artifactRepo.type }}
     # 制品仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
-    # 制品仓库外部查看url
+    # 制品仓库浏览器查看url
     viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
     # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
     url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
@@ -275,7 +275,7 @@ buildDockerEnvs:
   defaultBuildDependency:
     # maven第三方开源依赖的仓库设置
     maven:
-      # ~/.m2/settings.xml的仓库url
+        # ~/.m2/settings.xml的仓库url
       - url: http://maven.aliyun.com/nexus/content/groups/public/
         # ~/.m2/settings.xml的仓库id
         id: nexus
@@ -293,7 +293,7 @@ buildDockerEnvs:
       trustedHost: mirrors.aliyun.com
     # gradle第三方开源依赖的仓库设置
     gradle:
-      # ~/.gradle/init.gradle的仓库url
+        # ~/.gradle/init.gradle的仓库url
       - url: https://maven.aliyun.com/repository/jcenter
       - url: https://maven.aliyun.com/repository/google
       - url: https://maven.aliyun.com/repository/central
@@ -302,11 +302,11 @@ buildDockerEnvs:
     go:
       # ~/.config/go/env的仓库url
       url: https://mirrors.aliyun.com/goproxy
-  # 构建docker对应的构建用户的home目录
+  # 构建docker executor对应的构建用户的home目录
   dockerHomeDir: "/home/dory"
-  # 构建环境设置
+  # 构建docker executor环境设置
   dockerEnvs:
-    # 构建环境的类型
+      # 构建环境的类型
     - name: maven
       # 是否把caches目录装载到容器的$HOME目录
       mountHomeDir: true
@@ -350,14 +350,9 @@ buildDockerEnvs:
           image: "hub/node:17.0.1-alpine3.14"
     - name: go
       mountHomeDir: false
-      # 是否启用外部代理服务器拉取依赖
       enableProxy: false
-      # mount构建容器中非$HOME目录之外的构建依赖缓存目录
-      # 例如go语言，需要装载容器中的/go/pkg作为缓存
       mountExtraCacheDirs: ["/go/pkg"]
-      # 执行构建命令前执行什么命令
       commandsBeforeBuild: ["pwd", "ls -al"]
-      # 执行检查命令后执行什么命令
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: go-1.17
@@ -366,7 +361,6 @@ buildDockerEnvs:
           image: "public/golang:1.14.15-alpine3.13-dory"
         - buildEnvName: go
           image: "public/golang:1.17.3-alpine3.15-dory"
-      # 构建环境的类型
     - name: python
       mountHomeDir: false
       enableProxy: false
