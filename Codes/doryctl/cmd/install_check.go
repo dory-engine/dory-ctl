@@ -113,7 +113,7 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 		LogSuccess("check helm installed success")
 	}
 
-	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-README-check.md", o.Language, pkg.DirInstallScripts))
+	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-README-check.md", pkg.DirInstallScripts, o.Language))
 	if err != nil {
 		err = fmt.Errorf("get readme error: %s", err.Error())
 		return err
