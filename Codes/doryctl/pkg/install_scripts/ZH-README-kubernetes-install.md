@@ -118,6 +118,6 @@ kubectl apply -f project-data-alpine.yaml
 kubectl -n {{ $.dory.namespace }} get pods
 ```
 
-## dory not config yet
+## 请继续完成dory的配置
 
 2. 请根据 `README-kubernetes-config.md` 的说明在完成安装后手工设置dory
