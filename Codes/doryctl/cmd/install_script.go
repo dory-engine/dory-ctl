@@ -30,7 +30,7 @@ func NewCmdInstallScript() *cobra.Command {
 	msgShort := fmt.Sprintf("create dory-core install scripts and config files")
 	msgLong := fmt.Sprintf(`create dory-core install scripts and config files, run the scripts by manual, for experts`)
 	msgExample := fmt.Sprintf(`  # create dory-core install scripts and config files with docker-compose or kubernetes
-  doryctl install script -f install-config.yaml -o readme-install
+  doryctl install script -o readme-install -f install-config.yaml
   or
   cat install-config.yaml | doryctl install script -o readme-install -f -
 `)
