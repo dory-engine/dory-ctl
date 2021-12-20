@@ -246,7 +246,7 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 	_ = os.MkdirAll(fmt.Sprintf("%s/tmp", dorycoreDir), 0700)
 
 	// create config.yaml
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dorycoreScriptDir, dorycoreConfigName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s-%s", pkg.DirInstallScripts, dorycoreScriptDir, o.Language, dorycoreConfigName))
 	if err != nil {
 		err = fmt.Errorf("create dory-core config files error: %s", err.Error())
 		return err
@@ -514,7 +514,7 @@ func (o *OptionsInstallRun) DoryCreateConfigReadme(installConfig pkg.InstallConf
 		return err
 	}
 
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-%s", pkg.DirInstallScripts, o.Language, readmeName))
 	if err != nil {
 		err = fmt.Errorf("create dory config readme error: %s", err.Error())
 		return err
@@ -550,7 +550,7 @@ func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfi
 		return err
 	}
 
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s", pkg.DirInstallScripts, readmeName))
+	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-%s", pkg.DirInstallScripts, o.Language, readmeName))
 	if err != nil {
 		err = fmt.Errorf("create dory reset readme error: %s", err.Error())
 		return err
