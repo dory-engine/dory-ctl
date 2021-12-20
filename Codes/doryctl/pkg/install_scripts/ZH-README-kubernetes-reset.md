@@ -22,3 +22,8 @@ kubectl delete pv project-data-pv
 ## 所有dory组件的数据存放位置
 
 - 所有dory组件的数据存放在: `{{ $.rootDir }}`
+
+```shell script
+# 重新安装前，请清理dory组件数据
+rm -rf {{ $.rootDir }}/*
+```

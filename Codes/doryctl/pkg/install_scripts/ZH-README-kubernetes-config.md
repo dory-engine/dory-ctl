@@ -89,3 +89,5 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 - url: https://{{ $.imageRepo.domainName }}
 - user: admin / {{ $.imageRepo.password }} (管理员用户)
 - 数据存放在: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
+
+### 注意，本目录非常重要，本目录为安装过程配置文件以及说明文件目录，建议保留

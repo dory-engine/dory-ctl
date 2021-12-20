@@ -21,3 +21,8 @@ kubectl delete pv project-data-pv
 ## about dory services data
 
 - dory services data located at: `{{ $.rootDir }}`
+
+```shell script
+# before reinstall, please remove dory services data first
+rm -rf {{ $.rootDir }}/*
+```
