@@ -146,86 +146,247 @@ func main() {
 	fmt.Println("##############")
 
 	strYaml := `
-deployName: tp1-spring-demo
-port: 9000
-protocol: http
-httpSettings:
-  matchHeaders: []
-  gateway:
-    rewriteUri: /spring
-    matchUris: []
-    matchDefault: false
-  timeout: ""
-  retries:
-    retryOn: ""
-    attempts: 0
-    perTryTimeout: ""
-  mirror:
-    host: ""
-    port: 0
-    subset: ""
-    mirrorPercent: 0
-  corsPolicy:
-    allowOrigins:
-      - gateway:
-          rewriteUri: /spring
-          matchUris:
-            - gateway:
-                rewriteUri: /spring
-                matchUris:
-                - rewriteUri: /spring
-                  matchUris:
-                  - rewriteUri: /spring
-                matchDefault: false
-          matchDefault: false
-    allowMethods: []
-    allowCredentials: false
-    allowHeaders: []
-    exposeHeaders:
-      - int: 0
-        x:
-          - int: 0
-    maxAge: ""
-  trafficPolicyEnable: false
-  loadBalancer:
-    loadBalancerEnable: false
-    simple: ""
-    consistentHash:
-      consistentHashEnable: false
-      httpHeaderName: ""
-      httpCookie:
-        name: ""
-        path: ""
-        ttl: ""
-      useSourceIp: false
-      httpQueryParameterName: ""
-  connectionPool:
-    connectionPoolEnable: false
-    tcp:
-      tcpEnable: false
-      maxConnections: 0
-      connectTimeout: ""
-    http:
-      httpEnable: false
-      http1MaxPendingRequests: 0
-      http2MaxRequests: 0
-      maxRequestsPerConnection: 0
-      maxRetries: 0
-      idleTimeout: ""
-  outlierDetection:
-    outlierDetectionEnable: false
-    consecutiveGatewayErrors: 1.01
-    consecutive5xxErrors: 0.1
-    interval: ""
-    baseEjectionTime: ""
-    maxEjectionPercent: 0
-    minHealthPercent: 0
-tcpSettings:
-  sourceServiceNames: [""]
-labelName: ""
-localLabelConfig:
-  labelDefault: ""
-  labelNew: ""
+deploys:
+- deployName: tp1-gin-demo
+  relatedPackage: tp1-gin-demo
+  deployImageTag: ""
+  deployLabels: {}
+  deploySessionAffinityTimeoutSeconds: 0
+  deployNodePorts:
+    - port: 8000
+      nodePort: 30103
+      protocol: http
+  deployLocalPorts: []
+  deployReplicas: 1
+  hpaConfig:
+    maxReplicas: 2
+    memoryAverageValue: 100Mi
+    memoryAverageRequestPercent: 0
+    cpuAverageValue: 100m
+    cpuAverageRequestPercent: 0
+  deployEnvs: []
+  deployCommand: sh -c "./tp1-gin-demo 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-gin-demo/logs/tp1-gin-demo.logs"
+  deployCmd: []
+  deployResources:
+    memoryRequest: 10Mi
+    memoryLimit: 100Mi
+    cpuRequest: "0.02"
+    cpuLimit: "0.1"
+  deployVolumes:
+    - pathInPod: /tp1-gin-demo/logs
+      pathInPv: tp1-gin-demo/logs
+      pvc: ""
+  deployHealthCheck:
+    checkPort: 0
+    httpGet:
+        path: /
+        port: 8000
+        httpHeaders: []
+    readinessDelaySeconds: 15
+    readinessPeriodSeconds: 5
+    livenessDelaySeconds: 150
+    livenessPeriodSeconds: 30
+  dependServices: []
+  hostAliases: []
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  deployConfigSettings:
+    - Codes/Backend/tp1-gin-demo/config1/:tp1-gin-demo/config1/
+    - Codes/Backend/tp1-gin-demo/config2/:tp1-gin-demo/config2/
+- deployName: tp1-go-demo
+  relatedPackage: tp1-go-demo
+  deployImageTag: ""
+  deployLabels: {}
+  deploySessionAffinityTimeoutSeconds: 0
+  deployNodePorts:
+    - port: 8000
+      nodePort: 30102
+      protocol: http
+  deployLocalPorts: []
+  deployReplicas: 1
+  hpaConfig:
+    maxReplicas: 0
+    memoryAverageValue: ""
+    memoryAverageRequestPercent: 0
+    cpuAverageValue: ""
+    cpuAverageRequestPercent: 0
+  deployEnvs: []
+  deployCommand: sh -c "./tp1-go-demo 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-go-demo/logs/tp1-go-demo.logs"
+  deployCmd: []
+  deployResources:
+    memoryRequest: 10Mi
+    memoryLimit: 150Mi
+    cpuRequest: "0.02"
+    cpuLimit: "0.1"
+  deployVolumes:
+    - pathInPod: /tp1-go-demo/logs
+      pathInPv: tp1-go-demo/logs
+      pvc: ""
+  deployHealthCheck:
+    checkPort: 0
+    httpGet:
+        path: /
+        port: 8000
+        httpHeaders: []
+    readinessDelaySeconds: 15
+    readinessPeriodSeconds: 5
+    livenessDelaySeconds: 150
+    livenessPeriodSeconds: 30
+  dependServices:
+    - dependName: tp1-node-demo
+      dependPort: 3000
+      dependType: TCP
+    - dependName: tp1-python-demo
+      dependPort: 3000
+      dependType: TCP
+  hostAliases: []
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  deployConfigSettings: []
+- deployName: tp1-node-demo
+  relatedPackage: tp1-node-demo
+  deployImageTag: ""
+  deployLabels: {}
+  deploySessionAffinityTimeoutSeconds: 0
+  deployNodePorts: []
+  deployLocalPorts:
+    - port: 3000
+      protocol: http
+      ingress:
+        domainName: ""
+        pathPrefix: ""
+  deployReplicas: 1
+  hpaConfig:
+    maxReplicas: 0
+    memoryAverageValue: ""
+    memoryAverageRequestPercent: 0
+    cpuAverageValue: ""
+    cpuAverageRequestPercent: 0
+  deployEnvs: []
+  deployCommand: sh -c "node index.js 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-node-demo/logs/tp1-node-demo.logs"
+  deployCmd: []
+  deployResources:
+    memoryRequest: 10Mi
+    memoryLimit: 150Mi
+    cpuRequest: "0.02"
+    cpuLimit: "0.1"
+  deployVolumes:
+    - pathInPod: /tp1-node-demo/logs
+      pathInPv: tp1-node-demo/logs
+      pvc: ""
+  deployHealthCheck:
+    checkPort: 0
+    httpGet:
+        path: /
+        port: 3000
+        httpHeaders: []
+    readinessDelaySeconds: 15
+    readinessPeriodSeconds: 5
+    livenessDelaySeconds: 150
+    livenessPeriodSeconds: 30
+  dependServices: []
+  hostAliases: []
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  deployConfigSettings: []
+- deployName: tp1-python-demo
+  relatedPackage: tp1-python-demo
+  deployImageTag: ""
+  deployLabels: {}
+  deploySessionAffinityTimeoutSeconds: 0
+  deployNodePorts: []
+  deployLocalPorts:
+    - port: 3000
+      protocol: http
+      ingress:
+        domainName: ""
+        pathPrefix: ""
+  deployReplicas: 1
+  hpaConfig:
+    maxReplicas: 0
+    memoryAverageValue: ""
+    memoryAverageRequestPercent: 0
+    cpuAverageValue: ""
+    cpuAverageRequestPercent: 0
+  deployEnvs: []
+  deployCommand: sh -c "python3 main.py 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-python-demo/logs/tp1-python-demo.logs"
+  deployCmd: []
+  deployResources:
+    memoryRequest: 10Mi
+    memoryLimit: 150Mi
+    cpuRequest: "0.02"
+    cpuLimit: "0.1"
+  deployVolumes:
+    - pathInPod: /tp1-python-demo/logs
+      pathInPv: tp1-python-demo/logs
+      pvc: ""
+  deployHealthCheck:
+    checkPort: 0
+    httpGet:
+        path: /
+        port: 3000
+        httpHeaders: []
+    readinessDelaySeconds: 15
+    readinessPeriodSeconds: 5
+    livenessDelaySeconds: 150
+    livenessPeriodSeconds: 30
+  dependServices: []
+  hostAliases: []
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  deployConfigSettings: []
+- deployName: tp1-spring-demo
+  relatedPackage: tp1-spring-demo
+  deployImageTag: ""
+  deployLabels: {}
+  deploySessionAffinityTimeoutSeconds: 0
+  deployNodePorts: []
+  deployLocalPorts:
+    - port: 9000
+      protocol: http
+      ingress:
+        domainName: demo.test-project1.local
+        pathPrefix: /spring/
+  deployReplicas: 1
+  hpaConfig:
+    maxReplicas: 0
+    memoryAverageValue: ""
+    memoryAverageRequestPercent: 0
+    cpuAverageValue: ""
+    cpuAverageRequestPercent: 0
+  deployEnvs:
+    - JAVA_OPTS=-Xms256m -Xmx256m
+  deployCommand: sh -c "java -jar example.smallest-0.0.1-SNAPSHOT.war 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-spring-demo/logs/tp1-spring-demo.logs"
+  deployCmd: []
+  deployResources:
+    memoryRequest: 10Mi
+    memoryLimit: 250Mi
+    cpuRequest: "0.05"
+    cpuLimit: "0.25"
+  deployVolumes:
+    - pathInPod: /tp1-spring-demo/logs
+      pathInPv: tp1-spring-demo/logs
+      pvc: ""
+  deployHealthCheck:
+    checkPort: 0
+    httpGet:
+        path: /
+        port: 9000
+        httpHeaders: []
+    readinessDelaySeconds: 15
+    readinessPeriodSeconds: 5
+    livenessDelaySeconds: 150
+    livenessPeriodSeconds: 30
+  dependServices: []
+  hostAliases: []
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  deployConfigSettings: []
 `
 	var mapYaml map[string]interface{}
 	err := yaml.Unmarshal([]byte(strYaml), &mapYaml)
