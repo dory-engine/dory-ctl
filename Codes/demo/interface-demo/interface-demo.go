@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"reflect"
@@ -32,23 +31,23 @@ func removeItem(m map[string]interface{}) map[string]interface{} {
 				delete(m, k)
 			} else {
 				var isMap bool
-				x := []map[string]interface{}{}
+				var x []map[string]interface{}
 				for i := 0; i < vv.Len(); i++ {
 					vvv := reflect.ValueOf(vv.Index(i))
-					fmt.Println(vvv)
-					if vvv.Kind() == reflect.String {
-					} else if vvv.Kind() == reflect.Int {
-					} else if vvv.Kind() == reflect.Float32 {
-					} else if vvv.Kind() == reflect.Float64 {
-					} else if vvv.Kind() == reflect.Bool {
+					if vvv.Kind() == reflect.Map {
+						vm, ok := vv.Index(i).Interface().(map[string]interface{})
+						if ok {
+							isMap = true
+							v3 := removeItem(vm)
+							x = append(x, v3)
+						}
 					} else if vvv.Kind() == reflect.Struct {
-						isMap = true
-						v3 := removeItem(vv.Index(i).Interface().(map[string]interface{}))
-						x = append(x, v3)
-					} else if vvv.Kind() == reflect.Map {
-						isMap = true
-						v3 := removeItem(vv.Index(i).Interface().(map[string]interface{}))
-						x = append(x, v3)
+						vm, ok := vv.Index(i).Interface().(map[string]interface{})
+						if ok {
+							isMap = true
+							v3 := removeItem(vm)
+							x = append(x, v3)
+						}
 					}
 				}
 				if isMap {
@@ -142,58 +141,91 @@ func main() {
 		},
 	}
 	m2 := removeItem(m)
-	data, _ := json.Marshal(m2)
-	fmt.Println(string(data))
+	bs, _ := yaml.Marshal(m2)
+	fmt.Println(string(bs))
+	fmt.Println("##############")
 
 	strYaml := `
 deployName: tp1-spring-demo
-relatedPackage: tp1-spring-demo
-deployImageTag: ""
-deployLabels: {}
-deploySessionAffinityTimeoutSeconds: 0
-deployNodePorts: []
-deployLocalPorts:
-  - port: 9000
-    protocol: http
-    ingress:
-      domainName: demo.test-project1.local
-      pathPrefix: /spring/
-deployReplicas: 1
-hpaConfig:
-  maxReplicas: 0
-  memoryAverageValue: ""
-  memoryAverageRequestPercent: 0
-  cpuAverageValue: ""
-  cpuAverageRequestPercent: 0
-deployEnvs:
-  - JAVA_OPTS=-Xms256m -Xmx256m
-deployCommand: sh -c "java -jar example.smallest-0.0.1-SNAPSHOT.war 2>&1 | sed \"s/^/[$(hostname)] /\" | tee -a /tp1-spring-demo/logs/tp1-spring-demo.logs"
-deployCmd: []
-deployResources:
-  memoryRequest: 10Mi
-  memoryLimit: 250Mi
-  cpuRequest: "0.05"
-  cpuLimit: "0.25"
-deployVolumes:
-  - pathInPod: /tp1-spring-demo/logs
-    pathInPv: tp1-spring-demo/logs
-    pvc: ""
-deployHealthCheck:
-  checkPort: 0
-  httpGet:
-      path: /
-      port: 9000
-      httpHeaders: []
-  readinessDelaySeconds: 15
-  readinessPeriodSeconds: 5
-  livenessDelaySeconds: 150
-  livenessPeriodSeconds: 30
-dependServices: []
-hostAliases: []
-securityContext:
-  runAsUser: 0
-  runAsGroup: 0
-deployConfigSettings: []
+port: 9000
+protocol: http
+httpSettings:
+  matchHeaders: []
+  gateway:
+    rewriteUri: /spring
+    matchUris: []
+    matchDefault: false
+  timeout: ""
+  retries:
+    retryOn: ""
+    attempts: 0
+    perTryTimeout: ""
+  mirror:
+    host: ""
+    port: 0
+    subset: ""
+    mirrorPercent: 0
+  corsPolicy:
+    allowOrigins:
+      - gateway:
+          rewriteUri: /spring
+          matchUris:
+            - gateway:
+                rewriteUri: /spring
+                matchUris:
+                - rewriteUri: /spring
+                  matchUris:
+                  - rewriteUri: /spring
+                matchDefault: false
+          matchDefault: false
+    allowMethods: []
+    allowCredentials: false
+    allowHeaders: []
+    exposeHeaders:
+      - int: 0
+        x:
+          - int: 0
+    maxAge: ""
+  trafficPolicyEnable: false
+  loadBalancer:
+    loadBalancerEnable: false
+    simple: ""
+    consistentHash:
+      consistentHashEnable: false
+      httpHeaderName: ""
+      httpCookie:
+        name: ""
+        path: ""
+        ttl: ""
+      useSourceIp: false
+      httpQueryParameterName: ""
+  connectionPool:
+    connectionPoolEnable: false
+    tcp:
+      tcpEnable: false
+      maxConnections: 0
+      connectTimeout: ""
+    http:
+      httpEnable: false
+      http1MaxPendingRequests: 0
+      http2MaxRequests: 0
+      maxRequestsPerConnection: 0
+      maxRetries: 0
+      idleTimeout: ""
+  outlierDetection:
+    outlierDetectionEnable: false
+    consecutiveGatewayErrors: 1.01
+    consecutive5xxErrors: 0.1
+    interval: ""
+    baseEjectionTime: ""
+    maxEjectionPercent: 0
+    minHealthPercent: 0
+tcpSettings:
+  sourceServiceNames: [""]
+labelName: ""
+localLabelConfig:
+  labelDefault: ""
+  labelNew: ""
 `
 	var mapYaml map[string]interface{}
 	err := yaml.Unmarshal([]byte(strYaml), &mapYaml)
@@ -202,7 +234,7 @@ deployConfigSettings: []
 		return
 	}
 	mapYaml = removeItem(mapYaml)
-	bs, _ := yaml.Marshal(mapYaml)
+	bs, _ = yaml.Marshal(mapYaml)
 	fmt.Println(string(bs))
 
 }
