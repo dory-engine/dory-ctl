@@ -90,4 +90,4 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 - user: admin / {{ $.imageRepo.password }} (admin user)
 - data located at: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
 
-### caution: this directory is very important, included all config files and readme files, please keep it
+### caution: this folder is very important, included all config files and readme files, please keep it
