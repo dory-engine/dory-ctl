@@ -1,5 +1,20 @@
 # kubernetes prerequisite
 
+## check /etc/timezone and /etc/localtime
+
+- all kubernetes nodes should have /etc/timezone and /etc/localtime files
+
+```shell script
+# check /etc/timezone and /etc/localtime files
+ls -al /etc/timezone
+ls -al /etc/localtime
+
+# update /etc/timezone and /etc/localtime files
+timedatectl set-timezone Asia/Shanghai
+echo 'Asia/Shanghai' > /etc/timezone
+ls -al /etc/timezone
+```
+
 ## create kubernetes admin token
 
 - kubernetes admin token is for dory to deploy project applications in kubernetes cluster, you must set it in dory's config file

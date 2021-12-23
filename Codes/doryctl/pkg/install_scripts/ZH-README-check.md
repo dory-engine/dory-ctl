@@ -1,5 +1,20 @@
 # kubernetes环境部署要求
 
+## 检查 /etc/timezone 和 /etc/localtime 配置
+
+- 所有kubernetes节点必须配置 /etc/timezone 和 /etc/localtime
+
+```shell script
+# 检查 /etc/timezone 和 /etc/localtime 文件
+ls -al /etc/timezone
+ls -al /etc/localtime
+
+# 更新 /etc/timezone 和 /etc/localtime 文件
+timedatectl set-timezone Asia/Shanghai
+echo 'Asia/Shanghai' > /etc/timezone
+ls -al /etc/timezone
+```
+
 ## 在kubernetes集群中创建管理token
 
 - kubernetes管理token用于dory连接kubernetes集群并发布应用，必须在dory配置文件中设置
