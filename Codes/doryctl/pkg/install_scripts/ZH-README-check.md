@@ -94,4 +94,5 @@ kubectl -n kube-system get pods -l=k8s-app=metrics-server
 
 # 查看pod的metrics
 kubectl top pods -A
+
 ```
