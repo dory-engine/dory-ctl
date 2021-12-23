@@ -1,5 +1,11 @@
 # kubernetes环境部署要求
 
+## 系统硬件资源需求
+
+- cpus: 2核
+- memory: 8G
+- storage: 40G
+
 ## 检查 /etc/timezone 和 /etc/localtime 配置
 
 - 所有kubernetes节点必须配置 /etc/timezone 和 /etc/localtime

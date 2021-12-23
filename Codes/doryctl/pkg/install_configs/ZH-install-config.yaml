@@ -23,7 +23,7 @@ hostIP: "10.2.0.10"
 hostIP: "10.1.0.2"
 {{- end }}
 # 外部查看本机的url地址，请不要包含端口
-viewURL: http://new2.imdory.com
+viewURL: http://dory.local
 # dory组件部署设置
 dory:
   # dory组件所在的名字空间
@@ -106,7 +106,7 @@ imageRepo:
   # 镜像仓库类型，选项: harbor
   type: harbor
   # 镜像仓库的访问域名，用于创建harbor的自签名tls证书
-  domainName: harbor2.new.imdory.com
+  domainName: harbor.dory.local
   # 镜像仓库版本，harbor版本，支持v2.2.x - v2.4.x
   version: v2.4.0
   # 镜像仓库的管理员密码，为空表示自动随机生成

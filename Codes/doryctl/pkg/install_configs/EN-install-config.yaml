@@ -24,7 +24,7 @@ hostIP: "10.1.0.2"
 {{- end }}
 # all dory services view url, please don't include port
 # use kubernetes node port or docker expose port to access dory services
-viewURL: http://new2.imdory.com
+viewURL: http://dory.local
 # dory services deployment settings
 dory:
   # which namespace will dory service deploy in
@@ -107,7 +107,7 @@ imageRepo:
   # image repository type, options: harbor
   type: harbor
   # image repository domain name, used for create image repository self signed certificates
-  domainName: harbor2.new.imdory.com
+  domainName: harbor.dory.local
   # image repository (harbor) version, support v2.2.x - v2.4.x
   version: v2.4.0
   # image repository admin user password, leave it empty to random create one

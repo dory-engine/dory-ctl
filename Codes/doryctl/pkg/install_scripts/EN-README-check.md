@@ -1,5 +1,11 @@
 # kubernetes prerequisite
 
+## hardware requirement
+
+- cpus: 2 cores
+- memory: 8G
+- storage: 40G
+
 ## check /etc/timezone and /etc/localtime
 
 - all kubernetes nodes should have /etc/timezone and /etc/localtime files
