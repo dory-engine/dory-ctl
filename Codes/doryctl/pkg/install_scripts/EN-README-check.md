@@ -78,6 +78,21 @@ kubectl -n traefik get services -o wide
 
 - install:
 ```shell script
+# pull docker image
+docker pull registry.aliyuncs.com/google_containers/metrics-server:v0.5.2
+docker tag registry.aliyuncs.com/google_containers/metrics-server:v0.5.2 k8s.gcr.io/metrics-server/metrics-server:v0.5.2
+
+# get metrics-server install yaml
+curl -O -L https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.2/components.yaml
+# add --kubelet-insecure-tls args
+sed -i 's/- args:/- args:\n        - --kubelet-insecure-tls/g' components.yaml
 # install metrics-server
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl apply -f components.yaml
+
+
+# waiting for metrics-server ready
+kubectl -n kube-system get pods -l=k8s-app=metrics-server
+
+# get pods metrics
+kubectl top pods -A
 ```

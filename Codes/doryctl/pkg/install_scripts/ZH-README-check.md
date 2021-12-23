@@ -78,6 +78,20 @@ kubectl -n traefik get services -o wide
 
 - install:
 ```shell script
-# 安装 metrics-server
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# 拉取镜像
+docker pull registry.aliyuncs.com/google_containers/metrics-server:v0.5.2
+docker tag registry.aliyuncs.com/google_containers/metrics-server:v0.5.2 k8s.gcr.io/metrics-server/metrics-server:v0.5.2
+
+# 获取metrics-server安装yaml
+curl -O -L https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.2/components.yaml
+# 添加--kubelet-insecure-tls参数
+sed -i 's/- args:/- args:\n        - --kubelet-insecure-tls/g' components.yaml
+# 安装metrics-server
+kubectl apply -f components.yaml
+
+# 等待metrics-server正常
+kubectl -n kube-system get pods -l=k8s-app=metrics-server
+
+# 查看pod的metrics
+kubectl top pods -A
 ```
