@@ -2,7 +2,7 @@
 
 ## caution about docker install mode 
 
-- docker mode install machine and kubernetes master can't be the same machine, because docker mode boot harbor services and kubernetes master ingress use the same 443 TLS port, port conflicts will cause dory connect harbor failed
+- docker mode install machine and kubernetes master can't be the same machine, because in docker mode harbor services and kubernetes master ingress controller use the same 443 TLS port, port conflicts will cause dory connect harbor failed
 - make sure you have 2 hosts for docker mode install 
 
 ## hardware requirement
