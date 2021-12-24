@@ -1,5 +1,10 @@
 # kubernetes环境部署要求
 
+## docker模式安装注意事项
+
+- docker模式安装的主机不能是kubernetes的master节点，docker模式启动的harbor会与kubernetes的master节点的ingress controller抢夺443端口，会引起harbor访问异常
+- 要使用docker模式安装，请保证你至少有两台主机
+
 ## 系统硬件资源需求
 
 - cpus: 2核
