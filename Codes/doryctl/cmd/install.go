@@ -34,7 +34,7 @@ func NewCmdInstall() *cobra.Command {
   # 1. check prerequisite for install with kubernetes
   doryctl install check --mode kubernetes
   
-  # 2. pull relative kubernetes images from kubernetes hub
+  # 2. pull relative docker images from docker hub
   doryctl install pull
   
   # 3. print kubernetes install mode config settings
