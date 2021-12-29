@@ -26,6 +26,29 @@
 - 多云编排: 可以同时接管多个不同的云原生环境、主机环境(企业版原生支持)、各种数据库环境(企业版原生支持)，把应用发布到多个不同环境。
 - 协同治理: 接管DevOps持续交付工具链各个组件，自动开通配置好各个组件和云原生环境，应用上云从未如此简单。
 
+## 安装 doryctl
+
+### 二进制包方式安装
+
+- 从[doryctl Releases](https://github.com/dory-engine/dory-ctl/releases)下载相应的二进制安装包. 一旦下载后，二进制执行文件就可以在任何地方执行，你无需把执行文件放到全局目录，假如你没有主机的相关权限的话。
+
+- 更好的方式是把二进制执行文件放到PATH所在的目录，这样你在任何地方都可以调用doryctl，常见的路径为 /user/local/bin
+
+### 源码方式安装
+
+- doryctl 需要golangv1.16.x以上版本编译。
+
+```shell script
+# 克隆源代码
+git clone https://github.com/dory-engine/dory-ctl.git
+
+# 从源代码编译doryctl
+cd dory-ctl
+go mod tidy && go build -o doryctl
+mv doryctl /usr/local/bin/
+```
+
+
 ## 使用 doryctl 安装 `Dory-Engine`
 
 - 可以使用 doryctl 以两种方式安装 `Dory-Engine`: 

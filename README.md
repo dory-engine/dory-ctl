@@ -26,6 +26,28 @@ For more detail please visit our official website: [https://doryengine.com](http
 - Multi-cloud orchestration: It can take over multiple different cloud native environments, host environments (native support for Enterprise Edition), various database environments (native support for Enterprise Edition), and publish applications to multiple different environments at the same time.
 - Collaborative governance: Taking over the various components of the DevOps continuous delivery tool chain, automatically opening and configuring each component and cloud native environment, application to the cloud has never been easier.
 
+## Install doryctl
+
+### Binary (Cross-platform)
+
+- Download the appropriate version for your platform from [doryctl Releases](https://github.com/dory-engine/dory-ctl/releases). Once downloaded, the binary can be run from anywhere. You don’t need to install it into a global location. This works well for shared hosts and other systems where you don’t have a privileged account.
+
+- Ideally, you should install it somewhere in your PATH for easy use. /usr/local/bin is the most probable location.
+
+### Build from source
+
+- doryctl require golang version v1.16.x+
+
+```shell script
+# clone doryctl source
+git clone https://github.com/dory-engine/dory-ctl.git
+
+# build doryctl from source
+cd dory-ctl
+go mod tidy && go build -o doryctl
+mv doryctl /usr/local/bin/
+```
+
 ## Install Dory-Engine by doryctl
 
 - Now we can use doryctl to install `Dory-Engine` with `docker-compose` (for test usage) or `kubernetes`(for production usage, recommended)
