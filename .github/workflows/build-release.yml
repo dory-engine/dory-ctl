@@ -1,0 +1,47 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goarch: amd64
+            goos: linux
+          - goarch: amd64
+            goos: darwin
+          - goarch: arm64
+            goos: linux
+          - goarch: arm64
+            goos: darwin
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Making doryctl
+        run: go mod tidy && go build -o doryctl
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+      - name: Packaging...
+        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
+      - name: Uploading assets...
+        if: ${{ !env.ACT }}
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+          asset_name: doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+          asset_content_type: application/gzip
