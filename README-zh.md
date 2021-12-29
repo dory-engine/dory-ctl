@@ -1,6 +1,7 @@
 # doryctl 是一个安装和管理 `Dory-Engine` 的命令行工具
 
-[English documents](README.md)
+- [English documents](README.md)
+- [中文文档](README-zh.md)
 
 ![](docs/images/dory-icon.png)
 
