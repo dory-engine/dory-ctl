@@ -21,21 +21,23 @@ jobs:
             goos: linux
           - goarch: arm64
             goos: darwin
+          - goarch: amd64
+            goos: windows
     steps:
       - uses: actions/checkout@master
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
       - name: Making doryctl
-        working-directory: Codes/doryctl
+        working-directory: .
         run: go mod tidy && go build -o doryctl
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
       - name: Packaging...
-        working-directory: Codes/doryctl
-        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl ../../LICENSE
+        working-directory: .
+        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
       - name: Uploading assets...
         if: ${{ !env.ACT }}
         id: upload-release-asset
