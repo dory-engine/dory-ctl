@@ -10,7 +10,7 @@ For more detail please visit our official website: [https://doryengine.com](http
 
 - Developers can publish applications from source code to kubernetes cluster without writing complicated kubernetes yaml deployment files.
 
-### `Dory-Engine`架构
+### `Dory-Engine` Architecture
 
 ![](docs/images/architecture.png)
 
