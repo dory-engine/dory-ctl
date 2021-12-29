@@ -37,6 +37,8 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.17
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Making doryctl
         working-directory: .
         run: go mod tidy && go build -o doryctl
