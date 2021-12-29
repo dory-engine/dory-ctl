@@ -23,6 +23,7 @@ jobs:
           prerelease: false
 
   build:
+    needs: createRelease
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -61,7 +62,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.createRelease.upload_url }}
+          upload_url: ${{ jobs.createRelease.create_release.outputs.upload_url }}
           asset_path: ./doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
           asset_name: doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
           asset_content_type: application/gzip
