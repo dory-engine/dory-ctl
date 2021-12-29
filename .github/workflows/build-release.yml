@@ -4,12 +4,6 @@ on:
   push:
     tags:
     - "*"
-#    branches:
-#      - master
-#  release:
-#    types:
-#      - created
-#      - edited
 
 jobs:
 
@@ -51,7 +45,7 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
       - name: Packaging...
         working-directory: .
-        run: tar czvf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
+        run: tar czvf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}-${{ github.ref }}.tgz doryctl LICENSE && echo "doryctl-${{ matrix.goos }}-${{ matrix.goarch }}-${{ github.ref }}.tgz"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
