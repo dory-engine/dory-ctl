@@ -1,5 +1,7 @@
 # doryctl is a command line toolkit to install and control `Dory-Engine`
 
+[中文文档](README-zh.md)
+
 ![](docs/images/dory-icon.png)
 
 For more detail please visit our official website: [https://doryengine.com](https://doryengine.com)
