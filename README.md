@@ -1,4 +1,4 @@
-# doryctl is a command line toolkit to install and control `Dory-Engine`
+# `doryctl` is a command line toolkit to install and control `Dory-Engine`
 
 - [English documents](README.md)
 - [中文文档](README-zh.md)
@@ -8,6 +8,8 @@
 For more detail please visit our official website: [https://doryengine.com](https://doryengine.com)
 
 ## What is `Dory-Engine`
+
+![](docs/images/what-is-dory.png)
 
 - `Dory-Engine` is an engine to make your application to Cloud-Native infrastructure extremely easy. 
 

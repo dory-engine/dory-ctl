@@ -1,4 +1,4 @@
-# doryctl 是一个安装和管理 `Dory-Engine` 的命令行工具
+# `doryctl` 是一个安装和管理 `Dory-Engine` 的命令行工具
 
 - [English documents](README.md)
 - [中文文档](README-zh.md)
@@ -8,6 +8,8 @@
 详细参见官方网站: [https://doryengine.com](https://doryengine.com)
 
 ## 什么是`Dory-Engine`
+
+![](docs/images/what-is-dory.png)
 
 - `Dory-Engine` 是一个极简的应用上云引擎
 
