@@ -37,8 +37,18 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
       - name: Packaging...
         working-directory: .
-        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
-      - name: Uploading assets...
+        run: tar czvf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Uploading Release assets...
         if: ${{ !env.ACT }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
