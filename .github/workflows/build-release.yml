@@ -25,7 +25,7 @@ jobs:
           release_name: doryctl ${{ steps.get_tag_name.outputs.tag_name }}
           draft: false
           prerelease: false
-          body_path: CHANGELOG.md
+          body_path: CHANGELOGS/CHANGELOG-${{ steps.get_tag_name.outputs.tag_name }}.md
       - id: get_upload_url
         run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
 
