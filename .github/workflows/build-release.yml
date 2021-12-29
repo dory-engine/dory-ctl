@@ -10,6 +10,10 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.step_version.outputs.version }}
+      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
+
     strategy:
       matrix:
         include:
@@ -24,6 +28,11 @@ jobs:
           - goarch: amd64
             goos: windows
     steps:
+      - id: step_version
+        run: echo "::set-output name=version::${{ steps.package_version.outputs.version }}"
+      - id: step_upload_url
+        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+
       - uses: actions/checkout@master
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -48,6 +57,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+
       - name: Uploading Release assets...
         if: ${{ !env.ACT }}
         id: upload-release-asset
