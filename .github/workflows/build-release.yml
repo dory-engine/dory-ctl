@@ -6,13 +6,22 @@ on:
     - "*"
 
 jobs:
+  createRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: Doryctl ${{ env.RELEASE_VERSION }}
+          draft: false
+          prerelease: false
 
   build:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.step_version.outputs.version }}
-      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
-
     strategy:
       matrix:
         include:
@@ -42,17 +51,7 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
       - name: Packaging
         working-directory: .
-        run: tar czvf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}-${{ env.RELEASE_VERSION }}.tgz doryctl LICENSE
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: Release ${{ env.RELEASE_VERSION }}
-          draft: false
-          prerelease: false
+        run: tar czvf doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
       - name: Uploading Release assets
         if: ${{ !env.ACT }}
         id: upload-release-asset
@@ -60,7 +59,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./doryctl-${{ matrix.goos }}-${{ matrix.goarch }}-${{ env.RELEASE_VERSION }}.tgz
-          asset_name: doryctl-${{ matrix.goos }}-${{ matrix.goarch }}-${{ env.RELEASE_VERSION }}.tgz
+          upload_url: ${{ github.event.createRelease.upload_url }}
+          asset_path: ./doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+          asset_name: doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
           asset_content_type: application/gzip
