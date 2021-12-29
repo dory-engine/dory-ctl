@@ -35,7 +35,7 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
       - name: Packaging...
         working-directory: Codes/doryctl
-        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl LICENSE
+        run: tar czf doryctl-${{ matrix.goos }}-${{ matrix.goarch }}.tgz doryctl ../../LICENSE
       - name: Uploading assets...
         if: ${{ !env.ACT }}
         id: upload-release-asset
