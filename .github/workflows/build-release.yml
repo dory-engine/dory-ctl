@@ -8,6 +8,8 @@ on:
 jobs:
   createRelease:
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
     steps:
       - name: Get tag name
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -21,6 +23,8 @@ jobs:
           release_name: Doryctl ${{ env.RELEASE_VERSION }}
           draft: false
           prerelease: false
+      - id: get_upload_url
+        run: echo "::set-output name=upload_url::{{ steps.create_release.outputs.upload_url }}"
 
   build:
     needs: createRelease
@@ -62,7 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.createRelease.steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.createRelease.outputs.upload_url }}
           asset_path: ./doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
           asset_name: doryctl-${{ env.RELEASE_VERSION }}-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
           asset_content_type: application/gzip
