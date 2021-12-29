@@ -2,12 +2,14 @@ name: Go
 
 on:
   push:
-    branches:
-      - master
-  release:
-    types:
-      - created
-      - edited
+    tags:
+    - "*"
+#    branches:
+#      - master
+#  release:
+#    types:
+#      - created
+#      - edited
 
 jobs:
 
