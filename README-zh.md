@@ -28,10 +28,9 @@
 
 ## 使用 doryctl 安装 `Dory-Engine`
 
-- Now we can use doryctl to install `Dory-Engine` with `docker-compose` (for test usage) or `kubernetes`(for production usage, recommended)
-- 可以使用 doryctl 以两种方式安装 `Dory-Engine`。 
-    1. 使用`docker-compose`把`Dory-Engine`安装在`docker`容器中，用于测试用途。
-    2. 把`Dory-Engine`安装在`kubernetes`中，用于正式生产用途。
+- 可以使用 doryctl 以两种方式安装 `Dory-Engine`: 
+    - 1. 使用`docker-compose`把`Dory-Engine`安装在`docker`容器中，用于测试用途。
+    - 2. 把`Dory-Engine`安装在`kubernetes`中，用于正式生产用途。
 
 ```shell script
 ##############################
