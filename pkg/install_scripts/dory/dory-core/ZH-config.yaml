@@ -404,3 +404,10 @@ buildDockerEnvs:
           image: "public/alpine:3.14.3-dory"
         - buildEnvName: alpine
           image: "public/alpine:3.15.0-dory"
+
+# 调试容器docker镜像设置
+componentDebugEnvs:
+  # ssh-debug容器镜像所在的镜像仓库相对路径
+  sshDebug: "public/ssh-debug:v1.1.5"
+  # vnc-debug容器镜像所在的镜像仓库相对路径
+  vncDebug: "public/vnc-debug:v1.6.1"
