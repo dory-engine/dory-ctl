@@ -1,4 +1,4 @@
-# `doryctl` is a command line toolkit to install and control `Dory-Engine`
+# Dory-Engine - Make Cloud-Native extremely easy, doryctl is CLI for Dory-Engine
 
 - [English documents](README.md)
 - [中文文档](README-zh.md)
