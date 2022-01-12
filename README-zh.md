@@ -3,6 +3,9 @@
 - [English documents](README.md)
 - [中文文档](README-zh.md)
 
+- [Github](https://github.com/dory-engine/dory-dashboard)
+- [Gitee](https://gitee.com/dory-engine/dory-dashboard)
+
 ![](docs/images/dory-icon.png)
 
 详细参见官方网站: [https://doryengine.com](https://doryengine.com)
