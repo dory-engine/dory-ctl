@@ -1,34 +1,48 @@
 dockerImages:
   - source: busybox:latest
     target: public/busybox:latest
-  - source: doryengine/alpine:3.14.3-dory
+  - source: alpine:3.14.3
     target: public/alpine:3.14.3-dory
-  - source: doryengine/alpine:3.15.0-dory
+    dockerFile: Dockerfile-alpine
+  - source: alpine:3.15.0
     target: public/alpine:3.15.0-dory
-  - source: doryengine/golang:1.14.15-alpine3.13-dory
+    dockerFile: Dockerfile-alpine
+  - source: golang:1.14.15-alpine3.13
     target: public/golang:1.14.15-alpine3.13-dory
-  - source: doryengine/golang:1.17.3-alpine3.15-dory
+    dockerFile: Dockerfile-golang
+  - source: golang:1.17.3-alpine3.15
     target: public/golang:1.17.3-alpine3.15-dory
-  - source: doryengine/gradle:6.7.0-jdk14-dory
+    dockerFile: Dockerfile-golang
+  - source: gradle:6.7.0-jdk14
     target: public/gradle:6.7.0-jdk14-dory
-  - source: doryengine/gradle:7.3.0-jdk11-dory
+    dockerFile: Dockerfile-gradle
+  - source: gradle:7.3.0-jdk11
     target: public/gradle:7.3.0-jdk11-dory
-  - source: doryengine/gradle:7.3.0-jdk17-dory
+    dockerFile: Dockerfile-gradle
+  - source: gradle:7.3.0-jdk17
     target: public/gradle:7.3.0-jdk17-dory
-  - source: doryengine/gradle:7.3.0-jdk8-dory
+    dockerFile: Dockerfile-gradle
+  - source: gradle:7.3.0-jdk8
     target: public/gradle:7.3.0-jdk8-dory
-  - source: doryengine/maven:3.6.3-jdk-14-dory
+    dockerFile: Dockerfile-gradle
+  - source: maven:3.6.3-jdk-14
     target: public/maven:3.6.3-jdk-14-dory
-  - source: doryengine/maven:3.8.3-openjdk-17-dory
+    dockerFile: Dockerfile-maven
+  - source: maven:3.8.3-openjdk-17
     target: public/maven:3.8.3-openjdk-17-dory
-  - source: doryengine/maven:3.8.4-jdk-11-dory
+    dockerFile: Dockerfile-maven
+  - source: maven:3.8.4-jdk-11
     target: public/maven:3.8.4-jdk-11-dory
-  - source: doryengine/maven:3.8.4-jdk-8-dory
+    dockerFile: Dockerfile-maven
+  - source: maven:3.8.4-jdk-8
     target: public/maven:3.8.4-jdk-8-dory
-  - source: doryengine/python:3.10.0-alpine3.15-dory
+    dockerFile: Dockerfile-maven
+  - source: python:3.10.0-alpine3.15
     target: public/python:3.10.0-alpine3.15-dory
-  - source: doryengine/python:3.9.9-alpine3.15-dory
+    dockerFile: Dockerfile-python
+  - source: python:3.9.9-alpine3.15
     target: public/python:3.9.9-alpine3.15-dory
+    dockerFile: Dockerfile-python
   - source: node:13.14-alpine3.11
     target: hub/node:13.14-alpine3.11
   - source: node:15.14.0-alpine3.13

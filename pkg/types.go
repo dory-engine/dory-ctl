@@ -11,8 +11,9 @@ type DoryConfig struct {
 }
 
 type InstallDockerImage struct {
-	Source string `yaml:"source" json:"source" bson:"source" validate:"required"`
-	Target string `yaml:"target" json:"target" bson:"target" validate:""`
+	Source     string `yaml:"source" json:"source" bson:"source" validate:"required"`
+	Target     string `yaml:"target" json:"target" bson:"target" validate:"required"`
+	DockerFile string `yaml:"dockerFile" json:"dockerFile" bson:"dockerFile" validate:""`
 }
 
 type InstallDockerImages struct {

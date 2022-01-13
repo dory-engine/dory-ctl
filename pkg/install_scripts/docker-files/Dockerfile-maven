@@ -1,0 +1,4 @@
+FROM {{ $.source }}
+LABEL maintainer="cookeem"
+LABEL email="cookeem@qq.com"
+RUN useradd --uid 1000 --user-group --create-home --home-dir /home/dory dory
