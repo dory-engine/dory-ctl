@@ -589,6 +589,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
+	vals["versionDoryCore"] = pkg.VersionDoryCore
+	vals["versionDoryDashboard"] = pkg.VersionDoryDashboard
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
@@ -825,6 +827,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
+	vals["versionDoryCore"] = pkg.VersionDoryCore
+	vals["versionDoryDashboard"] = pkg.VersionDoryDashboard
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)

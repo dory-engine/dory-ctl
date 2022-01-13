@@ -128,7 +128,7 @@ services:
   {{- end }}
 
   dory-core:
-    image: doryengine/dory-core:v1.6.3-alpine3.15.0
+    image: doryengine/dory-core:{{ $.versionDoryCore }}-alpine3.15.0
     container_name: dory-core
     volumes:
       - ./dory-core/config:/dory-core/config
@@ -146,7 +146,7 @@ services:
       - mongo-core-dory
 
   dory-dashboard:
-    image: doryengine/dory-dashboard:v1.6.1
+    image: doryengine/dory-dashboard:{{ $.versionDoryDashboard }}
     container_name: dory-dashboard
     ports:
       - {{ $.dory.dorycore.port }}:80

@@ -3,13 +3,16 @@ package pkg
 import "embed"
 
 const (
-	BaseCmdName       = "doryctl"
-	ConfigDirDefault  = ".doryctl"
-	ConfigFileDefault = "doryctl.yaml"
-	ConfigDirEnv      = "DORY_CONFIGDIR"
-	ConfigFileEnv     = "DORY_CONFIG"
-	DirInstallScripts = "install_scripts"
-	DirInstallConfigs = "install_configs"
+	VersionDoryCtl       = "v0.6.4"
+	VersionDoryCore      = "v1.6.3"
+	VersionDoryDashboard = "v1.6.1"
+	BaseCmdName          = "doryctl"
+	ConfigDirDefault     = ".doryctl"
+	ConfigFileDefault    = "doryctl.yaml"
+	ConfigDirEnv         = "DORY_CONFIGDIR"
+	ConfigFileEnv        = "DORY_CONFIG"
+	DirInstallScripts    = "install_scripts"
+	DirInstallConfigs    = "install_configs"
 )
 
 var (

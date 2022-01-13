@@ -370,6 +370,8 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
+	vals["versionDoryCore"] = pkg.VersionDoryCore
+	vals["versionDoryDashboard"] = pkg.VersionDoryDashboard
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)
@@ -523,6 +525,8 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
+	vals["versionDoryCore"] = pkg.VersionDoryCore
+	vals["versionDoryDashboard"] = pkg.VersionDoryDashboard
 
 	outputDir := o.OutputDir
 	_ = os.MkdirAll(outputDir, 0700)

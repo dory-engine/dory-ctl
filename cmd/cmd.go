@@ -98,6 +98,7 @@ func NewCmdRoot() *cobra.Command {
 
 	//cmd.AddCommand(NewCmdLogin())
 	cmd.AddCommand(NewCmdInstall())
+	cmd.AddCommand(NewCmdVersion())
 	return cmd
 }
 

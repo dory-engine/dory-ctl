@@ -302,7 +302,7 @@ deploys:
         ip: {{ $.hostIP }}
 
   - deployName: dory-core
-    deployImage: doryengine/dory-core:v1.6.3-alpine3.15.0
+    deployImage: doryengine/dory-core:{{ $.versionDoryCore }}-alpine3.15.0
     deployLocalPort:
       - port: 9000
     deployReplicas: 1
@@ -346,7 +346,7 @@ deploys:
         dependType: TCP
 
   - deployName: dory-dashboard
-    deployImage: doryengine/dory-dashboard:v1.6.1
+    deployImage: doryengine/dory-dashboard:{{ $.versionDoryDashboard }}
     deployNodePort:
       - port: 80
         nodePort: {{ $.dory.dorycore.port }}
