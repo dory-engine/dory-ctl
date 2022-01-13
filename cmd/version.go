@@ -54,8 +54,8 @@ func (o *OptionsVersionRun) Validate(args []string) error {
 
 func (o *OptionsVersionRun) Run(args []string) error {
 	var err error
-	LogInfo(fmt.Sprintf("doryctl version: %s", pkg.VersionDoryCtl))
-	LogInfo(fmt.Sprintf("dory-core version: %s", pkg.VersionDoryCore))
-	LogInfo(fmt.Sprintf("dory-dashboard version: %s", pkg.VersionDoryDashboard))
+	fmt.Println(fmt.Sprintf("doryctl version: %s", pkg.VersionDoryCtl))
+	fmt.Println(fmt.Sprintf("dory-core version: %s", pkg.VersionDoryCore))
+	fmt.Println(fmt.Sprintf("dory-dashboard version: %s", pkg.VersionDoryDashboard))
 	return err
 }
