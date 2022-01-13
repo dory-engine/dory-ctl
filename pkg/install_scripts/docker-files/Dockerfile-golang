@@ -2,3 +2,5 @@ FROM {{ $.source }}
 LABEL maintainer="cookeem"
 LABEL email="cookeem@qq.com"
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk --update add git curl zip
+
+# docker build -t {{ $.source }}-dory -f Dockerfile-golang-{{ $.tagName }} .

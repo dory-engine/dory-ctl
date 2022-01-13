@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
-	"strings"
 )
 
 type OptionsInstallScript struct {
@@ -153,50 +152,6 @@ func (o *OptionsInstallScript) HarborGetDockerImages() (pkg.InstallDockerImages,
 	err = yaml.Unmarshal(bs, &dockerImages)
 	if err != nil {
 		err = fmt.Errorf("get pull docker images error: %s", err.Error())
-		return dockerImages, err
-	}
-
-	outputDir := o.OutputDir
-	_ = os.MkdirAll(outputDir, 0700)
-	dockerFileDir := fmt.Sprintf("%s/docker-files", outputDir)
-	_ = os.MkdirAll(dockerFileDir, 0700)
-	dockerFileTplDir := "docker-files"
-
-	for _, dockerImage := range dockerImages.InstallDockerImages {
-		if dockerImage.DockerFile != "" {
-			arr := strings.Split(dockerImage.Source, ":")
-			var tagName string
-			if len(arr) == 2 {
-				tagName = arr[1]
-			} else {
-				tagName = "latest"
-			}
-			dockerFileName := fmt.Sprintf("%s/%s-%s", dockerFileDir, dockerImage.DockerFile, tagName)
-
-			bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, dockerFileTplDir, dockerImage.DockerFile))
-			if err != nil {
-				err = fmt.Errorf("create %s error: %s", dockerFileName, err.Error())
-				return dockerImages, err
-			}
-			vals := map[string]interface{}{
-				"source": dockerImage.Source,
-			}
-			strDockerfile, err := pkg.ParseTplFromVals(vals, string(bs))
-			if err != nil {
-				err = fmt.Errorf("create %s error: %s", dockerFileName, err.Error())
-				return dockerImages, err
-			}
-			err = os.WriteFile(fmt.Sprintf("%s", dockerFileName), []byte(strDockerfile), 0600)
-			if err != nil {
-				err = fmt.Errorf("create values.yaml error: %s", err.Error())
-				return dockerImages, err
-			}
-		}
-	}
-	LogInfo(fmt.Sprintf("create docker-files %s success", dockerFileDir))
-	_, _, err = pkg.CommandExec("ls -alh", dockerFileDir)
-	if err != nil {
-		err = fmt.Errorf("create docker-files %s success error: %s", dockerFileDir, err.Error())
 		return dockerImages, err
 	}
 	return dockerImages, err
