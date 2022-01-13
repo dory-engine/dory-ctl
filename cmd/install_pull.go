@@ -75,6 +75,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 	}
 
 	dockerFileDir := fmt.Sprintf("docker-files")
+	_ = os.RemoveAll(dockerFileDir)
 	_ = os.MkdirAll(dockerFileDir, 0700)
 	dockerFileTplDir := "docker-files"
 
@@ -110,10 +111,10 @@ func (o *OptionsInstallPull) Run(args []string) error {
 			}
 		}
 	}
-	LogInfo(fmt.Sprintf("create docker-files %s success", dockerFileDir))
+	LogInfo(fmt.Sprintf("create docker files %s success", dockerFileDir))
 	_, _, err = pkg.CommandExec("ls -alh", dockerFileDir)
 	if err != nil {
-		err = fmt.Errorf("create docker-files %s error: %s", dockerFileDir, err.Error())
+		err = fmt.Errorf("create docker files %s error: %s", dockerFileDir, err.Error())
 		return err
 	}
 
@@ -123,8 +124,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 	}
 
 	LogInfo("docker images need to build")
-	LogWarning("all docker files in docker-files folder, if your machine is without internet connection, build docker images by manual")
-	buildCount := 0
+	LogWarning(fmt.Sprintf("all docker files in %s folder, if your machine is without internet connection, build docker images by manual", dockerFileDir))
 	for _, idi := range dockerImages.InstallDockerImages {
 		if idi.DockerFile != "" {
 			arr := strings.Split(idi.Source, ":")
@@ -135,23 +135,16 @@ func (o *OptionsInstallPull) Run(args []string) error {
 				tagName = "latest"
 			}
 			fmt.Println(fmt.Sprintf("docker build -t %s-dory -f %s-%s %s", idi.Source, idi.DockerFile, tagName, dockerFileDir))
-			buildCount = buildCount + 1
 		}
 	}
 
-	LogInfo("pull docker images begin")
+	LogInfo("pull and build docker images begin")
 	for i, idi := range dockerImages.InstallDockerImages {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
 		if err != nil {
 			err = fmt.Errorf("pull docker image %s error: %s", idi.Source, err.Error())
 			return err
 		}
-		LogSuccess(fmt.Sprintf("# progress: %d/%d %s", i+1, len(dockerImages.InstallDockerImages), idi.Source))
-	}
-	LogSuccess(fmt.Sprintf("pull docker images success"))
-
-	LogInfo("build docker images begin")
-	for i, idi := range dockerImages.InstallDockerImages {
 		if idi.DockerFile != "" {
 			arr := strings.Split(idi.Source, ":")
 			var tagName string
@@ -165,10 +158,10 @@ func (o *OptionsInstallPull) Run(args []string) error {
 				err = fmt.Errorf("build docker image %s error: %s", idi.Source, err.Error())
 				return err
 			}
-			LogSuccess(fmt.Sprintf("# progress: %d/%d %s", i+1, buildCount, idi.Source))
 		}
+		LogSuccess(fmt.Sprintf("# progress: %d/%d %s", i+1, len(dockerImages.InstallDockerImages), idi.Source))
 	}
-	LogSuccess(fmt.Sprintf("build docker images success"))
+	LogSuccess(fmt.Sprintf("pull and build docker images success"))
 
 	defer color.Unset()
 	return err
