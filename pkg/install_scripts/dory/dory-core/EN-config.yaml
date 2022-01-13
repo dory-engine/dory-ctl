@@ -187,8 +187,6 @@ gitRepoConfigs:
     token: "PLEASE_INPUT_BY_MANUAL"
     # default tag name
     tagDefault: "v0.1.0"
-    # hotfix branch name
-    branchHotfix: hotfix
 # image repository settings, support harbor
 imageRepoConfigs:
     # image repository type, options: harbor

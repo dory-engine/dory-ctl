@@ -187,8 +187,6 @@ gitRepoConfigs:
     token: "PLEASE_INPUT_BY_MANUAL"
     # 默认tag名字
     tagDefault: "v0.1.0"
-    # hotfix分支名字
-    branchHotfix: hotfix
 # 镜像仓库配置，支持harbor
 imageRepoConfigs:
     # 镜像仓库类型，选项: harbor
