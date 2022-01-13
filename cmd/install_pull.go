@@ -134,7 +134,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 			} else {
 				tagName = "latest"
 			}
-			fmt.Println(fmt.Sprintf("docker build -t %s/%s-dory -f %s-%s %s", dockerFileDir, idi.Source, idi.DockerFile, tagName, dockerFileDir))
+			fmt.Println(fmt.Sprintf("docker build -t %s-dory -f %s/%s-%s %s", idi.Source, dockerFileDir, idi.DockerFile, tagName, dockerFileDir))
 		}
 	}
 
@@ -153,7 +153,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 			} else {
 				tagName = "latest"
 			}
-			_, _, err = pkg.CommandExec(fmt.Sprintf("docker build -t %s/%s-dory -f %s-%s %s", dockerFileDir, idi.Source, idi.DockerFile, tagName, dockerFileDir), ".")
+			_, _, err = pkg.CommandExec(fmt.Sprintf("docker build -t %s-dory -f %s/%s-%s %s", idi.Source, dockerFileDir, idi.DockerFile, tagName, dockerFileDir), ".")
 			if err != nil {
 				err = fmt.Errorf("build docker image %s error: %s", idi.Source, err.Error())
 				return err
