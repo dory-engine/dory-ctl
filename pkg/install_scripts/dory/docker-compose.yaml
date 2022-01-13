@@ -128,7 +128,7 @@ services:
   {{- end }}
 
   dory-core:
-    image: doryengine/dory-core:v1.6.2-alpine3.15.0
+    image: doryengine/dory-core:v1.6.3-alpine3.15.0
     container_name: dory-core
     volumes:
       - ./dory-core/config:/dory-core/config
