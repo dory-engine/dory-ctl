@@ -406,6 +406,6 @@ buildDockerEnvs:
 # 调试容器docker镜像设置
 componentDebugEnvs:
   # ssh-debug容器镜像所在的镜像仓库相对路径
-  sshDebug: "public/ssh-debug:v1.1.5"
+  sshDebug: "public/sshd-centos:7.9-2009"
   # vnc-debug容器镜像所在的镜像仓库相对路径
-  vncDebug: "public/vnc-debug:v1.6.1"
+  vncDebug: "public/vnc-centos:7.9-2009"

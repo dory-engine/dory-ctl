@@ -51,3 +51,7 @@ dockerImages:
     target: hub/node:17.0.1-alpine3.14
   - source: openjdk:14-jdk-alpine3.10
     target: hub/openjdk:14-jdk-alpine3.10
+  - source: doryengine/sshd-centos:7.9-2009
+    target: public/sshd-centos:7.9-2009
+  - source: doryengine/vnc-centos:7.9-2009
+    target: public/vnc-centos:7.9-2009
