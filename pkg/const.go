@@ -3,8 +3,8 @@ package pkg
 import "embed"
 
 const (
-	VersionDoryCtl       = "v0.6.6"
-	VersionDoryCore      = "v1.6.5"
+	VersionDoryCtl       = "v0.6.7"
+	VersionDoryCore      = "v1.6.6"
 	VersionDoryDashboard = "v1.6.2"
 	BaseCmdName          = "doryctl"
 	ConfigDirDefault     = ".doryctl"
