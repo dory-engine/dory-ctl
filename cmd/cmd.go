@@ -50,17 +50,15 @@ func LogError(msg string) {
 	fmt.Println(fmt.Sprintf("[ERROR]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
 }
 
+func CheckError(err error) {
+	if err != nil {
+		LogError(err.Error())
+		os.Exit(1)
+	}
+}
+
 func NewOptionsCommon() *OptionsCommon {
 	var o OptionsCommon
-	lang := "EN"
-	l, err := locale.Detect()
-	if err == nil {
-		b, _ := l.Base()
-		if strings.ToUpper(b.String()) == "ZH" {
-			lang = "ZH"
-		}
-	}
-	o.Language = lang
 	return &o
 }
 
@@ -88,18 +86,10 @@ func NewCmdRoot() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&o.ConfigFile, "config", "c", "", fmt.Sprintf("doryctl config.yaml config file (default is $HOME/%s/%s)", pkg.ConfigDirDefault, pkg.ConfigFileDefault))
-	fmt.Println("config:", o.ConfigFile)
-	err := o.CheckConfigFile()
-	if err != nil {
-		LogError(err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("OK")
-
+	cmd.PersistentFlags().StringVarP(&o.ConfigFile, "config", "c", "", fmt.Sprintf("doryctl config.yaml config file, it can set by system environment variable %s (default is $HOME/%s/%s)", pkg.EnvVarConfigFile, pkg.ConfigDirDefault, pkg.ConfigFileDefault))
 	cmd.PersistentFlags().StringVarP(&o.ServerURL, "serverURL", "s", "", "dory-core server URL, example: https://dory.example.com:8080")
 	cmd.PersistentFlags().BoolVar(&o.Insecure, "insecure", false, "if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure")
-	cmd.PersistentFlags().IntVar(&o.Timeout, "timeout", 5, "dory-core server connection timeout seconds settings")
+	cmd.PersistentFlags().IntVar(&o.Timeout, "timeout", pkg.TimeoutDefault, "dory-core server connection timeout seconds settings")
 	cmd.PersistentFlags().StringVar(&o.AccessToken, "token", "", fmt.Sprintf("dory-core server access token"))
 	cmd.PersistentFlags().StringVar(&o.Language, "language", "", fmt.Sprintf("language settings (options: ZH / EN)"))
 	cmd.PersistentFlags().BoolVarP(&o.Verbose, "verbose", "v", false, "show logs in verbose mode")
@@ -176,6 +166,54 @@ func (o *OptionsCommon) CheckConfigFile() error {
 			err = fmt.Errorf("%s: %s", errInfo, err.Error())
 			return err
 		}
+	}
+
+	return err
+}
+
+func (o *OptionsCommon) GetOptionsCommon() error {
+	errInfo := fmt.Sprintf("get common option error")
+	var err error
+
+	err = o.CheckConfigFile()
+	if err != nil {
+		return err
+	}
+
+	bs, err := os.ReadFile(o.ConfigFile)
+	if err != nil {
+		err = fmt.Errorf("%s: %s", errInfo, err.Error())
+		return err
+	}
+	var doryConfig pkg.DoryConfig
+	err = yaml.Unmarshal(bs, &doryConfig)
+	if err != nil {
+		err = fmt.Errorf("%s: %s", errInfo, err.Error())
+		return err
+	}
+
+	if o.ServerURL == "" && doryConfig.ServerURL != "" {
+		o.ServerURL = doryConfig.ServerURL
+	}
+	if o.AccessToken == "" && doryConfig.AccessToken != "" {
+		o.AccessToken = doryConfig.AccessToken
+	}
+	if o.Language == "" && doryConfig.Language != "" {
+		o.Language = doryConfig.Language
+	}
+	if o.Timeout == pkg.TimeoutDefault && doryConfig.Timeout != pkg.TimeoutDefault {
+		o.Timeout = doryConfig.Timeout
+	}
+	if o.Language == "" {
+		lang := "EN"
+		l, err := locale.Detect()
+		if err == nil {
+			b, _ := l.Base()
+			if strings.ToUpper(b.String()) == "ZH" {
+				lang = "ZH"
+			}
+		}
+		o.Language = lang
 	}
 
 	return err

@@ -1,17 +1,20 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
+	"gopkg.in/yaml.v3"
+	"os"
+	"strings"
 )
 
 type OptionsLogin struct {
 	*OptionsCommon
 	Username string
 	Password string
-
-	DoryConfig pkg.DoryConfig
 }
 
 func NewOptionsLogin() *OptionsLogin {
@@ -27,13 +30,13 @@ func NewCmdLogin() *cobra.Command {
 	msgShort := fmt.Sprintf("login to DoryEngine server")
 	msgLong := fmt.Sprintf(`Must login before use other %s commands`, pkg.BaseCmdName)
 	msgExample := fmt.Sprintf(`  # login with username and password input prompt
-  doryctl login --serverURL http://dory.example.com:8080 --insecure=false
+  doryctl login --serverURL http://dory.example.com:8080
 
   # login without password input prompt
-  doryctl login --serverURL http://dory.example.com:8080 --insecure=false --username test-user
+  doryctl login --serverURL http://dory.example.com:8080 --username test-user
 
   # login without input prompt
-  doryctl login --serverURL http://dory.example.com:8080 --insecure=false --username test-user --password xxx`)
+  doryctl login --serverURL http://dory.example.com:8080 --username test-user --password xxx`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -42,44 +45,66 @@ func NewCmdLogin() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			cobra.CheckErr(o.Complete(cmd))
-			cobra.CheckErr(o.Validate(args))
-			cobra.CheckErr(o.Run(args))
+			CheckError(o.Complete(cmd))
+			CheckError(o.Validate(args))
+			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVarP(&o.Username, "username", "U", "", "Print the fields of fields (Currently only 1 level deep)")
-	cmd.Flags().StringVarP(&o.Password, "password", "P", "", "Get different explanations for particular API version (API group/version)")
+	cmd.Flags().StringVarP(&o.Username, "username", "U", "", "dory-core server username")
+	cmd.Flags().StringVarP(&o.Password, "password", "P", "", "dory-core server password")
 	return cmd
 }
 
 func (o *OptionsLogin) Complete(cmd *cobra.Command) error {
 	var err error
+	err = o.GetOptionsCommon()
 	return err
 }
 
 func (o *OptionsLogin) Validate(args []string) error {
 	var err error
 	if len(args) > 0 {
-		err = fmt.Errorf("not accept any args")
+		err = fmt.Errorf("command args must be empty")
 		return err
 	}
 	if o.ServerURL == "" {
-		err = fmt.Errorf("serverURL required")
-		return err
-	}
-	if o.Username == "" && o.Password != "" {
-		err = fmt.Errorf("password provided so username required")
+		err = fmt.Errorf("--serverURL required")
 		return err
 	}
 
 	return err
 }
 
-// Run executes the appropriate steps to print a model's documentation
 func (o *OptionsLogin) Run(args []string) error {
 	var err error
-	fmt.Println(o.Timeout)
-	fmt.Println(o.Insecure)
-	fmt.Println(o.ServerURL)
+	if o.Password != "" {
+		LogWarning("set password in command line args is not safe!")
+	}
+	for {
+		if o.Username == "" {
+			LogInfo("please input username")
+			reader := bufio.NewReader(os.Stdin)
+			username, _ := reader.ReadString('\n')
+			username = strings.Trim(username, "\n")
+			username = strings.Trim(username, " ")
+			o.Username = username
+		} else {
+			break
+		}
+	}
+	for {
+		if o.Password == "" {
+			LogInfo("please input password")
+			bytePassword, _ := terminal.ReadPassword(0)
+			password := string(bytePassword)
+			password = strings.Trim(password, " ")
+			o.Password = password
+		} else {
+			break
+		}
+	}
+
+	bs, _ := yaml.Marshal(o)
+	fmt.Println(string(bs))
 	return err
 }

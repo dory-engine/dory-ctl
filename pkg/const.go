@@ -12,6 +12,8 @@ const (
 	EnvVarConfigFile     = "DORYCONFIG"
 	DirInstallScripts    = "install_scripts"
 	DirInstallConfigs    = "install_configs"
+
+	TimeoutDefault = 5
 )
 
 var (

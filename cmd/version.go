@@ -33,9 +33,9 @@ func NewCmdVersion() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			cobra.CheckErr(o.Complete(cmd))
-			cobra.CheckErr(o.Validate(args))
-			cobra.CheckErr(o.Run(args))
+			CheckError(o.Complete(cmd))
+			CheckError(o.Validate(args))
+			CheckError(o.Run(args))
 		},
 	}
 
