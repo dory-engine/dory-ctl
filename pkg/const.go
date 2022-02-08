@@ -4,13 +4,12 @@ import "embed"
 
 const (
 	VersionDoryCtl       = "v0.6.7"
-	VersionDoryCore      = "v1.6.6"
+	VersionDoryCore      = "v1.6.8"
 	VersionDoryDashboard = "v1.6.2"
 	BaseCmdName          = "doryctl"
 	ConfigDirDefault     = ".doryctl"
-	ConfigFileDefault    = "doryctl.yaml"
-	ConfigDirEnv         = "DORY_CONFIGDIR"
-	ConfigFileEnv        = "DORY_CONFIG"
+	ConfigFileDefault    = "config.yaml"
+	EnvVarConfigFile     = "DORYCONFIG"
 	DirInstallScripts    = "install_scripts"
 	DirInstallConfigs    = "install_configs"
 )

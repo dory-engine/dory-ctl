@@ -60,10 +60,6 @@ app:
   crontabCheckInterval: 5
   # 流水线执行完是否删除流水线工作空间目录
   clearWorkspace: true
-  # 测试报告存放目录 (相对路径)
-  testReportDir: dory-data/testReport
-  # 测试报告查看URI
-  testReportUri: /assets/testReport
   # 默认头像目录URI
   avatarDefaultUri: /avatar/default
   # 默认头像完整路径URI
@@ -74,6 +70,10 @@ app:
   avatarUri: /avatar/user
   # 用户头像的URL前缀
   avatarUrlPrefix: ""
+  # 自定义步骤输出文件存放目录
+  customStepOutputDir: dory-data/customStepOutput
+  # 自定义步骤输出文件查看URI
+  customStepOutputUri: /assets/customStepOutput
   # 接口请求超时设置，单位(秒)
   requestTimeoutSeconds: 5
   # deployment检查时间间隔，单位秒
@@ -82,6 +82,12 @@ app:
   deployCheckCountLimit: 30
   # 默认环境名，添加环境的时候使用默认环境的配置参数添加环境
   defaultEnvName: test
+  # dory在docker executor中自动生成的输入参数文件路径
+  dockerParamInputFileName: /tmp/dory-param-input
+  # dory从docker executor中读取的输出参数文件路径
+  dockerParamOutputFileName: /tmp/dory-param-output
+  # dory把docker executor中以下路径的文件保存成输出文件
+  dockerOutputFileDir: /tmp/dory-file-output
 # smtp发送邮件设置
 mail:
   # smtp服务器地址

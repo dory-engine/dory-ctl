@@ -60,10 +60,6 @@ app:
   crontabCheckInterval: 5
   # clear work space after pipeline run finish
   clearWorkspace: true
-  # test report directory (relative path)
-  testReportDir: dory-data/testReport
-  # test report view path
-  testReportUri: /assets/testReport
   # default avatar view path
   avatarDefaultUri: /avatar/default
   # default avatar full view path
@@ -74,6 +70,10 @@ app:
   avatarUri: /avatar/user
   # user avatar url prefix
   avatarUrlPrefix: ""
+  # custom step output files directory (relative path)
+  customStepOutputDir: dory-data/customStepOutput
+  # custom step output files view path
+  customStepOutputUri: /assets/customStepOutput
   # request timeout seconds
   requestTimeoutSeconds: 5
   # deploy check interval (seconds)
@@ -82,6 +82,13 @@ app:
   deployCheckCountLimit: 30
   # default kubernetes environment name
   defaultEnvName: test
+  # 在docker容器中自动生成的输入参数文件路径
+  # dory will create input param file in this path of docker executor
+  dockerParamInputFileName: /tmp/dory-param-input
+  # dory will read output param file in this path of docker executor
+  dockerParamOutputFileName: /tmp/dory-param-output
+  # dory will save output files in this path of docker executor
+  dockerOutputFileDir: /tmp/dory-file-output
 # smtp send mail settings
 mail:
   # smtp server host

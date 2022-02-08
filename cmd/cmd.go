@@ -7,7 +7,7 @@ import (
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -16,15 +16,14 @@ import (
 )
 
 type OptionsCommon struct {
-	ServerURL string
-	Insecure  bool
-	Timeout   time.Duration
-
-	ConfigFile string
-	LogLevel   string
-	LogFile    string
-
-	Language string
+	ServerURL    string `yaml:"serverURL" json:"serverURL" bson:"serverURL" validate:""`
+	Insecure     bool   `yaml:"insecure" json:"insecure" bson:"insecure" validate:""`
+	Timeout      int    `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+	AccessToken  string `yaml:"accessToken" json:"accessToken" bson:"accessToken" validate:""`
+	Language     string `yaml:"language" json:"language" bson:"language" validate:""`
+	ConfigFile   string `yaml:"configFile" json:"configFile" bson:"configFile" validate:""`
+	Verbose      bool   `yaml:"verbose" json:"verbose" bson:"verbose" validate:""`
+	ConfigExists bool   `yaml:"configExists" json:"configExists" bson:"configExists" validate:""`
 }
 
 func LogSuccess(msg string) {
@@ -89,150 +88,87 @@ func NewCmdRoot() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&o.ServerURL, "serverURL", "s", "", "DoryEngine server URL, example: http://dory.example.com:8080")
-	cmd.PersistentFlags().BoolVarP(&o.Insecure, "insecure", "i", false, "if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure")
-	cmd.PersistentFlags().DurationVar(&o.Timeout, "timeout", time.Second*2, "DoryEngine server connection timeout settings, example: 2s, 1m")
-	cmd.PersistentFlags().StringVar(&o.ConfigFile, "configFile", "", fmt.Sprintf("doryctl.yaml config file (default is $HOME/%s/%s)", pkg.ConfigDirDefault, pkg.ConfigFileDefault))
-	cmd.PersistentFlags().StringVar(&o.LogLevel, "logLevel", "INFO", "show log level, options: ERROR, WARN, INFO, DEBUG")
-	cmd.PersistentFlags().StringVar(&o.LogFile, "logFile", "", "log File path (if set, save logs in this path)")
+	cmd.PersistentFlags().StringVarP(&o.ServerURL, "serverURL", "s", "", "dory-core server URL, example: https://dory.example.com:8080")
+	cmd.PersistentFlags().BoolVar(&o.Insecure, "insecure", false, "if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure")
+	cmd.PersistentFlags().IntVar(&o.Timeout, "timeout", 5, "dory-core server connection timeout seconds settings")
+	cmd.PersistentFlags().StringVarP(&o.ConfigFile, "config", "c", "", fmt.Sprintf("doryctl config.yaml config file (default is $HOME/%s/%s)", pkg.ConfigDirDefault, pkg.ConfigFileDefault))
+	cmd.PersistentFlags().StringVar(&o.AccessToken, "token", "", fmt.Sprintf("dory-core server access token"))
+	cmd.PersistentFlags().StringVar(&o.Language, "language", "", fmt.Sprintf("language settings (options: ZH, EN)"))
+	cmd.PersistentFlags().BoolVarP(&o.Verbose, "verbose", "v", false, "show logs in verbose mode")
 
-	//cmd.AddCommand(NewCmdLogin())
+	err := o.CheckConfigFile()
+	if err != nil {
+		LogError(err.Error())
+		os.Exit(1)
+	}
+
+	cmd.AddCommand(NewCmdLogin())
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
 	return cmd
 }
 
-func (o *OptionsCommon) GetConfigFile() (string, bool, error) {
-	errInfo := fmt.Sprintf("get config directory error")
+func (o *OptionsCommon) CheckConfigFile() error {
+	errInfo := fmt.Sprintf("check config file error")
 	var err error
-	var configFile string
-	var found bool
 
 	if o.ConfigFile == "" {
-		if v, exists := os.LookupEnv(pkg.ConfigDirEnv); exists {
+		v, exists := os.LookupEnv(pkg.EnvVarConfigFile)
+		if exists {
 			o.ConfigFile = v
+		} else {
+			defaultConfigFile := fmt.Sprintf("~/%s/%s", pkg.ConfigDirDefault, pkg.ConfigFileDefault)
+			o.ConfigFile = defaultConfigFile
 		}
 	}
-
-	if o.ConfigFile != "" {
-		configDir := filepath.Dir(o.ConfigFile)
-
-		f, err := os.Stat(configDir)
-		if err != nil {
-			err = fmt.Errorf("%s: %s", errInfo, err.Error())
-			return configFile, found, err
-		}
-		if !f.IsDir() {
-			err = fmt.Errorf("%s: %s is not directory", errInfo, configDir)
-			return configFile, found, err
-		}
-
-		configFile = o.ConfigFile
-		f, err = os.Stat(configFile)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				// check directory write permission
-				err = os.WriteFile(configFile, []byte{}, 0600)
-				if err != nil {
-					err = fmt.Errorf("%s: create %s error: %s", errInfo, configFile, err.Error())
-					return configFile, found, err
-				}
-				_ = os.Remove(configFile)
-			} else {
-				err = fmt.Errorf("%s: get %s error: %s", errInfo, configFile, err.Error())
-				return configFile, found, err
+	fi, err := os.Stat(o.ConfigFile)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			configDir := filepath.Dir(o.ConfigFile)
+			err = os.MkdirAll(configDir, 0700)
+			if err != nil {
+				err = fmt.Errorf("%s: %s", errInfo, err.Error())
+				return err
+			}
+			err = os.WriteFile(o.ConfigFile, []byte{}, 0600)
+			if err != nil {
+				err = fmt.Errorf("%s: %s", errInfo, err.Error())
+				return err
 			}
 		} else {
-			found = true
-			if f.IsDir() {
-				err = fmt.Errorf("%s: %s is directory", errInfo, configFile)
-				return configFile, found, err
-			}
+			err = fmt.Errorf("%s: %s", errInfo, err.Error())
+			return err
 		}
 	} else {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			err = fmt.Errorf("%s: get home directory error: %s", errInfo, err.Error())
-			return configFile, found, err
-		}
-		configDir := fmt.Sprintf("%s/%s", homeDir, pkg.ConfigDirDefault)
-		err = os.MkdirAll(configDir, 0700)
-		if err != nil {
-			err = fmt.Errorf("%s: create %s error: %s", errInfo, configDir, err.Error())
-			return configFile, found, err
-		}
-		configFile = fmt.Sprintf("%s/%s", configDir, pkg.ConfigFileDefault)
-		o.ConfigFile = configFile
-		f, err := os.Stat(configFile)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				// check directory write permission
-				err = os.WriteFile(configFile, []byte{}, 0600)
-				if err != nil {
-					err = fmt.Errorf("%s: create %s error: %s", errInfo, configFile, err.Error())
-					return configFile, found, err
-				}
-				_ = os.Remove(configFile)
-			} else {
-				err = fmt.Errorf("%s: get %s error: %s", errInfo, configFile, err.Error())
-				return configFile, found, err
-			}
-		} else {
-			found = true
-			if f.IsDir() {
-				err = fmt.Errorf("%s: %s is directory", errInfo, configFile)
-				return configFile, found, err
-			}
+		if fi.IsDir() {
+			err = fmt.Errorf("%s: %s must be a file", errInfo, o.ConfigFile)
+			return err
 		}
 	}
-	return configFile, found, err
-}
-
-func (o *OptionsCommon) ReadConfigFile() (pkg.DoryConfig, bool, error) {
-	var conf pkg.DoryConfig
-	configFile, found, err := o.GetConfigFile()
+	bs, err := os.ReadFile(o.ConfigFile)
 	if err != nil {
-		return conf, found, err
-	}
-	if !found {
-		return conf, found, err
-	}
-	configDir := filepath.Dir(configFile)
-	configFileName := filepath.Base(configFile)
-	viper.AddConfigPath(configDir)
-	viper.SetConfigType("yaml")
-	viper.SetConfigName(configFileName)
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		return conf, found, err
-	}
-
-	err = viper.Unmarshal(&conf)
-	if err != nil {
-		err = fmt.Errorf("parse %s error: %s", configFile, err.Error())
-		return conf, found, err
-	}
-
-	err = viper.WriteConfig()
-	if err != nil {
-		err = fmt.Errorf("write config %s error: %s", configFile, err.Error())
-		return conf, found, err
-	}
-
-	return conf, found, err
-}
-
-func (o *OptionsCommon) WriteConfigFile(conf pkg.DoryConfig) error {
-	viper.Set("serverURL", conf.ServerURL)
-	viper.Set("insecure", conf.Insecure)
-	viper.Set("timeout", conf.Timeout)
-	viper.Set("accessToken", conf.AccessToken)
-	viper.Set("userToken", conf.UserToken)
-	err := viper.WriteConfig()
-	if err != nil {
-		err = fmt.Errorf("write config error: %s", err.Error())
+		err = fmt.Errorf("%s: %s", errInfo, err.Error())
 		return err
+	}
+	var doryConfig pkg.DoryConfig
+	err = yaml.Unmarshal(bs, &doryConfig)
+	if err != nil {
+		err = fmt.Errorf("%s: %s", errInfo, err.Error())
+		return err
+	}
+
+	if doryConfig.AccessToken == "" {
+		bs, err = yaml.Marshal(doryConfig)
+		if err != nil {
+			err = fmt.Errorf("%s: %s", errInfo, err.Error())
+			return err
+		}
+
+		err = os.WriteFile(o.ConfigFile, bs, 0600)
+		if err != nil {
+			err = fmt.Errorf("%s: %s", errInfo, err.Error())
+			return err
+		}
 	}
 
 	return err

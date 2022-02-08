@@ -21,7 +21,7 @@ func NewCmdVersion() *cobra.Command {
 
 	msgUse := fmt.Sprintf("version")
 	msgShort := fmt.Sprintf("show doryctl version info")
-	msgLong := fmt.Sprintf(`show doryctl and dory-core, dory-dashboard version info`)
+	msgLong := fmt.Sprintf(`show doryctl and isntall dory-core, dory-dashboard version info`)
 	msgExample := fmt.Sprintf(`  ##############################
   show doryctl and dory-core, dory-dashboard version info:
   doryctl version`)
@@ -55,7 +55,7 @@ func (o *OptionsVersionRun) Validate(args []string) error {
 func (o *OptionsVersionRun) Run(args []string) error {
 	var err error
 	fmt.Println(fmt.Sprintf("doryctl version: %s", pkg.VersionDoryCtl))
-	fmt.Println(fmt.Sprintf("dory-core version: %s", pkg.VersionDoryCore))
-	fmt.Println(fmt.Sprintf("dory-dashboard version: %s", pkg.VersionDoryDashboard))
+	fmt.Println(fmt.Sprintf("install dory-core version: %s", pkg.VersionDoryCore))
+	fmt.Println(fmt.Sprintf("install dory-dashboard version: %s", pkg.VersionDoryDashboard))
 	return err
 }

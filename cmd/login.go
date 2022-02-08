@@ -54,11 +54,6 @@ func NewCmdLogin() *cobra.Command {
 
 func (o *OptionsLogin) Complete(cmd *cobra.Command) error {
 	var err error
-	conf, _, err := o.ReadConfigFile()
-	if err != nil {
-		return err
-	}
-	o.DoryConfig = conf
 	return err
 }
 
