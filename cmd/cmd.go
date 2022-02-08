@@ -118,7 +118,12 @@ func (o *OptionsCommon) CheckConfigFile() error {
 		if exists {
 			o.ConfigFile = v
 		} else {
-			defaultConfigFile := fmt.Sprintf("~/%s/%s", pkg.ConfigDirDefault, pkg.ConfigFileDefault)
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				err = fmt.Errorf("%s: %s", errInfo, err.Error())
+				return err
+			}
+			defaultConfigFile := fmt.Sprintf("%s/%s/%s", homeDir, pkg.ConfigDirDefault, pkg.ConfigFileDefault)
 			o.ConfigFile = defaultConfigFile
 		}
 	}
