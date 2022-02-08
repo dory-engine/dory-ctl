@@ -89,6 +89,7 @@ func NewCmdRoot() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVarP(&o.ConfigFile, "config", "c", "", fmt.Sprintf("doryctl config.yaml config file (default is $HOME/%s/%s)", pkg.ConfigDirDefault, pkg.ConfigFileDefault))
+	fmt.Println("config:", o.ConfigFile)
 	err := o.CheckConfigFile()
 	if err != nil {
 		LogError(err.Error())
