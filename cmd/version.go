@@ -7,7 +7,7 @@ import (
 )
 
 type OptionsVersionRun struct {
-	*OptionsCommon
+	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 }
 
 func NewOptionsVersionRun() *OptionsVersionRun {

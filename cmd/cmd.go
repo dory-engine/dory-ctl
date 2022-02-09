@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"bytes"
+	"crypto/tls"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Xuanwo/go-locale"
@@ -9,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"io/fs"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,25 +32,41 @@ type OptionsCommon struct {
 	ConfigExists bool   `yaml:"configExists" json:"configExists" bson:"configExists" validate:""`
 }
 
-func LogSuccess(msg string) {
+type Log struct {
+	Verbose bool `yaml:"verbose" json:"verbose" bson:"verbose" validate:""`
+}
+
+func (log *Log) SetVerbose(verbose bool) {
+	log.Verbose = verbose
+}
+
+func (log *Log) Debug(msg string) {
+	if log.Verbose {
+		defer color.Unset()
+		color.Set(color.FgBlack)
+		fmt.Println(fmt.Sprintf("[DEBUG]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+	}
+}
+
+func (log *Log) Success(msg string) {
 	defer color.Unset()
 	color.Set(color.FgGreen)
 	fmt.Println(fmt.Sprintf("[SUCCESS] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
 }
 
-func LogInfo(msg string) {
+func (log *Log) Info(msg string) {
 	defer color.Unset()
 	color.Set(color.FgBlue)
 	fmt.Println(fmt.Sprintf("[INFO]    %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
 }
 
-func LogWarning(msg string) {
+func (log *Log) Warning(msg string) {
 	defer color.Unset()
 	color.Set(color.FgMagenta)
 	fmt.Println(fmt.Sprintf("[WARNING] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
 }
 
-func LogError(msg string) {
+func (log *Log) Error(msg string) {
 	defer color.Unset()
 	color.Set(color.FgRed)
 	fmt.Println(fmt.Sprintf("[ERROR]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
@@ -52,7 +74,7 @@ func LogError(msg string) {
 
 func CheckError(err error) {
 	if err != nil {
-		LogError(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
 }
@@ -63,6 +85,7 @@ func NewOptionsCommon() *OptionsCommon {
 }
 
 var OptCommon = NewOptionsCommon()
+var log Log
 
 func NewCmdRoot() *cobra.Command {
 	o := OptCommon
@@ -196,7 +219,12 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 		o.ServerURL = doryConfig.ServerURL
 	}
 	if o.AccessToken == "" && doryConfig.AccessToken != "" {
-		o.AccessToken = doryConfig.AccessToken
+		bs, err = base64.StdEncoding.DecodeString(doryConfig.AccessToken)
+		if err != nil {
+			err = fmt.Errorf("%s: %s", errInfo, err.Error())
+			return err
+		}
+		o.AccessToken = string(bs)
 	}
 	if o.Language == "" && doryConfig.Language != "" {
 		o.Language = doryConfig.Language
@@ -215,6 +243,62 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 		}
 		o.Language = lang
 	}
+	if o.Verbose {
+		log.SetVerbose(o.Verbose)
+	}
 
 	return err
+}
+
+func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string]interface{}) (string, string, int, error) {
+	var err error
+	var strJson string
+	var statusCode int
+	var req *http.Request
+	var resp *http.Response
+	var bs []byte
+	var xUserToken string
+	client := &http.Client{
+		Timeout: time.Second * time.Duration(o.Timeout),
+	}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	url = fmt.Sprintf("%s/%s", o.ServerURL, url)
+
+	if len(param) > 0 {
+		bs, err = json.Marshal(param)
+		if err != nil {
+			return strJson, xUserToken, statusCode, err
+		}
+		req, err = http.NewRequest(method, url, bytes.NewReader(bs))
+		if err != nil {
+			return strJson, xUserToken, statusCode, err
+		}
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+		if err != nil {
+			return strJson, xUserToken, statusCode, err
+		}
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if userToken != "" {
+		req.Header.Set("X-User-Token", userToken)
+	} else {
+		req.Header.Set("X-Access-Token", o.AccessToken)
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return strJson, xUserToken, statusCode, err
+	}
+	defer resp.Body.Close()
+	statusCode = resp.StatusCode
+	bs, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return strJson, xUserToken, statusCode, err
+	}
+	strJson = string(bs)
+	xUserToken = resp.Header.Get("X-User-Token")
+
+	return strJson, xUserToken, statusCode, err
 }

@@ -7,8 +7,8 @@ import (
 )
 
 type OptionsInstallPrint struct {
-	*OptionsCommon
-	Mode string
+	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
+	Mode           string `yaml:"mode" json:"mode" bson:"mode" validate:""`
 }
 
 func NewOptionsInstallPrint() *OptionsInstallPrint {

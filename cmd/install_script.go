@@ -11,10 +11,10 @@ import (
 )
 
 type OptionsInstallScript struct {
-	*OptionsCommon
-	FileName  string
-	OutputDir string
-	Stdin     []byte
+	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
+	FileName       string `yaml:"fileName" json:"fileName" bson:"fileName" validate:""`
+	OutputDir      string `yaml:"outputDir" json:"outputDir" bson:"outputDir" validate:""`
+	Stdin          []byte `yaml:"stdin" json:"stdin" bson:"stdin" validate:""`
 }
 
 func NewOptionsInstallScript() *OptionsInstallScript {
@@ -89,7 +89,7 @@ func (o *OptionsInstallScript) Run(args []string) error {
 
 	defer func() {
 		if err != nil {
-			LogError(err.Error())
+			log.Error(err.Error())
 		}
 	}()
 
@@ -506,10 +506,10 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 		return err
 	}
 
-	LogWarning(fmt.Sprintf("all scripts and config files located at: %s", outputDir))
-	LogWarning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", outputDir, readmeDockerInstallName))
-	LogWarning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", outputDir, readmeDockerConfigName))
-	LogWarning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", outputDir, readmeDockerResetName))
+	log.Warning(fmt.Sprintf("all scripts and config files located at: %s", outputDir))
+	log.Warning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", outputDir, readmeDockerInstallName))
+	log.Warning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", outputDir, readmeDockerConfigName))
+	log.Warning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", outputDir, readmeDockerResetName))
 
 	return err
 }
@@ -714,9 +714,9 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 		return err
 	}
 
-	LogWarning(fmt.Sprintf("all scripts and config files located at: %s", outputDir))
-	LogWarning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", outputDir, readmeKubernetesInstallName))
-	LogWarning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", outputDir, readmeKubernetesConfigName))
-	LogWarning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", outputDir, readmeKubernetesResetName))
+	log.Warning(fmt.Sprintf("all scripts and config files located at: %s", outputDir))
+	log.Warning(fmt.Sprintf("1. please follow %s/%s to install dory by manual", outputDir, readmeKubernetesInstallName))
+	log.Warning(fmt.Sprintf("2. please follow %s/%s to config dory by manual after install", outputDir, readmeKubernetesConfigName))
+	log.Warning(fmt.Sprintf("3. if install fail, please follow %s/%s to stop all dory services and install again", outputDir, readmeKubernetesResetName))
 	return err
 }

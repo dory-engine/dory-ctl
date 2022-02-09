@@ -11,7 +11,7 @@ import (
 )
 
 type OptionsInstallPull struct {
-	*OptionsCommon
+	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 }
 
 func NewOptionsInstallPull() *OptionsInstallPull {
@@ -111,20 +111,20 @@ func (o *OptionsInstallPull) Run(args []string) error {
 			}
 		}
 	}
-	LogInfo(fmt.Sprintf("create docker files in %s success", dockerFileDir))
+	log.Info(fmt.Sprintf("create docker files in %s success", dockerFileDir))
 	_, _, err = pkg.CommandExec("ls -alh", dockerFileDir)
 	if err != nil {
 		err = fmt.Errorf("create docker files %s error: %s", dockerFileDir, err.Error())
 		return err
 	}
 
-	LogInfo("docker images need to pull")
+	log.Info("docker images need to pull")
 	for _, idi := range dockerImages.InstallDockerImages {
 		fmt.Println(fmt.Sprintf("docker pull %s", idi.Source))
 	}
 
-	LogInfo("docker images need to build")
-	LogWarning(fmt.Sprintf("all docker files in %s folder, if your machine is without internet connection, build docker images by manual", dockerFileDir))
+	log.Info("docker images need to build")
+	log.Warning(fmt.Sprintf("all docker files in %s folder, if your machine is without internet connection, build docker images by manual", dockerFileDir))
 	for _, idi := range dockerImages.InstallDockerImages {
 		if idi.DockerFile != "" {
 			arr := strings.Split(idi.Source, ":")
@@ -138,7 +138,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 		}
 	}
 
-	LogInfo("pull and build docker images begin")
+	log.Info("pull and build docker images begin")
 	for i, idi := range dockerImages.InstallDockerImages {
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker pull %s", idi.Source), ".")
 		if err != nil {
@@ -159,9 +159,9 @@ func (o *OptionsInstallPull) Run(args []string) error {
 				return err
 			}
 		}
-		LogSuccess(fmt.Sprintf("# progress: %d/%d %s", i+1, len(dockerImages.InstallDockerImages), idi.Source))
+		log.Success(fmt.Sprintf("# progress: %d/%d %s", i+1, len(dockerImages.InstallDockerImages), idi.Source))
 	}
-	LogSuccess(fmt.Sprintf("pull and build docker images success"))
+	log.Success(fmt.Sprintf("pull and build docker images success"))
 
 	defer color.Unset()
 	return err

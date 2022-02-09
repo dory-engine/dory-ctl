@@ -8,8 +8,8 @@ import (
 )
 
 type OptionsInstallCheck struct {
-	*OptionsCommon
-	Mode string
+	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
+	Mode           string `yaml:"mode" json:"mode" bson:"mode" validate:""`
 }
 
 func NewOptionsInstallCheck() *OptionsInstallCheck {
@@ -66,51 +66,51 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 
 	defer color.Unset()
 
-	LogInfo("check openssl installed")
+	log.Info("check openssl installed")
 	_, _, err = pkg.CommandExec(fmt.Sprintf("openssl version"), ".")
 	if err != nil {
 		err = fmt.Errorf("check openssl installed error: %s", err.Error())
-		LogError(err.Error())
+		log.Error(err.Error())
 		return err
 	}
-	LogSuccess("check openssl installed success")
+	log.Success("check openssl installed success")
 
-	LogInfo("check docker installed")
+	log.Info("check docker installed")
 	_, _, err = pkg.CommandExec(fmt.Sprintf("docker version"), ".")
 	if err != nil {
 		err = fmt.Errorf("check docker installed error: %s", err.Error())
-		LogError(err.Error())
+		log.Error(err.Error())
 		return err
 	}
-	LogSuccess("check docker installed success")
+	log.Success("check docker installed success")
 
-	LogInfo("check kubernetes installed")
+	log.Info("check kubernetes installed")
 	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl get pods -A -o wide"), ".")
 	if err != nil {
 		err = fmt.Errorf("check kubernetes installed error: %s", err.Error())
-		LogError(err.Error())
+		log.Error(err.Error())
 		return err
 	}
-	LogSuccess("check kubernetes installed success")
+	log.Success("check kubernetes installed success")
 
 	if o.Mode == "docker" {
-		LogInfo("check docker-compose installed")
+		log.Info("check docker-compose installed")
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker-compose version"), ".")
 		if err != nil {
 			err = fmt.Errorf("check docker-compose installed error: %s", err.Error())
-			LogError(err.Error())
+			log.Error(err.Error())
 			return err
 		}
-		LogSuccess("check docker-compose installed success")
+		log.Success("check docker-compose installed success")
 	} else if o.Mode == "kubernetes" {
-		LogInfo("check helm installed")
+		log.Info("check helm installed")
 		_, _, err = pkg.CommandExec(fmt.Sprintf("helm version"), ".")
 		if err != nil {
 			err = fmt.Errorf("check helm installed error: %s", err.Error())
-			LogError(err.Error())
+			log.Error(err.Error())
 			return err
 		}
-		LogSuccess("check helm installed success")
+		log.Success("check helm installed success")
 	}
 
 	bs, err := pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-README-check.md", pkg.DirInstallScripts, o.Language))
@@ -119,10 +119,10 @@ func (o *OptionsInstallCheck) Run(args []string) error {
 		return err
 	}
 	strReadme := string(bs)
-	LogWarning(fmt.Sprintf("########################################################"))
-	LogWarning(fmt.Sprintf("KUBERNETES PREREQUISITE README INFO"))
-	LogWarning(fmt.Sprintf("########################################################"))
-	LogWarning(fmt.Sprintf("\n%s", strReadme))
+	log.Warning(fmt.Sprintf("########################################################"))
+	log.Warning(fmt.Sprintf("KUBERNETES PREREQUISITE README INFO"))
+	log.Warning(fmt.Sprintf("########################################################"))
+	log.Warning(fmt.Sprintf("\n%s", strReadme))
 
 	return err
 }
