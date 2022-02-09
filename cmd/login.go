@@ -32,7 +32,7 @@ func NewCmdLogin() *cobra.Command {
 
 	msgUse := fmt.Sprintf("login")
 	msgShort := fmt.Sprintf("login to dory-core server")
-	msgLong := fmt.Sprintf(`Must login before use other %s commands`, pkg.BaseCmdName)
+	msgLong := fmt.Sprintf("login first before use doryctl to control your dory-core server, it will save dory-core server settings in doryctl config file")
 	msgExample := fmt.Sprintf(`  # login with username and password input prompt
   doryctl login --serverURL http://dory.example.com:8080
 

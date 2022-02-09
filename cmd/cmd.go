@@ -45,32 +45,32 @@ func (log *Log) Debug(msg string) {
 	if log.Verbose {
 		defer color.Unset()
 		color.Set(color.FgBlack)
-		fmt.Println(fmt.Sprintf("[DEBUG]   [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
+		fmt.Println(fmt.Sprintf("[DEBU] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 	}
 }
 
 func (log *Log) Success(msg string) {
 	defer color.Unset()
 	color.Set(color.FgGreen)
-	fmt.Println(fmt.Sprintf("[SUCCESS] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[SUCC] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Info(msg string) {
 	defer color.Unset()
 	color.Set(color.FgBlue)
-	fmt.Println(fmt.Sprintf("[INFO]    [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[INFO] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Warning(msg string) {
 	defer color.Unset()
 	color.Set(color.FgMagenta)
-	fmt.Println(fmt.Sprintf("[WARNING] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[WARN] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Error(msg string) {
 	defer color.Unset()
 	color.Set(color.FgRed)
-	fmt.Println(fmt.Sprintf("[ERROR]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[ERRO] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func CheckError(err error) {
@@ -119,6 +119,7 @@ func NewCmdRoot() *cobra.Command {
 	cmd.PersistentFlags().BoolVarP(&o.Verbose, "verbose", "v", false, "show logs in verbose mode")
 
 	cmd.AddCommand(NewCmdLogin())
+	cmd.AddCommand(NewCmdLogout())
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
 	return cmd
