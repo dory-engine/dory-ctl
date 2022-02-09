@@ -52,6 +52,7 @@ func NewCmdInstallRun() *cobra.Command {
 
 func (o *OptionsInstallRun) Complete(cmd *cobra.Command) error {
 	var err error
+	err = o.GetOptionsCommon()
 	return err
 }
 

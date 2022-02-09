@@ -44,6 +44,7 @@ func NewCmdVersion() *cobra.Command {
 
 func (o *OptionsVersionRun) Complete(cmd *cobra.Command) error {
 	var err error
+	err = o.GetOptionsCommon()
 	return err
 }
 

@@ -47,6 +47,7 @@ func NewCmdInstallPrint() *cobra.Command {
 
 func (o *OptionsInstallPrint) Complete(cmd *cobra.Command) error {
 	var err error
+	err = o.GetOptionsCommon()
 	return err
 }
 

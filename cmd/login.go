@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/base64"
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
@@ -109,30 +110,48 @@ func (o *OptionsLogin) Run(args []string) error {
 	}
 
 	bs, _ := yaml.Marshal(o)
-	log.Debug(string(bs))
+	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{
 		"username": o.Username,
 		"password": o.Password,
 	}
-	strJson, xUserToken, statusCode, err := o.QueryAPI("api/public/login", http.MethodPost, "", param)
-	log.Info(fmt.Sprintf("strJson: %s", strJson))
-	log.Debug(fmt.Sprintf("xUserToken: %s", xUserToken))
-	log.Debug(fmt.Sprintf("statusCode: %s", statusCode))
-	log.Debug(fmt.Sprintf("err: %v", err))
-
-	log.Debug("#####")
+	_, xUserToken, err := o.QueryAPI("api/public/login", http.MethodPost, "", param)
+	if err != nil {
+		return err
+	}
 
 	accessTokenName := fmt.Sprintf("doryctl-%s", time.Now().Format("20060102030405"))
 	param = map[string]interface{}{
 		"accessTokenName": accessTokenName,
 		"expireDays":      o.ExpireDays,
 	}
-	strJson, xUserToken, statusCode, err = o.QueryAPI("api/account/accessToken", http.MethodPost, xUserToken, param)
-	log.Info(fmt.Sprintf("strJson: %s", strJson))
-	log.Debug(fmt.Sprintf("xUserToken: %s", xUserToken))
-	log.Debug(fmt.Sprintf("statusCode: %s", statusCode))
-	log.Debug(fmt.Sprintf("err: %v", err))
+	result, _, err := o.QueryAPI("api/account/accessToken", http.MethodPost, xUserToken, param)
+	if err != nil {
+		return err
+	}
+	accessToken := result.Get("data.accessToken").String()
+	if accessToken == "" {
+		err = fmt.Errorf("get accessToken error: accessToken is empty")
+		return err
+	}
+	accessTokenBase64 := base64.StdEncoding.EncodeToString([]byte(accessToken))
+	o.AccessToken = accessTokenBase64
+	doryConfig := pkg.DoryConfig{
+		ServerURL:   o.ServerURL,
+		Insecure:    o.Insecure,
+		Timeout:     o.Timeout,
+		AccessToken: o.AccessToken,
+		Language:    o.Language,
+	}
+	bs, _ = yaml.Marshal(doryConfig)
+	err = os.WriteFile(o.ConfigFile, bs, 0600)
+	if err != nil {
+		return err
+	}
+
+	log.Success("login success")
+	log.Debug(fmt.Sprintf("update %s success", o.ConfigFile))
 
 	return err
 }

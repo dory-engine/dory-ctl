@@ -11,6 +11,7 @@ import (
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/gjson"
 	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
@@ -44,26 +45,26 @@ func (log *Log) Debug(msg string) {
 	if log.Verbose {
 		defer color.Unset()
 		color.Set(color.FgBlack)
-		fmt.Println(fmt.Sprintf("[DEBUG]   %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+		fmt.Println(fmt.Sprintf("[DEBUG]   [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 	}
 }
 
 func (log *Log) Success(msg string) {
 	defer color.Unset()
 	color.Set(color.FgGreen)
-	fmt.Println(fmt.Sprintf("[SUCCESS] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[SUCCESS] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Info(msg string) {
 	defer color.Unset()
 	color.Set(color.FgBlue)
-	fmt.Println(fmt.Sprintf("[INFO]    %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[INFO]    [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Warning(msg string) {
 	defer color.Unset()
 	color.Set(color.FgMagenta)
-	fmt.Println(fmt.Sprintf("[WARNING] %s: %s", time.Now().Format("2006-01-02 15:04:05"), msg))
+	fmt.Println(fmt.Sprintf("[WARNING] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
 }
 
 func (log *Log) Error(msg string) {
@@ -218,6 +219,7 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 	if o.ServerURL == "" && doryConfig.ServerURL != "" {
 		o.ServerURL = doryConfig.ServerURL
 	}
+
 	if o.AccessToken == "" && doryConfig.AccessToken != "" {
 		bs, err = base64.StdEncoding.DecodeString(doryConfig.AccessToken)
 		if err != nil {
@@ -226,12 +228,7 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 		}
 		o.AccessToken = string(bs)
 	}
-	if o.Language == "" && doryConfig.Language != "" {
-		o.Language = doryConfig.Language
-	}
-	if o.Timeout == pkg.TimeoutDefault && doryConfig.Timeout != pkg.TimeoutDefault {
-		o.Timeout = doryConfig.Timeout
-	}
+
 	if o.Language == "" {
 		lang := "EN"
 		l, err := locale.Detect()
@@ -243,6 +240,14 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 		}
 		o.Language = lang
 	}
+	if o.Language == "" && doryConfig.Language != "" {
+		o.Language = doryConfig.Language
+	}
+
+	if o.Timeout == 0 && doryConfig.Timeout != 0 && doryConfig.Timeout != pkg.TimeoutDefault {
+		o.Timeout = doryConfig.Timeout
+	}
+
 	if o.Verbose {
 		log.SetVerbose(o.Verbose)
 	}
@@ -250,8 +255,9 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 	return err
 }
 
-func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string]interface{}) (string, string, int, error) {
+func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string]interface{}) (gjson.Result, string, error) {
 	var err error
+	var result gjson.Result
 	var strJson string
 	var statusCode int
 	var req *http.Request
@@ -265,40 +271,80 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 
 	url = fmt.Sprintf("%s/%s", o.ServerURL, url)
 
+	var strReqBody string
 	if len(param) > 0 {
 		bs, err = json.Marshal(param)
 		if err != nil {
-			return strJson, xUserToken, statusCode, err
+			return result, xUserToken, err
 		}
+		strReqBody = string(bs)
 		req, err = http.NewRequest(method, url, bytes.NewReader(bs))
 		if err != nil {
-			return strJson, xUserToken, statusCode, err
+			return result, xUserToken, err
 		}
 	} else {
 		req, err = http.NewRequest(method, url, nil)
 		if err != nil {
-			return strJson, xUserToken, statusCode, err
+			return result, xUserToken, err
 		}
 	}
+	headerMap := map[string]string{}
 	req.Header.Set("Content-Type", "application/json")
+	headerMap["Content-Type"] = "application/json"
 	if userToken != "" {
 		req.Header.Set("X-User-Token", userToken)
+		headerMap["X-User-Token"] = "******"
 	} else {
 		req.Header.Set("X-Access-Token", o.AccessToken)
+		headerMap["X-Access-Token"] = "******"
 	}
+
+	headers := []string{}
+	for key, val := range headerMap {
+		header := fmt.Sprintf(`-H "%s: %s"`, key, val)
+		headers = append(headers, header)
+	}
+	msgCurlParam := strings.Join(headers, " ")
+	if strReqBody != "" {
+		msgCurlParam = fmt.Sprintf("%s -d '%s'", msgCurlParam, strReqBody)
+	}
+	msgCurl := fmt.Sprintf(`curl -v -X%s %s '%s'`, method, msgCurlParam, url)
+	log.Debug(msgCurl)
 
 	resp, err = client.Do(req)
 	if err != nil {
-		return strJson, xUserToken, statusCode, err
+		return result, xUserToken, err
 	}
 	defer resp.Body.Close()
 	statusCode = resp.StatusCode
 	bs, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return strJson, xUserToken, statusCode, err
+		return result, xUserToken, err
 	}
-	strJson = string(bs)
-	xUserToken = resp.Header.Get("X-User-Token")
 
-	return strJson, xUserToken, statusCode, err
+	strJson = string(bs)
+	var prettyJSON bytes.Buffer
+	err = json.Indent(&prettyJSON, []byte(strJson), "", "  ")
+	if err != nil {
+		return result, xUserToken, err
+	}
+	strPrettyJson := prettyJSON.String()
+
+	result = gjson.Parse(strJson)
+
+	log.Debug(fmt.Sprintf("%s %s %s in %s", method, url, resp.Status, result.Get("duration").String()))
+	log.Debug(fmt.Sprintf("Response Header:"))
+	for key, val := range resp.Header {
+		log.Debug(fmt.Sprintf("  %s: %s", key, val))
+	}
+	log.Debug(fmt.Sprintf("Response Body:\n%s", strPrettyJson))
+
+	if statusCode < http.StatusOK || statusCode >= http.StatusBadRequest {
+		err = fmt.Errorf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String())
+		return result, xUserToken, err
+	}
+	xUserToken = resp.Header.Get("X-User-Token")
+	log.Info(fmt.Sprintf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String()))
+
+	return result, xUserToken, err
 }
