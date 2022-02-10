@@ -16,6 +16,9 @@ type OptionsProjectGet struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 	ProjectTeam    string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
+	Param          struct {
+		ProjectNames []string
+	}
 }
 
 func NewOptionsProjectGet() *OptionsProjectGet {
@@ -62,6 +65,17 @@ func (o *OptionsProjectGet) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsProjectGet) Validate(args []string) error {
 	var err error
+	projectNames := args
+	for _, s := range projectNames {
+		s = strings.Trim(s, " ")
+		err = pkg.ValidateMinusNameID(s)
+		if err != nil {
+			err = fmt.Errorf("projectNames error: %s", err.Error())
+			return err
+		}
+		o.Param.ProjectNames = append(o.Param.ProjectNames, s)
+	}
+
 	if o.Output != "" {
 		if o.Output != "yaml" && o.Output != "json" {
 			err = fmt.Errorf("--output must be yaml or json")
@@ -77,15 +91,13 @@ func (o *OptionsProjectGet) Run(args []string) error {
 	bs, _ := yaml.Marshal(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
-	projectNames := args
-
 	param := map[string]interface{}{
-		"projectNames": projectNames,
+		"projectNames": o.Param.ProjectNames,
 		"projectTeam":  o.ProjectTeam,
 		"page":         1,
 		"perPage":      1000,
 	}
-	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param)
+	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param, false)
 	if err != nil {
 		return err
 	}
@@ -101,7 +113,7 @@ func (o *OptionsProjectGet) Run(args []string) error {
 	}
 
 	dataOutput := map[string]interface{}{}
-	if len(projectNames) == 1 && len(projects) == 1 && projectNames[0] == projects[0].ProjectInfo.ProjectName {
+	if len(o.Param.ProjectNames) == 1 && len(projects) == 1 && o.Param.ProjectNames[0] == projects[0].ProjectInfo.ProjectName {
 		dataOutput["project"] = projects[0]
 	} else {
 		dataOutput["projects"] = projects

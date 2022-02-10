@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -147,6 +148,17 @@ func ValidateIpAddress(s string) error {
 	var err error
 	if net.ParseIP(s).To4() == nil {
 		err = fmt.Errorf(`not ipv4 address`)
+		return err
+	}
+	return err
+}
+
+func ValidateMinusNameID(s string) error {
+	var err error
+	RegExp := regexp.MustCompile(`^(([a-z])[a-z0-9]+(-[a-z0-9]+)+)$`)
+	match := RegExp.MatchString(s)
+	if !match {
+		err = fmt.Errorf(`should include lower case and number, format should like "hello-world-no3"`)
 		return err
 	}
 	return err

@@ -277,3 +277,16 @@ type Project struct {
 	Modules              map[string][]Module   `yaml:"modules" json:"modules" bson:"modules" validate:""`
 	Pipelines            []Pipeline            `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
 }
+
+type Run struct {
+	ProjectName  string `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	PipelineName string `yaml:"pipelineName" json:"pipelineName" bson:"pipelineName" validate:""`
+	RunName      string `yaml:"runName" json:"runName" bson:"runName" validate:""`
+	StartUser    string `yaml:"startUser" json:"startUser" bson:"startUser" validate:""`
+	AbortUser    string `yaml:"abortUser" json:"abortUser" bson:"abortUser" validate:""`
+	Status       struct {
+		Result    string `yaml:"result" json:"result" bson:"result" validate:""`
+		StartTime string `yaml:"startTime" json:"startTime" bson:"startTime" validate:""`
+		Duration  string `yaml:"duration" json:"duration" bson:"duration" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+}

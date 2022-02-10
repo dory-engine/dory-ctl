@@ -116,7 +116,7 @@ func (o *OptionsLogin) Run(args []string) error {
 		"username": o.Username,
 		"password": o.Password,
 	}
-	_, xUserToken, err := o.QueryAPI("api/public/login", http.MethodPost, "", param)
+	_, xUserToken, err := o.QueryAPI("api/public/login", http.MethodPost, "", param, true)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (o *OptionsLogin) Run(args []string) error {
 		"accessTokenName": accessTokenName,
 		"expireDays":      o.ExpireDays,
 	}
-	result, _, err := o.QueryAPI("api/account/accessToken", http.MethodPost, xUserToken, param)
+	result, _, err := o.QueryAPI("api/account/accessToken", http.MethodPost, xUserToken, param, true)
 	if err != nil {
 		return err
 	}

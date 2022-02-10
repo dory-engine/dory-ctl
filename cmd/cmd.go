@@ -134,6 +134,7 @@ func NewCmdRoot() *cobra.Command {
 	cmd.AddCommand(NewCmdLogout())
 	cmd.AddCommand(NewCmdProject())
 	cmd.AddCommand(NewCmdPipeline())
+	cmd.AddCommand(NewCmdRun())
 
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
@@ -271,7 +272,7 @@ func (o *OptionsCommon) GetOptionsCommon() error {
 	return err
 }
 
-func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string]interface{}) (gjson.Result, string, error) {
+func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string]interface{}, showSuccess bool) (gjson.Result, string, error) {
 	var err error
 	var result gjson.Result
 	var strJson string
@@ -360,7 +361,13 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 		return result, xUserToken, err
 	}
 	xUserToken = resp.Header.Get("X-User-Token")
-	log.Debug(fmt.Sprintf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String()))
+
+	msg := fmt.Sprintf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String())
+	if showSuccess {
+		log.Success(msg)
+	} else {
+		log.Debug(msg)
+	}
 
 	return result, xUserToken, err
 }

@@ -16,6 +16,10 @@ type OptionsPipelineGet struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 	ProjectNames   string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
+	Param          struct {
+		ProjectNames  []string
+		PipelineNames []string
+	}
 }
 
 func NewOptionsPipelineGet() *OptionsPipelineGet {
@@ -62,6 +66,30 @@ func (o *OptionsPipelineGet) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsPipelineGet) Validate(args []string) error {
 	var err error
+	pipelineNames := args
+	for _, s := range pipelineNames {
+		s = strings.Trim(s, " ")
+		err = pkg.ValidateMinusNameID(s)
+		if err != nil {
+			err = fmt.Errorf("pipelineNames error: %s", err.Error())
+			return err
+		}
+		o.Param.PipelineNames = append(o.Param.PipelineNames, s)
+	}
+
+	o.ProjectNames = strings.Trim(o.ProjectNames, " ")
+	if o.ProjectNames != "" {
+		arr := strings.Split(o.ProjectNames, ",")
+		for _, s := range arr {
+			s = strings.Trim(s, " ")
+			err = pkg.ValidateMinusNameID(s)
+			if err != nil {
+				err = fmt.Errorf("--projectNames error: %s", err.Error())
+				return err
+			}
+			o.Param.ProjectNames = append(o.Param.ProjectNames, s)
+		}
+	}
 	if o.Output != "" {
 		if o.Output != "yaml" && o.Output != "json" {
 			err = fmt.Errorf("--output must be yaml or json")
@@ -77,22 +105,12 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 	bs, _ := yaml.Marshal(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
-	pipelineNames := args
-	projectNames := []string{}
-	o.ProjectNames = strings.Trim(o.ProjectNames, " ")
-	if o.ProjectNames != "" {
-		arr := strings.Split(o.ProjectNames, ",")
-		for _, s := range arr {
-			projectNames = append(projectNames, strings.Trim(s, " "))
-		}
-	}
-
 	param := map[string]interface{}{
-		"projectNames": projectNames,
+		"projectNames": o.Param.ProjectNames,
 		"page":         1,
 		"perPage":      1000,
 	}
-	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param)
+	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param, false)
 	if err != nil {
 		return err
 	}
@@ -109,10 +127,10 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 		}
 	}
 
-	if len(pipelineNames) > 0 {
+	if len(o.Param.PipelineNames) > 0 {
 		pls := pipelines
 		pipelines = []pkg.Pipeline{}
-		for _, pipelineName := range pipelineNames {
+		for _, pipelineName := range o.Param.PipelineNames {
 			for _, pl := range pls {
 				if pl.PipelineName == pipelineName {
 					pipelines = append(pipelines, pl)
@@ -123,7 +141,7 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 	}
 
 	dataOutput := map[string]interface{}{}
-	if len(pipelineNames) == 1 && len(pipelines) == 1 && pipelineNames[0] == pipelines[0].PipelineName {
+	if len(o.Param.PipelineNames) == 1 && len(pipelines) == 1 && o.Param.PipelineNames[0] == pipelines[0].PipelineName {
 		dataOutput["pipeline"] = pipelines[0]
 	} else {
 		dataOutput["pipelines"] = pipelines
@@ -145,14 +163,14 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 			successCount := fmt.Sprintf("%d", pipeline.SuccessCount)
 			failCount := fmt.Sprintf("%d", pipeline.FailCount)
 			abortCount := fmt.Sprintf("%d", pipeline.AbortCount)
-			var result string
+			var statusResult string
 			if pipeline.Status.StartTime != "" {
-				result = pipeline.Status.StartTime
+				statusResult = pipeline.Status.StartTime
 				if pipeline.Status.Result != "" {
-					result = fmt.Sprintf("%s [%s]", result, pipeline.Status.Result)
+					statusResult = fmt.Sprintf("%s [%s]", statusResult, pipeline.Status.Result)
 				}
 			}
-			data = append(data, []string{pipelineName, branchName, envs, envProds, successCount, failCount, abortCount, result})
+			data = append(data, []string{pipelineName, branchName, envs, envProds, successCount, failCount, abortCount, statusResult})
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
