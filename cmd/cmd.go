@@ -448,14 +448,13 @@ func (o *OptionsCommon) QueryWebsocket(url string) error {
 		switch msgType {
 		case websocket.TextMessage:
 			if isRunLog {
-				//var msg pkg.WsRunLog
-				//err = json.Unmarshal(msgData, &msg)
-				//if err != nil {
-				//	err = fmt.Errorf("parse msg error: %s", err.Error())
-				//	return err
-				//}
-				////log.RunLog(msg)
-				fmt.Println(string(msgData))
+				var msg pkg.WsRunLog
+				err = json.Unmarshal(msgData, &msg)
+				if err != nil {
+					err = fmt.Errorf("parse msg error: %s", err.Error())
+					return err
+				}
+				log.RunLog(msg)
 			} else {
 			}
 		case websocket.CloseMessage:
