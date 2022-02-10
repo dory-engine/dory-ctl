@@ -13,13 +13,13 @@ func NewCmdProject() *cobra.Command {
 	msgExample := fmt.Sprintf(`  # get project resoures
   doryctl project get
   
-  # add project, admin permission required
+  # [TODO] add project, admin permission required
   doryctl project add test-project1 --projectName=test-project1 --projectDesc=TEST-PROJECT1 --projectShortName=tp1 --projectTeam=TP --envName=test
   
-  # delete project, admin permission required
+  # [TODO] delete project, admin permission required
   doryctl project delete test-project1
   
-  # update project info, admin permission required
+  # [TODO] update project info, admin permission required
   doryctl project update test-project1 --projectDesc=TEST-PROJECT1 --projectTeam=TP`)
 
 	cmd := &cobra.Command{

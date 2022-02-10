@@ -14,8 +14,6 @@ import (
 
 type OptionsProjectGet struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
-	Page           int    `yaml:"page" json:"page" bson:"page" validate:""`
-	Number         int    `yaml:"number" json:"number" bson:"number" validate:""`
 	ProjectTeam    string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
 }
@@ -32,10 +30,12 @@ func NewCmdProjectGet() *cobra.Command {
 	msgUse := fmt.Sprintf("get [projectName] ...")
 	msgShort := fmt.Sprintf("get project resoures")
 	msgLong := fmt.Sprintf(`get project resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get project resoures
+	msgExample := fmt.Sprintf(`  # get all project resoures
   doryctl project get
   # get single project resoure
-  doryctl project get test-project1`)
+  doryctl project get test-project1
+  # get multiple project resoures
+  doryctl project get test-project1 test-project2`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -49,8 +49,6 @@ func NewCmdProjectGet() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().IntVar(&o.Page, "page", 1, "pagination number")
-	cmd.Flags().IntVarP(&o.Number, "number", "n", 1000, "show how many items each page")
 	cmd.Flags().StringVar(&o.ProjectTeam, "projectTeam", "", "filters by project team")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	return cmd
@@ -84,8 +82,8 @@ func (o *OptionsProjectGet) Run(args []string) error {
 	param := map[string]interface{}{
 		"projectNames": projectNames,
 		"projectTeam":  o.ProjectTeam,
-		"page":         o.Page,
-		"perPage":      o.Number,
+		"page":         1,
+		"perPage":      1000,
 	}
 	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param)
 	if err != nil {

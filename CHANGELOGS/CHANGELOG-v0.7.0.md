@@ -18,7 +18,8 @@
     - dory-core config.yaml add customStepOutputDir, customStepOutputUri, dockerParamInputFileName, dockerParamOutputFileName, dockerOutputFileDir options
     - add login command
     - add logout command
-    - add project command
+    - add project get command
+    - add pipeline get command
     - doryctl log with verbose mode
     
 **fixed bug**
