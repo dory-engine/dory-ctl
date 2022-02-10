@@ -183,3 +183,97 @@ type KubePod struct {
 type KubePodList struct {
 	Items []KubePod `yaml:"items" json:"items" bson:"items" validate:""`
 }
+
+type ProjectNodePort struct {
+	NodePortStart int  `yaml:"nodePortStart" json:"nodePortStart" bson:"nodePortStart" validate:""`
+	NodePortEnd   int  `yaml:"nodePortEnd" json:"nodePortEnd" bson:"nodePortEnd" validate:""`
+	IsDefault     bool `yaml:"isDefault" json:"isDefault" bson:"isDefault" validate:""`
+}
+
+type ProjectAvailableEnv struct {
+	EnvName string `yaml:"envName" json:"envName" bson:"envName" validate:""`
+}
+
+type Module struct {
+	ModuleName string `yaml:"moduleName" json:"moduleName" bson:"moduleName" validate:""`
+	IsLatest   bool   `yaml:"isLatest" json:"isLatest" bson:"isLatest" validate:""`
+}
+
+type PipelineBuild struct {
+	Name string `yaml:"name" json:"name" bson:"name" validate:""`
+	Run  bool   `yaml:"run" json:"run" bson:"run" validate:""`
+}
+
+type Pipeline struct {
+	PipelineName   string   `yaml:"pipelineName" json:"pipelineName" bson:"pipelineName" validate:""`
+	BranchName     string   `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
+	Envs           []string `yaml:"envs" json:"envs" bson:"envs" validate:""`
+	EnvProductions []string `yaml:"envProductions" json:"envProductions" bson:"envProductions" validate:""`
+	SuccessCount   int      `yaml:"successCount" json:"successCount" bson:"successCount" validate:""`
+	FailCount      int      `yaml:"failCount" json:"failCount" bson:"failCount" validate:""`
+	AbortCount     int      `yaml:"abortCount" json:"abortCount" bson:"abortCount" validate:""`
+	Status         struct {
+		Result    string `yaml:"result" json:"result" bson:"result" validate:""`
+		StartTime string `yaml:"startTime" json:"startTime" bson:"startTime" validate:""`
+		Duration  string `yaml:"duration" json:"duration" bson:"duration" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+	ErrMsgPipelineDef string `yaml:"errMsgPipelineDef" json:"errMsgPipelineDef" bson:"errMsgPipelineDef" validate:""`
+	PipelineDef       struct {
+		Builds       []PipelineBuild `yaml:"builds" json:"builds" bson:"builds" validate:""`
+		PipelineStep struct {
+			GitPull struct {
+				Timeout int `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+			} `yaml:"gitPull" json:"gitPull" bson:"gitPull" validate:""`
+			Build struct {
+				Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+				Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"build" json:"build" bson:"build" validate:""`
+			PackageImage struct {
+				Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+				Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"packageImage" json:"packageImage" bson:"packageImage" validate:""`
+			SyncImage struct {
+				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"syncImage" json:"syncImage" bson:"syncImage" validate:""`
+			Deploy struct {
+				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"deploy" json:"deploy" bson:"deploy" validate:""`
+			ApplyIngress struct {
+				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"applyIngress" json:"applyIngress" bson:"applyIngress" validate:""`
+			CheckDeploy struct {
+				Enable      bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Retry       int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+				IgnoreError bool `yaml:"ignoreError" json:"ignoreError" bson:"ignoreError" validate:""`
+			} `yaml:"checkDeploy" json:"checkDeploy" bson:"checkDeploy" validate:""`
+			CheckQuota struct {
+				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+			} `yaml:"checkQuota" json:"checkQuota" bson:"checkQuota" validate:""`
+		} `yaml:"pipelineStep" json:"pipelineStep" bson:"pipelineStep" validate:""`
+	} `yaml:"pipelineDef" json:"pipelineDef" bson:"pipelineDef" validate:""`
+}
+
+type Project struct {
+	ProjectInfo struct {
+		ProjectGroup     string `yaml:"projectGroup" json:"projectGroup" bson:"projectGroup" validate:""`
+		ProjectName      string `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+		ProjectDesc      string `yaml:"projectDesc" json:"projectDesc" bson:"projectDesc" validate:""`
+		ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:""`
+		ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:""`
+	} `yaml:"projectInfo" json:"projectInfo" bson:"projectInfo" validate:""`
+	ProjectRepo struct {
+		ArtifactRepo string `yaml:"artifactRepo" json:"artifactRepo" bson:"artifactRepo" validate:""`
+		GitRepo      string `yaml:"gitRepo" json:"gitRepo" bson:"gitRepo" validate:""`
+		ImageRepo    string `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:""`
+	} `yaml:"projectRepo" json:"projectRepo" bson:"projectRepo" validate:""`
+	ProjectNodePorts     []ProjectNodePort     `yaml:"projectNodePorts" json:"projectNodePorts" bson:"projectNodePorts" validate:""`
+	ProjectAvailableEnvs []ProjectAvailableEnv `yaml:"projectAvailableEnvs" json:"projectAvailableEnvs" bson:"projectAvailableEnvs" validate:""`
+	Modules              map[string][]Module   `yaml:"modules" json:"modules" bson:"modules" validate:""`
+	Pipelines            []Pipeline            `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
+}

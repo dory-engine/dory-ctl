@@ -80,6 +80,18 @@ func CheckError(err error) {
 	}
 }
 
+func PrettyJson(strJson string) (string, error) {
+	var err error
+	var strPretty string
+	var buf bytes.Buffer
+	err = json.Indent(&buf, []byte(strJson), "", "  ")
+	if err != nil {
+		return strPretty, err
+	}
+	strPretty = buf.String()
+	return strPretty, err
+}
+
 func NewOptionsCommon() *OptionsCommon {
 	var o OptionsCommon
 	return &o
@@ -120,6 +132,7 @@ func NewCmdRoot() *cobra.Command {
 
 	cmd.AddCommand(NewCmdLogin())
 	cmd.AddCommand(NewCmdLogout())
+	cmd.AddCommand(NewCmdProject())
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
 	return cmd
@@ -290,6 +303,8 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 		}
 	}
 	headerMap := map[string]string{}
+	req.Header.Set("Language", o.Language)
+	headerMap["Language"] = o.Language
 	req.Header.Set("Content-Type", "application/json")
 	headerMap["Content-Type"] = "application/json"
 	if userToken != "" {
@@ -324,19 +339,17 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	}
 
 	strJson = string(bs)
-	var prettyJSON bytes.Buffer
-	err = json.Indent(&prettyJSON, []byte(strJson), "", "  ")
+	result = gjson.Parse(strJson)
+
+	strPrettyJson, err := PrettyJson(strJson)
 	if err != nil {
 		return result, xUserToken, err
 	}
-	strPrettyJson := prettyJSON.String()
-
-	result = gjson.Parse(strJson)
 
 	log.Debug(fmt.Sprintf("%s %s %s in %s", method, url, resp.Status, result.Get("duration").String()))
 	log.Debug(fmt.Sprintf("Response Header:"))
 	for key, val := range resp.Header {
-		log.Debug(fmt.Sprintf("  %s: %s", key, val))
+		log.Debug(fmt.Sprintf("  %s: %s", key, strings.Join(val, ",")))
 	}
 	log.Debug(fmt.Sprintf("Response Body:\n%s", strPrettyJson))
 
@@ -345,7 +358,7 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 		return result, xUserToken, err
 	}
 	xUserToken = resp.Header.Get("X-User-Token")
-	log.Info(fmt.Sprintf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String()))
+	log.Debug(fmt.Sprintf("%s %s [%s] %s", method, url, result.Get("status").String(), result.Get("msg").String()))
 
 	return result, xUserToken, err
 }

@@ -12,6 +12,7 @@ require (
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.2.1
 	github.com/tidwall/gjson v1.12.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
