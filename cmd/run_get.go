@@ -25,13 +25,13 @@ type OptionsRunGet struct {
 	Number         int    `yaml:"number" json:"number" bson:"number" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		ProjectNames  []string
-		PipelineNames []string
-		StatusResults []string
-		StartDate     time.Time
-		EndDate       time.Time
-		RunName       string
-		RunNumber     int
+		ProjectNames  []string  `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
+		PipelineNames []string  `yaml:"pipelineNames" json:"pipelineNames" bson:"pipelineNames" validate:""`
+		StatusResults []string  `yaml:"statusResults" json:"statusResults" bson:"statusResults" validate:""`
+		StartDate     time.Time `yaml:"startDate" json:"startDate" bson:"startDate" validate:""`
+		EndDate       time.Time `yaml:"endDate" json:"endDate" bson:"endDate" validate:""`
+		RunName       string    `yaml:"runName" json:"runName" bson:"runName" validate:""`
+		RunNumber     int       `yaml:"runNumber" json:"runNumber" bson:"runNumber" validate:""`
 	}
 }
 
@@ -84,7 +84,7 @@ func (o *OptionsRunGet) Complete(cmd *cobra.Command) error {
 func (o *OptionsRunGet) Validate(args []string) error {
 	var err error
 	if len(args) > 1 {
-		err = fmt.Errorf("runNames error: only accept one runName")
+		err = fmt.Errorf("runName error: only accept one runName")
 		return err
 	}
 	if len(args) == 1 {
@@ -246,46 +246,48 @@ func (o *OptionsRunGet) Run(args []string) error {
 		runs = append(runs, run)
 	}
 
-	dataOutput := map[string]interface{}{}
-	if o.Param.RunNumber != 0 {
-		dataOutput["run"] = runs[0]
-	} else {
-		dataOutput["runs"] = runs
-	}
-	switch o.Output {
-	case "json":
-		bs, _ = json.MarshalIndent(dataOutput, "", "  ")
-		fmt.Println(string(bs))
-	case "yaml":
-		bs, _ = yaml.Marshal(dataOutput)
-		fmt.Println(string(bs))
-	default:
-		data := [][]string{}
-		for _, run := range runs {
-			runName := run.RunName
-			startUser := run.StartUser
-			abortUser := run.AbortUser
-			startTime := run.Status.StartTime
-			statusResult := run.Status.Result
-			duration := run.Status.Duration
-			data = append(data, []string{runName, startUser, abortUser, startTime, statusResult, duration})
+	if len(runs) > 0 {
+		dataOutput := map[string]interface{}{}
+		if o.Param.RunNumber != 0 {
+			dataOutput["run"] = runs[0]
+		} else {
+			dataOutput["runs"] = runs
 		}
+		switch o.Output {
+		case "json":
+			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
+			fmt.Println(string(bs))
+		case "yaml":
+			bs, _ = yaml.Marshal(dataOutput)
+			fmt.Println(string(bs))
+		default:
+			data := [][]string{}
+			for _, run := range runs {
+				runName := run.RunName
+				startUser := run.StartUser
+				abortUser := run.AbortUser
+				startTime := run.Status.StartTime
+				statusResult := run.Status.Result
+				duration := run.Status.Duration
+				data = append(data, []string{runName, startUser, abortUser, startTime, statusResult, duration})
+			}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "StartUser", "AbortUser", "StartTime", "Status", "Duration"})
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-		table.AppendBulk(data)
-		table.Render()
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name", "StartUser", "AbortUser", "StartTime", "Status", "Duration"})
+			table.SetAutoWrapText(false)
+			table.SetAutoFormatHeaders(true)
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetCenterSeparator("")
+			table.SetColumnSeparator("")
+			table.SetRowSeparator("")
+			table.SetHeaderLine(false)
+			table.SetBorder(false)
+			table.SetTablePadding("\t")
+			table.SetNoWhiteSpace(true)
+			table.AppendBulk(data)
+			table.Render()
+		}
 	}
 
 	return err

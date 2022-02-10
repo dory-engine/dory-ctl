@@ -76,6 +76,14 @@ func (o *OptionsLogin) Validate(args []string) error {
 		err = fmt.Errorf("--serverURL required")
 		return err
 	}
+	if !strings.HasPrefix(o.ServerURL, "http://") && strings.HasPrefix(o.ServerURL, "https://") {
+		err = fmt.Errorf("--serverURL must start with http:// or https://")
+		return err
+	}
+	if o.ExpireDays < 0 {
+		err = fmt.Errorf("--expireDays can not less than 0")
+		return err
+	}
 
 	return err
 }

@@ -17,7 +17,7 @@ type OptionsProjectGet struct {
 	ProjectTeam    string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		ProjectNames []string
+		ProjectNames []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
 	}
 }
 
@@ -112,59 +112,61 @@ func (o *OptionsProjectGet) Run(args []string) error {
 		projects = append(projects, project)
 	}
 
-	dataOutput := map[string]interface{}{}
-	if len(o.Param.ProjectNames) == 1 && len(projects) == 1 && o.Param.ProjectNames[0] == projects[0].ProjectInfo.ProjectName {
-		dataOutput["project"] = projects[0]
-	} else {
-		dataOutput["projects"] = projects
-	}
-	switch o.Output {
-	case "json":
-		bs, _ = json.MarshalIndent(dataOutput, "", "  ")
-		fmt.Println(string(bs))
-	case "yaml":
-		bs, _ = yaml.Marshal(dataOutput)
-		fmt.Println(string(bs))
-	default:
-		data := [][]string{}
-		for _, project := range projects {
-			projectName := project.ProjectInfo.ProjectName
-			projectShortName := project.ProjectInfo.ProjectShortName
-			projectEnvs := []string{}
-			for _, pae := range project.ProjectAvailableEnvs {
-				projectEnvs = append(projectEnvs, pae.EnvName)
-			}
-			projectEnvNames := strings.Join(projectEnvs, ",")
-			projectNodePorts := []string{}
-			for _, pnp := range project.ProjectNodePorts {
-				np := fmt.Sprintf("%d-%d", pnp.NodePortStart, pnp.NodePortEnd)
-				projectNodePorts = append(projectNodePorts, np)
-			}
-			projectNodePortNames := strings.Join(projectNodePorts, ",")
-			pipelines := []string{}
-			for _, pp := range project.Pipelines {
-				pipelines = append(pipelines, pp.PipelineName)
-			}
-			pipelineNames := strings.Join(pipelines, ",")
-
-			data = append(data, []string{projectName, projectShortName, projectEnvNames, projectNodePortNames, pipelineNames})
+	if len(projects) > 0 {
+		dataOutput := map[string]interface{}{}
+		if len(o.Param.ProjectNames) == 1 && len(projects) == 1 && o.Param.ProjectNames[0] == projects[0].ProjectInfo.ProjectName {
+			dataOutput["project"] = projects[0]
+		} else {
+			dataOutput["projects"] = projects
 		}
+		switch o.Output {
+		case "json":
+			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
+			fmt.Println(string(bs))
+		case "yaml":
+			bs, _ = yaml.Marshal(dataOutput)
+			fmt.Println(string(bs))
+		default:
+			data := [][]string{}
+			for _, project := range projects {
+				projectName := project.ProjectInfo.ProjectName
+				projectShortName := project.ProjectInfo.ProjectShortName
+				projectEnvs := []string{}
+				for _, pae := range project.ProjectAvailableEnvs {
+					projectEnvs = append(projectEnvs, pae.EnvName)
+				}
+				projectEnvNames := strings.Join(projectEnvs, ",")
+				projectNodePorts := []string{}
+				for _, pnp := range project.ProjectNodePorts {
+					np := fmt.Sprintf("%d-%d", pnp.NodePortStart, pnp.NodePortEnd)
+					projectNodePorts = append(projectNodePorts, np)
+				}
+				projectNodePortNames := strings.Join(projectNodePorts, ",")
+				pipelines := []string{}
+				for _, pp := range project.Pipelines {
+					pipelines = append(pipelines, pp.PipelineName)
+				}
+				pipelineNames := strings.Join(pipelines, ",")
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "ShortName", "EnvNames", "NodePorts", "Pipelines"})
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-		table.AppendBulk(data)
-		table.Render()
+				data = append(data, []string{projectName, projectShortName, projectEnvNames, projectNodePortNames, pipelineNames})
+			}
+
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name", "ShortName", "EnvNames", "NodePorts", "Pipelines"})
+			table.SetAutoWrapText(false)
+			table.SetAutoFormatHeaders(true)
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetCenterSeparator("")
+			table.SetColumnSeparator("")
+			table.SetRowSeparator("")
+			table.SetHeaderLine(false)
+			table.SetBorder(false)
+			table.SetTablePadding("\t")
+			table.SetNoWhiteSpace(true)
+			table.AppendBulk(data)
+			table.Render()
+		}
 	}
 
 	return err

@@ -17,8 +17,8 @@ type OptionsPipelineGet struct {
 	ProjectNames   string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		ProjectNames  []string
-		PipelineNames []string
+		ProjectNames  []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
+		PipelineNames []string `yaml:"pipelineNames" json:"pipelineNames" bson:"pipelineNames" validate:""`
 	}
 }
 
@@ -127,67 +127,69 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 		}
 	}
 
-	if len(o.Param.PipelineNames) > 0 {
-		pls := pipelines
-		pipelines = []pkg.Pipeline{}
-		for _, pipelineName := range o.Param.PipelineNames {
-			for _, pl := range pls {
-				if pl.PipelineName == pipelineName {
-					pipelines = append(pipelines, pl)
-					break
+	if len(pipelines) > 0 {
+		if len(o.Param.PipelineNames) > 0 {
+			pls := pipelines
+			pipelines = []pkg.Pipeline{}
+			for _, pipelineName := range o.Param.PipelineNames {
+				for _, pl := range pls {
+					if pl.PipelineName == pipelineName {
+						pipelines = append(pipelines, pl)
+						break
+					}
 				}
 			}
 		}
-	}
 
-	dataOutput := map[string]interface{}{}
-	if len(o.Param.PipelineNames) == 1 && len(pipelines) == 1 && o.Param.PipelineNames[0] == pipelines[0].PipelineName {
-		dataOutput["pipeline"] = pipelines[0]
-	} else {
-		dataOutput["pipelines"] = pipelines
-	}
-	switch o.Output {
-	case "json":
-		bs, _ = json.MarshalIndent(dataOutput, "", "  ")
-		fmt.Println(string(bs))
-	case "yaml":
-		bs, _ = yaml.Marshal(dataOutput)
-		fmt.Println(string(bs))
-	default:
-		data := [][]string{}
-		for _, pipeline := range pipelines {
-			pipelineName := pipeline.PipelineName
-			branchName := pipeline.BranchName
-			envs := strings.Join(pipeline.Envs, ",")
-			envProds := strings.Join(pipeline.EnvProductions, ",")
-			successCount := fmt.Sprintf("%d", pipeline.SuccessCount)
-			failCount := fmt.Sprintf("%d", pipeline.FailCount)
-			abortCount := fmt.Sprintf("%d", pipeline.AbortCount)
-			var statusResult string
-			if pipeline.Status.StartTime != "" {
-				statusResult = pipeline.Status.StartTime
-				if pipeline.Status.Result != "" {
-					statusResult = fmt.Sprintf("%s [%s]", statusResult, pipeline.Status.Result)
-				}
-			}
-			data = append(data, []string{pipelineName, branchName, envs, envProds, successCount, failCount, abortCount, statusResult})
+		dataOutput := map[string]interface{}{}
+		if len(o.Param.PipelineNames) == 1 && len(pipelines) == 1 && o.Param.PipelineNames[0] == pipelines[0].PipelineName {
+			dataOutput["pipeline"] = pipelines[0]
+		} else {
+			dataOutput["pipelines"] = pipelines
 		}
+		switch o.Output {
+		case "json":
+			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
+			fmt.Println(string(bs))
+		case "yaml":
+			bs, _ = yaml.Marshal(dataOutput)
+			fmt.Println(string(bs))
+		default:
+			data := [][]string{}
+			for _, pipeline := range pipelines {
+				pipelineName := pipeline.PipelineName
+				branchName := pipeline.BranchName
+				envs := strings.Join(pipeline.Envs, ",")
+				envProds := strings.Join(pipeline.EnvProductions, ",")
+				successCount := fmt.Sprintf("%d", pipeline.SuccessCount)
+				failCount := fmt.Sprintf("%d", pipeline.FailCount)
+				abortCount := fmt.Sprintf("%d", pipeline.AbortCount)
+				var statusResult string
+				if pipeline.Status.StartTime != "" {
+					statusResult = pipeline.Status.StartTime
+					if pipeline.Status.Result != "" {
+						statusResult = fmt.Sprintf("%s [%s]", statusResult, pipeline.Status.Result)
+					}
+				}
+				data = append(data, []string{pipelineName, branchName, envs, envProds, successCount, failCount, abortCount, statusResult})
+			}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "Branch", "Envs", "EnvProds", "Success", "Fail", "Abort", "LastRun"})
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
-		table.AppendBulk(data)
-		table.Render()
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name", "Branch", "Envs", "EnvProds", "Success", "Fail", "Abort", "LastRun"})
+			table.SetAutoWrapText(false)
+			table.SetAutoFormatHeaders(true)
+			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			table.SetAlignment(tablewriter.ALIGN_LEFT)
+			table.SetCenterSeparator("")
+			table.SetColumnSeparator("")
+			table.SetRowSeparator("")
+			table.SetHeaderLine(false)
+			table.SetBorder(false)
+			table.SetTablePadding("\t")
+			table.SetNoWhiteSpace(true)
+			table.AppendBulk(data)
+			table.Render()
+		}
 	}
 
 	return err

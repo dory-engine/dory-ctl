@@ -2,12 +2,14 @@
 
 **new features:**
 
-- dory-core upgrade to v1.6.9
+- dory-core upgrade to v1.6.10
     - customStepConf support set step status as failed in dory-param-input file
     - customStepConf support save output files in assets directory
     - customStepConf support save output files in tar file
     - customStepConf support when dockerVolumes is empty, mount repository in docker executor by default
     - add api: /public/about
+    - check token in request header or query automatically
+    - name id string length unlimited
     
 - dory-dashboard upgrade to v1.6.3
     - customStep add tarFile and outputFiles support
@@ -15,14 +17,15 @@
     - customStepConf dockerVolumes and dockerEnvs webUI upgraded
 
 - doryctl upgrade
-    - dory-core config.yaml add customStepOutputDir, customStepOutputUri, dockerParamInputFileName, dockerParamOutputFileName, dockerOutputFileDir options
+    - dory-core config.yaml file add customStepOutputDir, customStepOutputUri, dockerParamInputFileName, dockerParamOutputFileName, dockerOutputFileDir options
+    - log with verbose mode
     - add login command
     - add logout command
     - add project get command
     - add pipeline get command
-    - doryctl log with verbose mode
+    - add run get command
     
 **fixed bug**
 
-- dory-core upgrade to v1.6.9
+- dory-core upgrade to v1.6.10
     - can't delete customStepConf bug fixed 

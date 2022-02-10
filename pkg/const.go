@@ -4,7 +4,7 @@ import "embed"
 
 const (
 	VersionDoryCtl       = "v0.6.7"
-	VersionDoryCore      = "v1.6.9"
+	VersionDoryCore      = "v1.6.10"
 	VersionDoryDashboard = "v1.6.3"
 	BaseCmdName          = "doryctl"
 	ConfigDirDefault     = ".doryctl"
@@ -14,6 +14,15 @@ const (
 	DirInstallConfigs    = "install_configs"
 
 	TimeoutDefault = 5
+
+	LogTypeInfo    = "INFO"
+	LogTypeWarning = "WARNING"
+	LogTypeError   = "ERROR"
+	LogTypeEnd     = "END"
+
+	LogStatusCreate = "CREATE" // special usage for websocket send notice directives
+	LogStatusStart  = "START"  // special usage for websocket send notice directives
+	LogStatusInput  = "INPUT"  // special usage for websocket send notice directives
 )
 
 var (

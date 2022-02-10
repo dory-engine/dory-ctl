@@ -10,6 +10,7 @@ import (
 	"github.com/Xuanwo/go-locale"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/fatih/color"
+	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
 	"gopkg.in/yaml.v3"
@@ -71,6 +72,31 @@ func (log *Log) Error(msg string) {
 	defer color.Unset()
 	color.Set(color.FgRed)
 	fmt.Println(fmt.Sprintf("[ERRO] [%s]: %s", time.Now().Format("01-02 15:04:05"), msg))
+}
+
+func (log *Log) RunLog(msg pkg.WsRunLog) {
+	defer color.Unset()
+	bs, _ := json.Marshal(msg)
+	strJson := string(bs)
+	switch msg.LogType {
+	case pkg.LogTypeInfo:
+		color.Set(color.FgBlue)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
+	case pkg.LogTypeWarning:
+		color.Set(color.FgMagenta)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
+	case pkg.LogTypeError:
+		color.Set(color.FgRed)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
+	case pkg.LogTypeEnd:
+		color.Set(color.FgGreen)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
+	case pkg.LogStatusCreate, pkg.LogStatusStart, pkg.LogStatusInput:
+	}
+	if log.Verbose {
+		color.Set(color.FgBlack)
+		fmt.Println(fmt.Sprintf("[DEBU] [%s]: %s", time.Now().Format("01-02 15:04:05"), strJson))
+	}
 }
 
 func CheckError(err error) {
@@ -370,4 +396,74 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	}
 
 	return result, xUserToken, err
+}
+
+func (o *OptionsCommon) QueryWebsocket(url string) error {
+	var err error
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	var serverURL string
+	if strings.HasPrefix(o.ServerURL, "http://") {
+		serverURL = strings.Replace(o.ServerURL, "http://", "ws://", 1)
+	} else if strings.HasPrefix(o.ServerURL, "https://") {
+		serverURL = strings.Replace(o.ServerURL, "https://", "wss://", 1)
+	}
+	if serverURL == "" {
+		return err
+	}
+
+	urlOrigin := url
+	url = fmt.Sprintf("%s/%s", serverURL, url)
+
+	header := http.Header{}
+	header.Add("X-Access-Token", o.AccessToken)
+	dialer := websocket.Dialer{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		//HandshakeTimeout: time.Second * time.Duration(o.Timeout),
+	}
+	conn, resp, err := dialer.Dial(url, header)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	log.Debug(fmt.Sprintf("WEBSOCKET %s %s", url, resp.Status))
+
+	go func(conn *websocket.Conn) {
+		for {
+			err := conn.WriteMessage(websocket.PingMessage, []byte("ping"))
+			if err != nil {
+				break
+			}
+			time.Sleep(time.Second * 15)
+		}
+	}(conn)
+
+	isRunLog := strings.HasPrefix(urlOrigin, "api/ws/log/run/")
+	for {
+		msgType, msgData, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("###", err.Error())
+			break
+		}
+		switch msgType {
+		case websocket.TextMessage:
+			if isRunLog {
+				//var msg pkg.WsRunLog
+				//err = json.Unmarshal(msgData, &msg)
+				//if err != nil {
+				//	err = fmt.Errorf("parse msg error: %s", err.Error())
+				//	return err
+				//}
+				////log.RunLog(msg)
+				fmt.Println(string(msgData))
+			} else {
+			}
+		case websocket.CloseMessage:
+			break
+		default:
+			break
+		}
+	}
+
+	return err
 }

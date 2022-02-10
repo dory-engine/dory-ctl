@@ -290,3 +290,23 @@ type Run struct {
 		Duration  string `yaml:"duration" json:"duration" bson:"duration" validate:""`
 	} `yaml:"status" json:"status" bson:"status" validate:""`
 }
+
+type WsRunLog struct {
+	ID         string `yaml:"ID" json:"ID" bson:"ID" validate:""`
+	LogType    string `yaml:"logType" json:"logType" bson:"logType" validate:""`
+	Content    string `yaml:"content" json:"content" bson:"content" validate:""`
+	RunName    string `yaml:"runName" json:"runName" bson:"runName" validate:""`
+	PhaseID    string `yaml:"phaseID" json:"phaseID" bson:"phaseID" validate:""`
+	StageID    string `yaml:"stageID" json:"stageID" bson:"stageID" validate:""`
+	StepID     string `yaml:"stepID" json:"stepID" bson:"stepID" validate:""`
+	CreateTime string `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
+}
+
+type WsAdminLog struct {
+	ID        string `yaml:"ID" json:"ID" bson:"ID" validate:""`
+	LogType   string `yaml:"logType" json:"logType" bson:"logType" validate:""`
+	Content   string `yaml:"content" json:"content" bson:"content" validate:""`
+	StartTime string `yaml:"startTime" json:"startTime" bson:"startTime" validate:""`
+	EndTime   string `yaml:"endTime" json:"endTime" bson:"endTime" validate:""`
+	Duration  string `yaml:"duration" json:"duration" bson:"duration" validate:""`
+}

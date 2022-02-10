@@ -34,5 +34,6 @@ func NewCmdRun() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCmdRunGet())
+	cmd.AddCommand(NewCmdRunLog())
 	return cmd
 }
