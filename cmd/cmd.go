@@ -517,9 +517,9 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
 							for {
 								if inputValue == "" {
 									if runInput.IsMultiple {
-										log.Warning("# please input option")
-									} else {
 										log.Warning("# please input options (support multiple options, example: opt1,opt2)")
+									} else {
+										log.Warning("# please input option")
 									}
 									reader := bufio.NewReader(os.Stdin)
 									inputValue, _ = reader.ReadString('\n')

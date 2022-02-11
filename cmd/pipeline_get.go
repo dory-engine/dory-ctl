@@ -37,9 +37,9 @@ func NewCmdPipelineGet() *cobra.Command {
 	msgExample := fmt.Sprintf(`  # get all pipeline resoures
   doryctl pipeline get
   # get single pipeline resoure
-  doryctl pipeline get test-pipeline1-develop
+  doryctl pipeline get test-project1-develop
   # get multiple pipeline resoures
-  doryctl pipeline get test-pipeline1-develop test-pipeline1-ops`)
+  doryctl pipeline get test-project1-develop test-project1-ops`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

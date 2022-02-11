@@ -12,15 +12,18 @@ func NewCmdPipeline() *cobra.Command {
 	msgLong := fmt.Sprintf(`manage pipeline resources in dory-core server`)
 	msgExample := fmt.Sprintf(`  # get pipeline resoures
   doryctl pipeline get
+
+  # execute pipeline
+  doryctl pipeline execute test-project1-develop
   
   # [TODO] add pipeline, project maintainer permission required
   doryctl pipeline add --projectName=test-project1 --branchName=release --tagSuffix=release --envs=uat --envProductions=prod1,prod2 --webhookPushEvent=true
   
   # [TODO] delete pipeline, project maintainer permission required
-  doryctl pipeline delete test-pipeline1-release
+  doryctl pipeline delete test-project1-release
   
   # [TODO] update pipeline token, project maintainer permission required
-  doryctl pipeline refreshToken test-pipeline1-release`)
+  doryctl pipeline refreshToken test-project1-release`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -37,5 +40,6 @@ func NewCmdPipeline() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCmdPipelineGet())
+	cmd.AddCommand(NewCmdPipelineExecute())
 	return cmd
 }

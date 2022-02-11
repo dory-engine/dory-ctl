@@ -27,12 +27,10 @@ func NewCmdRunLog() *cobra.Command {
 	o := NewOptionsRunLog()
 
 	msgUse := fmt.Sprintf("logs [runName]")
-	msgShort := fmt.Sprintf("get pipeline run resoures")
-	msgLong := fmt.Sprintf(`get pipeline run resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get all pipeline run resoures
-  doryctl run get
-  # get single pipeline run resoure
-  doryctl run get test-project1-develop-1`)
+	msgShort := fmt.Sprintf("get pipeline run logs")
+	msgLong := fmt.Sprintf(`get pipeline run logs in dory-core server`)
+	msgExample := fmt.Sprintf(`  # get pipeline run logs
+  doryctl run logs test-project1-develop-1`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -58,7 +56,7 @@ func (o *OptionsRunLog) Complete(cmd *cobra.Command) error {
 func (o *OptionsRunLog) Validate(args []string) error {
 	var err error
 	if len(args) != 1 {
-		err = fmt.Errorf("runNames error: only accept one runName")
+		err = fmt.Errorf("runName error: only accept one runName")
 		return err
 	}
 
