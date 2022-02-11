@@ -458,7 +458,6 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
 	for {
 		msgType, msgData, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("#", err.Error())
 			break
 		}
 		switch msgType {
@@ -539,8 +538,6 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
 								return err
 							}
 						}
-					} else {
-						fmt.Println("XXX")
 					}
 				}
 			} else {
