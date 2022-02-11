@@ -26,8 +26,12 @@
     - add command: pipeline execute
     - add command: run get
     - add command: run logs
-    
+
 **fixed bug**
 
 - dory-core upgrade to v1.6.10
     - can't delete customStepConf bug fixed 
+    
+***bugs***
+- doryctl run logs command: finished run read message stuck until timeout 
+
