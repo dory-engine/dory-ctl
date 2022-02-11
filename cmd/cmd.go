@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
@@ -88,10 +89,27 @@ func (log *Log) RunLog(msg pkg.WsRunLog) {
 	case pkg.LogTypeError:
 		color.Set(color.FgRed)
 		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
-	case pkg.LogTypeEnd:
+	}
+	if log.Verbose {
+		color.Set(color.FgBlack)
+		fmt.Println(fmt.Sprintf("[DEBU] [%s]: %s", time.Now().Format("01-02 15:04:05"), strJson))
+	}
+}
+
+func (log *Log) AdminLog(msg pkg.WsAdminLog) {
+	defer color.Unset()
+	bs, _ := json.Marshal(msg)
+	strJson := string(bs)
+	switch msg.LogType {
+	case pkg.LogTypeInfo:
+		color.Set(color.FgBlue)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.EndTime, msg.Content))
+	case pkg.StatusFail:
+		color.Set(color.FgRed)
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.EndTime, msg.Content))
+	case pkg.StatusSuccess:
 		color.Set(color.FgGreen)
-		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.CreateTime, msg.Content))
-	case pkg.LogStatusCreate, pkg.LogStatusStart, pkg.LogStatusInput:
+		fmt.Println(fmt.Sprintf("[%s] [%s]: %s", msg.LogType, msg.EndTime, msg.Content))
 	}
 	if log.Verbose {
 		color.Set(color.FgBlack)
@@ -398,9 +416,9 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	return result, xUserToken, err
 }
 
-func (o *OptionsCommon) QueryWebsocket(url string) error {
+func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
 	var err error
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	//http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	var serverURL string
 	if strings.HasPrefix(o.ServerURL, "http://") {
@@ -412,15 +430,14 @@ func (o *OptionsCommon) QueryWebsocket(url string) error {
 		return err
 	}
 
-	urlOrigin := url
 	url = fmt.Sprintf("%s/%s", serverURL, url)
 
 	header := http.Header{}
 	header.Add("X-Access-Token", o.AccessToken)
 	dialer := websocket.Dialer{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		//HandshakeTimeout: time.Second * time.Duration(o.Timeout),
 	}
+
 	conn, resp, err := dialer.Dial(url, header)
 	if err != nil {
 		return err
@@ -434,20 +451,19 @@ func (o *OptionsCommon) QueryWebsocket(url string) error {
 			if err != nil {
 				break
 			}
-			time.Sleep(time.Second * 15)
+			time.Sleep(time.Second * 5)
 		}
 	}(conn)
 
-	isRunLog := strings.HasPrefix(urlOrigin, "api/ws/log/run/")
 	for {
 		msgType, msgData, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("###", err.Error())
+			fmt.Println("#", err.Error())
 			break
 		}
 		switch msgType {
 		case websocket.TextMessage:
-			if isRunLog {
+			if runName != "" {
 				var msg pkg.WsRunLog
 				err = json.Unmarshal(msgData, &msg)
 				if err != nil {
@@ -455,7 +471,86 @@ func (o *OptionsCommon) QueryWebsocket(url string) error {
 					return err
 				}
 				log.RunLog(msg)
+				if msg.LogType == pkg.LogStatusInput {
+					param := map[string]interface{}{}
+					var r gjson.Result
+
+					r, _, err = o.QueryAPI(fmt.Sprintf("api/cicd/run/%s", runName), http.MethodGet, "", param, false)
+					if err != nil {
+						return err
+					}
+					run := pkg.Run{}
+					err = json.Unmarshal([]byte(r.Get("data.run").Raw), &run)
+					if err != nil {
+						return err
+					}
+					if run.RunName == "" {
+						err = fmt.Errorf("runName %s not exists", runName)
+						return err
+					}
+					if run.Status.Duration == "" {
+						r, _, err = o.QueryAPI(fmt.Sprintf("api/cicd/run/%s/input", runName), http.MethodGet, "", param, false)
+						if err != nil {
+							return err
+						}
+						var runInput pkg.RunInput
+						err = json.Unmarshal([]byte(r.Get("data").Raw), &runInput)
+						if err != nil {
+							err = fmt.Errorf("parse run input error: %s", err.Error())
+							return err
+						}
+						if runInput.PhaseID != "" {
+							opts := []string{}
+							for _, opt := range runInput.Options {
+								opts = append(opts, opt.Value)
+							}
+							if len(opts) == 0 {
+								opts = append(opts, pkg.InputValueConfirm, pkg.InputValueAbort)
+							} else {
+								opts = append(opts, pkg.InputValueAbort)
+							}
+							strOptions := strings.Join(opts, ",")
+							log.Warning(fmt.Sprintf("# %s, %s", runInput.Title, runInput.Desc))
+							log.Warning(fmt.Sprintf("# options: %s", strOptions))
+
+							var inputValue string
+							for {
+								if inputValue == "" {
+									if runInput.IsMultiple {
+										log.Warning("# please input option")
+									} else {
+										log.Warning("# please input options (support multiple options, example: opt1,opt2)")
+									}
+									reader := bufio.NewReader(os.Stdin)
+									inputValue, _ = reader.ReadString('\n')
+									inputValue = strings.Trim(inputValue, "\n")
+									inputValue = strings.Trim(inputValue, " ")
+								} else {
+									break
+								}
+							}
+
+							param = map[string]interface{}{
+								"phaseID":    runInput.PhaseID,
+								"inputValue": inputValue,
+							}
+							r, _, err = o.QueryAPI(fmt.Sprintf("api/cicd/run/%s/input", runName), http.MethodPost, "", param, false)
+							if err != nil {
+								return err
+							}
+						}
+					} else {
+						fmt.Println("XXX")
+					}
+				}
 			} else {
+				var msg pkg.WsAdminLog
+				err = json.Unmarshal(msgData, &msg)
+				if err != nil {
+					err = fmt.Errorf("parse msg error: %s", err.Error())
+					return err
+				}
+				log.AdminLog(msg)
 			}
 		case websocket.CloseMessage:
 			break

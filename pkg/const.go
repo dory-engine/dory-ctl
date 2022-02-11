@@ -20,6 +20,12 @@ const (
 	LogTypeError   = "ERROR"
 	LogTypeEnd     = "END"
 
+	StatusSuccess = "SUCCESS"
+	StatusFail    = "FAIL"
+
+	InputValueAbort   = "ABORT"
+	InputValueConfirm = "CONFIRM"
+
 	LogStatusCreate = "CREATE" // special usage for websocket send notice directives
 	LogStatusStart  = "START"  // special usage for websocket send notice directives
 	LogStatusInput  = "INPUT"  // special usage for websocket send notice directives

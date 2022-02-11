@@ -291,6 +291,19 @@ type Run struct {
 	} `yaml:"status" json:"status" bson:"status" validate:""`
 }
 
+type RunInputOption struct {
+	Name  string `yaml:"name" json:"name" bson:"name" validate:""`
+	Value string `yaml:"value" json:"value" bson:"value" validate:""`
+}
+
+type RunInput struct {
+	PhaseID    string           `yaml:"phaseID" json:"phaseID" bson:"phaseID" validate:""`
+	Title      string           `yaml:"title" json:"title" bson:"title" validate:""`
+	Desc       string           `yaml:"desc" json:"desc" bson:"desc" validate:""`
+	IsMultiple bool             `yaml:"isMultiple" json:"isMultiple" bson:"isMultiple" validate:""`
+	Options    []RunInputOption `yaml:"options" json:"options" bson:"options" validate:""`
+}
+
 type WsRunLog struct {
 	ID         string `yaml:"ID" json:"ID" bson:"ID" validate:""`
 	LogType    string `yaml:"logType" json:"logType" bson:"logType" validate:""`

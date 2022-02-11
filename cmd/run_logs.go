@@ -96,7 +96,7 @@ func (o *OptionsRunLog) Run(args []string) error {
 	}
 
 	url := fmt.Sprintf("api/ws/log/run/%s", o.Param.RunName)
-	err = o.QueryWebsocket(url)
+	err = o.QueryWebsocket(url, o.Param.RunName)
 	if err != nil {
 		return err
 	}
