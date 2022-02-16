@@ -13,10 +13,10 @@ func NewCmdRun() *cobra.Command {
 	msgExample := fmt.Sprintf(`  # get pipeline run resoures
   doryctl run get
   
-  # [TODO] show pipeline run logs
+  # show pipeline run logs
   doryctl run logs test-project1-develop-1
   
-  # [TODO] delete run, project maintainer permission required
+  # delete run, project maintainer permission required
   doryctl run abort test-project1-develop-1`)
 
 	cmd := &cobra.Command{
@@ -35,5 +35,6 @@ func NewCmdRun() *cobra.Command {
 
 	cmd.AddCommand(NewCmdRunGet())
 	cmd.AddCommand(NewCmdRunLog())
+	cmd.AddCommand(NewCmdRunAbort())
 	return cmd
 }
