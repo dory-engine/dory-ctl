@@ -4,7 +4,7 @@ import "embed"
 
 const (
 	VersionDoryCtl       = "v0.7.3"
-	VersionDoryCore      = "v1.6.13"
+	VersionDoryCore      = "v1.6.14"
 	VersionDoryDashboard = "v1.6.4"
 	BaseCmdName          = "doryctl"
 	ConfigDirDefault     = ".doryctl"
