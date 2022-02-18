@@ -12,8 +12,10 @@ import (
 
 type OptionsPipelineExecute struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
+	Batch          string `yaml:"batch" json:"batch" bson:"batch" validate:""`
 	Param          struct {
-		PipelineName string `yaml:"pipelineName" json:"pipelineName" bson:"pipelineName" validate:""`
+		PipelineName string   `yaml:"pipelineName" json:"pipelineName" bson:"pipelineName" validate:""`
+		Batches      []string `yaml:"Batches" json:"Batches" bson:"Batches" validate:""`
 	}
 }
 
@@ -30,7 +32,10 @@ func NewCmdPipelineExecute() *cobra.Command {
 	msgShort := fmt.Sprintf("execute pipeline")
 	msgLong := fmt.Sprintf(`execute pipeline in dory-core server`)
 	msgExample := fmt.Sprintf(`  # execute pipeline
-  doryctl pipeline execute test-project1-develop`)
+  doryctl pipeline execute test-project1-develop
+
+  # execute pipeline with batch input automatically
+  doryctl pipeline execute test-project1-ops --batch "develop::checkDeploy::tp1-gin-demo,tp1-go-demo"`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -44,6 +49,7 @@ func NewCmdPipelineExecute() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
+	cmd.Flags().StringVarP(&o.Batch, "batch", "b", "", "send input in run automatically, input values split with ::, example: develop::checkDeploy::tp1-gin-demo,tp1-go-demo")
 	return cmd
 }
 
@@ -68,6 +74,15 @@ func (o *OptionsPipelineExecute) Validate(args []string) error {
 		return err
 	}
 	o.Param.PipelineName = s
+
+	o.Batch = strings.Trim(o.Batch, " ")
+	arr := strings.Split(o.Batch, "::")
+	for _, val := range arr {
+		val = strings.Trim(val, " ")
+		if val != "" {
+			o.Param.Batches = append(o.Param.Batches, val)
+		}
+	}
 	return err
 }
 
@@ -104,7 +119,7 @@ func (o *OptionsPipelineExecute) Run(args []string) error {
 	}
 
 	url := fmt.Sprintf("api/ws/log/run/%s", runName)
-	err = o.QueryWebsocket(url, runName)
+	err = o.QueryWebsocket(url, runName, o.Param.Batches)
 	if err != nil {
 		return err
 	}

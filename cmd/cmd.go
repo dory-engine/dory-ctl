@@ -416,7 +416,7 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	return result, xUserToken, err
 }
 
-func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
+func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) error {
 	var err error
 	//http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
@@ -513,6 +513,11 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string) error {
 							log.Warning(fmt.Sprintf("# options: %s", strOptions))
 
 							var inputValue string
+							if len(batches) > 0 {
+								inputValue, batches = batches[0], batches[1:]
+								log.Warning(fmt.Sprintf("# input value automatically: %s", inputValue))
+							}
+
 							for {
 								if inputValue == "" {
 									if runInput.IsMultiple {
