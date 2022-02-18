@@ -35,7 +35,7 @@ func NewCmdPipelineExecute() *cobra.Command {
   doryctl pipeline execute test-project1-develop
 
   # execute pipeline with batch input automatically
-  doryctl pipeline execute test-project1-ops --batch "develop::checkDeploy::tp1-gin-demo,tp1-go-demo"`)
+  doryctl pipeline execute test-project1-ops --batch "develop::inputCheckDeploy::tp1-gin-demo,tp1-go-demo"`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -49,7 +49,7 @@ func NewCmdPipelineExecute() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVarP(&o.Batch, "batch", "b", "", "send input in run automatically, input values split with ::, example: develop::checkDeploy::tp1-gin-demo,tp1-go-demo")
+	cmd.Flags().StringVarP(&o.Batch, "batch", "b", "", "send input in run automatically, input values split with ::, example: develop::inputCheckDeploy::tp1-gin-demo,tp1-go-demo")
 	return cmd
 }
 
