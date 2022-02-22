@@ -95,7 +95,7 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 
 ### openldap account management
 
-- url: {{ $.viewURL }}:{{ $.dory.openldap.port }}
+- url: {{ $.viewURL | replace "http://" "https://" }}:{{ $.dory.openldap.port }}
 - user: cn=admin,{{ $.dory.openldap.baseDN }} / {{ $.dory.openldap.password }}
 
 ### caution: this folder is very important, included all config files and readme files, please keep it

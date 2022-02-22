@@ -95,27 +95,35 @@ docker rm -f dory-core && docker-compose up -d
 
 ## 访问各个dory服务
 
-### dory-dashboard
+### dory-dashboard 管理界面
 
 - url: {{ $.viewURL }}:{{ $.dory.dorycore.port }}
 - 管理员用户: {{ $.dorycore.adminUser.username }}
 - 管理员账号密码存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/dory-data/admin.password`
 - dory-core数据和配置存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core`
 
-### {{ $.dory.gitRepo.type }}
+### {{ $.dory.gitRepo.type }} 代码仓库
 
 - url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
 - 数据存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 
-### {{ $.dory.artifactRepo.type }}
+### {{ $.dory.artifactRepo.type }} 依赖与制品仓库
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
-- user: public-user / public-user (公共用户账号)
+- 公共用户账号: public-user / public-user
+- docker.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
+- gcr.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.portGcr }}
+- quay.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.portQuay }}
 
-### {{ $.imageRepo.type }}
+### {{ $.imageRepo.type }} 容器镜像仓库
 
 - url: https://{{ $.imageRepo.domainName }}
 - user: admin / {{ $.imageRepo.password }} (管理员用户)
 - 数据存放在: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
+
+### openldap 账号管理中心
+
+- url: {{ $.viewURL | replace "http://" "https://" }}:{{ $.dory.openldap.port }}
+- 管理员用户: cn=admin,{{ $.dory.openldap.baseDN }} / {{ $.dory.openldap.password }}
 
 ### 注意，本目录非常重要，本目录为安装过程配置文件以及说明文件目录，建议保留
