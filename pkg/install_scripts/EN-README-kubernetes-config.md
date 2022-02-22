@@ -67,27 +67,35 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 
 ## connect your dory
 
-### dory-dashboard
+### dory-dashboard admin dashboard
 
 - url: {{ $.viewURL }}:{{ $.dory.dorycore.port }}
 - user: {{ $.dorycore.adminUser.username }}
 - password file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/dory-data/admin.password`
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core`
 
-### {{ $.dory.gitRepo.type }}
+### {{ $.dory.gitRepo.type }} git repository
 
 - url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 
-### {{ $.dory.artifactRepo.type }}
+### {{ $.dory.artifactRepo.type }} artifact and dependency repository
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
-- user: public-user / public-user (public user)
+- public user: public-user / public-user
+- docker.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
+- gcr.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.portGcr }}
+- quay.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.portQuay }}
 
-### {{ $.imageRepo.type }}
+### {{ $.imageRepo.type }} image repository
 
 - url: https://{{ $.imageRepo.domainName }}
 - user: admin / {{ $.imageRepo.password }} (admin user)
 - data located at: `{{ $.rootDir }}/{{ $.imageRepo.namespace }}`
+
+### openldap account management
+
+- url: {{ $.viewURL }}:{{ $.dory.openldap.port }}
+- user: cn=admin,{{ $.dory.openldap.baseDN }} / {{ $.dory.openldap.password }}
 
 ### caution: this folder is very important, included all config files and readme files, please keep it

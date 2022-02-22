@@ -2,6 +2,36 @@
 
 ## 安装完成后必须进行dory-core配置
 
+### 在kubernetes的共享存储中创建目录
+
+- 创建目录
+
+{{- if $.kubernetes.pvConfigLocal.localPath }}
+```shell script
+# 在kubernetes的本地存储创建目录
+mkdir -p {{ $.kubernetes.pvConfigLocal.localPath }}
+```
+{{- else if $.kubernetes.pvConfigNfs.nfsPath }}
+```shell script
+# 在kubernetes的nfs存储创建目录
+mkdir -p {{ $.kubernetes.pvConfigNfs.nfsPath }}
+```
+{{- else if $.kubernetes.pvConfigCephfs.cephPath }}
+```shell script
+# 在kubernetes的cephfs存储创建目录
+mkdir -p {{ $.kubernetes.pvConfigCephfs.cephPath }}
+```
+{{- end }}
+
+- 重启project-data-alpine-0
+
+```shell script
+kubectl -n {{ $.dory.namespace }} delete pods project-data-alpine-0
+
+# 检查project-data-alpine-0是否正常
+kubectl -n {{ $.dory.namespace }} get pods project-data-alpine-0
+```
+
 ### 完成 {{ $.dory.gitRepo.type }} 安装并更新dory的config.yaml配置
 
 - url: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}

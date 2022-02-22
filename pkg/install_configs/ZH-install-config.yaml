@@ -10,9 +10,9 @@ installMode: kubernetes
 # 如果安装模式为docker，为本机的绝对路径。
 # 如果安装模式为kubernetes，并且kubernetes集群存在多个节点，请保证本机挂装了共享存储(例如nfs、cephfs)，并且目录在共享存储的挂装目录下
 {{- if eq $.mode "docker" }}
-rootDir: "/data/tmp"
+rootDir: "/data/docker-vols/dory-ce"
 {{- else if eq $.mode "kubernetes" }}
-rootDir: "/mnt/nfs/tmp"
+rootDir: "/mnt/nfs/k8s-vols/dory-ce"
 {{- end }}
 # 主机ip地址，通过本ip地址可以访问到部署的镜像仓库和制品依赖仓库。
 # 如果安装模式为docker，表示本机的ip地址，请勿使用127.0.0.1这种loopback地址。
@@ -73,6 +73,10 @@ dory:
     domain: "dory.local"
     # 账号中心baseDN设置
     baseDN: "dc=dory,dc=local"
+  # dorycore部署设置
+  dorycore:
+    # dashboard暴露的服务端口
+    port: 30010
   # redis缓存设置
   redis:
     # 镜像名
@@ -93,10 +97,6 @@ dory:
     dockerName: docker
     # 启动多少个docker executor实例
     dockerNumber: 2
-  # dorycore部署设置
-  dorycore:
-    # dashboard暴露的服务端口
-    port: 30010
 # 镜像仓库设置
 imageRepo:
   # 镜像仓库组件所在的名字空间
@@ -157,19 +157,19 @@ kubernetes:
   # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:
   #   # 本地存储路径（绝对路径）
-  #   localPath: "/data/k8s-vols"
+  #   localPath: "/data/k8s-vols/dory-ce"
 
   # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
   pvConfigNfs:
     # nfs存储路径（绝对路径）
-    nfsPath: "/data/nfs-vols/tmp"
+    nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
     # nfs服务器地址
     nfsServer: "10.2.0.10"
 
   # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
   # pvConfigCephfs:
   #   # ceph存储路径
-  #   cephPath: "/k8s-deploy"
+  #   cephPath: "/k8s-vols/dory-ce"
   #   # ceph账号
   #   cephUser: admin
   #   # ceph秘钥

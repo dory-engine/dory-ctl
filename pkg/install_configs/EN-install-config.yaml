@@ -10,9 +10,9 @@ installMode: kubernetes
 # if install mode is docker: use this host local path
 # if install mode is kubernetes: if kubernetes cluster with multiple nodes, please use shared storage (nfs or cephfs), make sure shared storage is mounted in this host path
 {{- if eq $.mode "docker" }}
-rootDir: "/data/tmp"
+rootDir: "/data/docker-vols/dory-ce"
 {{- else if eq $.mode "kubernetes" }}
-rootDir: "/mnt/nfs/tmp"
+rootDir: "/mnt/nfs/k8s-vols/dory-ce"
 {{- end }}
 # this host ip address, dory use this ip address to connect container image repository and build dependency repository
 # if install mode is docker: please use this host ip address, don't use loopback ip address like 127.0.0.1
@@ -74,6 +74,10 @@ dory:
     domain: "dory.local"
     # openldap baseDN settings
     baseDN: "dc=dory,dc=local"
+  # dory-core service deploy settings
+  dorycore:
+    # dory-dashboard expose service port (kubernetes node port)
+    port: 30010
   # redis cache settings
   redis:
     # redis cache image name
@@ -94,10 +98,6 @@ dory:
     dockerName: docker
     # how many docker executors will deploy in docker-compose or with kubernetes
     dockerNumber: 2
-  # dory-core service deploy settings
-  dorycore:
-    # dory-dashboard expose service port (kubernetes node port)
-    port: 30010
 # image repository settings
 imageRepo:
   # which namespace will image repository deploy in
@@ -158,19 +158,19 @@ kubernetes:
   # # if persistent volume use local storage, please set it, otherwise remove it
   # pvConfigLocal:
   #   # local path (absolute path)
-  #   localPath: "/data/k8s-vols"
+  #   localPath: "/data/k8s-vols/dory-ce"
 
   # if persistent volume use nfs shared storage, please set it, otherwise remove it
   pvConfigNfs:
     # nfs storage path (absolute path)
-    nfsPath: "/data/nfs-vols/tmp"
+    nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
     # nfs server ip address
     nfsServer: "10.2.0.10"
 
   # # if persistent volume use cephfs shared storage, please set it, otherwise remove it
   # pvConfigCephfs:
   #   # cephfs storage path
-  #   cephPath: "/k8s-deploy"
+  #   cephPath: "/k8s-vols/dory-ce"
   #   # ceph connect account
   #   cephUser: admin
   #   # ceph connect secret

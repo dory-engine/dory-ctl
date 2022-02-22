@@ -215,7 +215,7 @@ func (o *OptionsInstallRun) HarborPushDockerImages(installConfig pkg.InstallConf
 		targetImage := fmt.Sprintf("%s/%s", installConfig.ImageRepo.DomainName, idi.Target)
 		source := idi.Source
 		if idi.DockerFile != "" {
-			source = fmt.Sprintf("%s-dory", source)
+			source = idi.Target
 		}
 		_, _, err = pkg.CommandExec(fmt.Sprintf("docker tag %s %s && docker push %s", source, targetImage, targetImage), ".")
 		if err != nil {

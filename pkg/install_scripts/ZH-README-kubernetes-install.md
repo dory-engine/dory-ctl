@@ -67,7 +67,7 @@ curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay",
 
 # 把之前拉取的docker镜像推送到 {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
-docker tag {{ $image.source }}{{ if $image.dockerFile }}-dory{{ end }} {{ $.imageRepo.domainName }}/{{ $image.target }}
+docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $.imageRepo.domainName }}/{{ $image.target }}
 {{- end }}
 
 {{- range $_, $image := $.dockerImages }}
