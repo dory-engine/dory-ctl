@@ -901,17 +901,11 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
 		return err
 	}
+
+	// create harbor directory and chown
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Namespace)
 	_ = os.RemoveAll(harborDir)
 	_ = os.MkdirAll(harborDir, 0700)
-	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), outputDir)
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	log.Success(fmt.Sprintf("create harbor namespace and pv pvc success"))
-
-	// create harbor directory and chown
 	_ = os.MkdirAll(fmt.Sprintf("%s/database", harborDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/jobservice", harborDir), 0700)
 	_ = os.MkdirAll(fmt.Sprintf("%s/redis", harborDir), 0700)
@@ -937,6 +931,13 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 		return err
 	}
 	log.Success(fmt.Sprintf("create harbor directory and chown %s success", harborDir))
+
+	_, _, err = pkg.CommandExec(fmt.Sprintf("kubectl apply -f %s", step01NamespacePvName), outputDir)
+	if err != nil {
+		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+		return err
+	}
+	log.Success(fmt.Sprintf("create harbor namespace and pv pvc success"))
 
 	// install harbor in kubernetes
 	log.Info(fmt.Sprintf("install harbor in kubernetes begin"))
