@@ -156,19 +156,22 @@ kubernetes:
 
   # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:
-  #   # 本地存储路径，与前边的`rootDir`设置一致（绝对路径）
+  #   # 本地存储路径（绝对路径）
+  #   # 注意，与前边的`rootDir`设置一致
   #   localPath: "/data/k8s-vols/dory-ce"
 
   # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
   pvConfigNfs:
-    # nfs存储路径，注意，这里是nfs服务器上的nfs目录，非本机挂装目录（绝对路径）
+    # nfs存储路径（绝对路径）
+    # 注意，这里是nfs服务器上的nfs目录，对应前边的`rootDir`设置，非本机挂装目录
     nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
     # nfs服务器地址
     nfsServer: "10.2.0.10"
 
   # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
   # pvConfigCephfs:
-  #   # ceph存储路径，注意，这里是cephfs服务器上的cephfs目录，非本机挂装目录（绝对路径）
+  #   # ceph存储路径（绝对路径）
+  #   # 注意，这里是cephfs服务器上的cephfs目录，对应前边的`rootDir`设置，非本机挂装目录
   #   cephPath: "/k8s-vols/dory-ce"
   #   # ceph账号
   #   cephUser: admin

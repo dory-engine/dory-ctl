@@ -157,19 +157,22 @@ kubernetes:
 
   # # if persistent volume use local storage, please set it, otherwise remove it
   # pvConfigLocal:
-  #   # local path, the same as `rootDir` settings (absolute path)
+  #   # local path (absolute path)
+  #   # the same as `rootDir` settings
   #   localPath: "/data/k8s-vols/dory-ce"
 
   # if persistent volume use nfs shared storage, please set it, otherwise remove it
   pvConfigNfs:
-    # nfs storage path, this path is the nfs server path, not nfs mount path (absolute path)
+    # nfs storage path (absolute path)
+    # this path is the nfs server path, not nfs mount path, relative to `rootDir` settings
     nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
     # nfs server ip address
     nfsServer: "10.2.0.10"
 
   # # if persistent volume use cephfs shared storage, please set it, otherwise remove it
   # pvConfigCephfs:
-  #   # cephfs storage path, this path is the cephfs server path, not cephfs mount path (absolute path)
+  #   # cephfs storage path (absolute path)
+  #   # this path is the cephfs server path, not cephfs mount path, relative to `rootDir` settings
   #   cephPath: "/k8s-vols/dory-ce"
   #   # ceph connect account
   #   cephUser: admin
