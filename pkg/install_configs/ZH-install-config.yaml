@@ -156,7 +156,7 @@ kubernetes:
 
   # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:
-  #   # 本地存储路径，与`rootDir`一致（绝对路径）
+  #   # 本地存储路径，与前边的`rootDir`设置一致（绝对路径）
   #   localPath: "/data/k8s-vols/dory-ce"
 
   # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
