@@ -155,21 +155,21 @@ kubernetes:
   # kubernetes api server admin token
   token: "xxx"
 
-  # # if persistent volume use local storage, please set it, otherwise remove it
+  # # if persistent volume use local storage, please set it, otherwise remove it (only used for single node kubernetes cluster)
   # pvConfigLocal:
-  #   # local path (absolute path)
+  #   # local path, the same as `rootDir` settings (absolute path)
   #   localPath: "/data/k8s-vols/dory-ce"
 
   # if persistent volume use nfs shared storage, please set it, otherwise remove it
   pvConfigNfs:
-    # nfs storage path (absolute path)
+    # nfs storage path, this path is the nfs server path, not nfs mount path (absolute path)
     nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
     # nfs server ip address
     nfsServer: "10.2.0.10"
 
   # # if persistent volume use cephfs shared storage, please set it, otherwise remove it
   # pvConfigCephfs:
-  #   # cephfs storage path
+  #   # cephfs storage path, this path is the cephfs server path, not cephfs mount path (absolute path)
   #   cephPath: "/k8s-vols/dory-ce"
   #   # ceph connect account
   #   cephUser: admin
