@@ -155,7 +155,7 @@ kubernetes:
   # kubernetes api server admin token
   token: "xxx"
 
-  # # if persistent volume use local storage, please set it, otherwise remove it (only used for single node kubernetes cluster)
+  # # if persistent volume use local storage, please set it, otherwise remove it
   # pvConfigLocal:
   #   # local path, the same as `rootDir` settings (absolute path)
   #   localPath: "/data/k8s-vols/dory-ce"
