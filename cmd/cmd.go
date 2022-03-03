@@ -498,7 +498,7 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) er
 							err = fmt.Errorf("parse run input error: %s", err.Error())
 							return err
 						}
-						if runInput.PhaseID != "" {
+						if runInput.PhaseID == msg.PhaseID {
 							opts := []string{}
 							for _, opt := range runInput.Options {
 								opts = append(opts, opt.Value)
