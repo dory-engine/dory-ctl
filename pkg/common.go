@@ -170,7 +170,7 @@ func YamlIndent(obj interface{}, indent int) (string, error) {
 	var s string
 	var b bytes.Buffer
 	yamlEncoder := yaml.NewEncoder(&b)
-	yamlEncoder.SetIndent(2)
+	yamlEncoder.SetIndent(indent)
 	err = yamlEncoder.Encode(&obj)
 	if err != nil {
 		return s, err
