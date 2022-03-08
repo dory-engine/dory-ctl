@@ -162,7 +162,7 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 	var err error
 	var bs []byte
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
@@ -218,7 +218,7 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 	var err error
 	var bs []byte
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
@@ -288,7 +288,7 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 	var err error
 	var bs []byte
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
@@ -321,7 +321,7 @@ func (o *OptionsInstallScript) DoryCreateReadme(installConfig pkg.InstallConfig,
 	var err error
 	var bs []byte
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
@@ -334,7 +334,7 @@ func (o *OptionsInstallScript) DoryCreateReadme(installConfig pkg.InstallConfig,
 	if err != nil {
 		return err
 	}
-	bs, _ = yaml.Marshal(dockerImages)
+	bs, _ = pkg.YamlIndent(dockerImages)
 	m := map[string]interface{}{}
 	_ = yaml.Unmarshal(bs, &m)
 	for k, v := range m {
@@ -364,7 +364,7 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	var err error
 	bs := []byte{}
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {
@@ -519,7 +519,7 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	var err error
 	bs := []byte{}
 
-	bs, _ = yaml.Marshal(installConfig)
+	bs, _ = pkg.YamlIndent(installConfig)
 	vals := map[string]interface{}{}
 	err = yaml.Unmarshal(bs, &vals)
 	if err != nil {

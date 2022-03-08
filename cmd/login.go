@@ -7,7 +7,6 @@ import (
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
-	"gopkg.in/yaml.v3"
 	"net/http"
 	"os"
 	"strings"
@@ -117,7 +116,7 @@ func (o *OptionsLogin) Run(args []string) error {
 		}
 	}
 
-	bs, _ := yaml.Marshal(o)
+	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{
@@ -152,7 +151,7 @@ func (o *OptionsLogin) Run(args []string) error {
 		AccessToken: o.AccessToken,
 		Language:    o.Language,
 	}
-	bs, _ = yaml.Marshal(doryConfig)
+	bs, _ = pkg.YamlIndent(doryConfig)
 	err = os.WriteFile(o.ConfigFile, bs, 0600)
 	if err != nil {
 		return err

@@ -6,7 +6,6 @@ import (
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"net/http"
 	"os"
 	"strconv"
@@ -216,7 +215,7 @@ func (o *OptionsRunGet) Validate(args []string) error {
 func (o *OptionsRunGet) Run(args []string) error {
 	var err error
 
-	bs, _ := yaml.Marshal(o)
+	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{
@@ -258,7 +257,7 @@ func (o *OptionsRunGet) Run(args []string) error {
 			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
 			fmt.Println(string(bs))
 		case "yaml":
-			bs, _ = yaml.Marshal(dataOutput)
+			bs, _ = pkg.YamlIndent(dataOutput)
 			fmt.Println(string(bs))
 		default:
 			data := [][]string{}

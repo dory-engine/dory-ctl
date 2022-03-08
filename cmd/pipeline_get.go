@@ -6,7 +6,6 @@ import (
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"net/http"
 	"os"
 	"strings"
@@ -102,7 +101,7 @@ func (o *OptionsPipelineGet) Validate(args []string) error {
 func (o *OptionsPipelineGet) Run(args []string) error {
 	var err error
 
-	bs, _ := yaml.Marshal(o)
+	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{
@@ -152,8 +151,8 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
 			fmt.Println(string(bs))
 		case "yaml":
-			s, _ := pkg.YamlIndent(dataOutput, 2)
-			fmt.Println(s)
+			bs, _ = pkg.YamlIndent(dataOutput)
+			fmt.Println(string(bs))
 		default:
 			data := [][]string{}
 			for _, pipeline := range pipelines {

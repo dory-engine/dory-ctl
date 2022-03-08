@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"net/http"
 	"strings"
 )
@@ -76,7 +75,7 @@ func (o *OptionsRunAbort) Validate(args []string) error {
 func (o *OptionsRunAbort) Run(args []string) error {
 	var err error
 
-	bs, _ := yaml.Marshal(o)
+	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{}

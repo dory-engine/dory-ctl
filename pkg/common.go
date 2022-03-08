@@ -165,17 +165,17 @@ func ValidateMinusNameID(s string) error {
 	return err
 }
 
-func YamlIndent(obj interface{}, indent int) (string, error) {
+func YamlIndent(obj interface{}) ([]byte, error) {
 	var err error
-	var s string
+	var bs []byte
 	var b bytes.Buffer
 	yamlEncoder := yaml.NewEncoder(&b)
-	yamlEncoder.SetIndent(indent)
+	yamlEncoder.SetIndent(2)
 	err = yamlEncoder.Encode(&obj)
 	if err != nil {
-		return s, err
+		return bs, err
 	}
-	s = string(b.Bytes())
+	bs = b.Bytes()
 
-	return s, err
+	return bs, err
 }

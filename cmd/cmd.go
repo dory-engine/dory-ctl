@@ -240,7 +240,7 @@ func (o *OptionsCommon) CheckConfigFile() error {
 	}
 
 	if doryConfig.AccessToken == "" {
-		bs, err = yaml.Marshal(doryConfig)
+		bs, err = pkg.YamlIndent(doryConfig)
 		if err != nil {
 			err = fmt.Errorf("%s: %s", errInfo, err.Error())
 			return err

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"os"
 )
 
@@ -67,7 +66,7 @@ func (o *OptionsLogout) Run(args []string) error {
 		AccessToken: "",
 		Language:    o.Language,
 	}
-	bs, _ := yaml.Marshal(doryConfig)
+	bs, _ := pkg.YamlIndent(doryConfig)
 	err = os.WriteFile(o.ConfigFile, bs, 0600)
 	if err != nil {
 		return err
