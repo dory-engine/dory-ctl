@@ -152,7 +152,7 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
 			fmt.Println(string(bs))
 		case "yaml":
-			s, _ := pkg.YamlIndent(dataOutput, 3)
+			s, _ := pkg.YamlIndent(dataOutput, 4)
 			fmt.Println(s)
 		default:
 			data := [][]string{}
