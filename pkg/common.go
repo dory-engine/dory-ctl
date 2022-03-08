@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io"
 	"io/fs"
 	"math/rand"
@@ -162,4 +163,19 @@ func ValidateMinusNameID(s string) error {
 		return err
 	}
 	return err
+}
+
+func YamlIndent(obj interface{}, indent int) (string, error) {
+	var err error
+	var s string
+	var b bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&b)
+	yamlEncoder.SetIndent(2)
+	err = yamlEncoder.Encode(&obj)
+	if err != nil {
+		return s, err
+	}
+	s = string(b.Bytes())
+
+	return s, err
 }

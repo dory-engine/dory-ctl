@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
@@ -153,11 +152,8 @@ func (o *OptionsPipelineGet) Run(args []string) error {
 			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
 			fmt.Println(string(bs))
 		case "yaml":
-			var b bytes.Buffer
-			yamlEncoder := yaml.NewEncoder(&b)
-			yamlEncoder.SetIndent(2)
-			_ = yamlEncoder.Encode(&dataOutput)
-			fmt.Println(string(b.Bytes()))
+			s, _ := pkg.YamlIndent(dataOutput, 2)
+			fmt.Println(s)
 		default:
 			data := [][]string{}
 			for _, pipeline := range pipelines {
