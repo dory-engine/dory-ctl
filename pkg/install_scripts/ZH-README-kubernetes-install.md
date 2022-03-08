@@ -6,7 +6,7 @@
 2. 请根据 `README-kubernetes-config.md` 的说明在完成安装后手工设置dory
 3. 假如安装失败，请根据 `README-kubernetes-reset.md` 的说明停止所有dory服务并重新安装
 
-## create install root directories
+## 创建相关根目录
 
 ```shell script
 # 创建 {{ $.imageRepo.type }} 相关目录并设置目录权限
