@@ -194,7 +194,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 	defKind := pkg.DefKind{
 		Kind: "",
 		Metadata: pkg.Metadata{
-			Name:        project.ProjectInfo.ProjectName,
 			ProjectName: project.ProjectInfo.ProjectName,
 			Labels:      map[string]string{},
 		},

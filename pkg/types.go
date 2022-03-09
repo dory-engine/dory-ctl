@@ -569,7 +569,6 @@ type ProjectOutput struct {
 }
 
 type Metadata struct {
-	Name        string            `yaml:"name" json:"name" bson:"name" validate:"required"`
 	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
 	Labels      map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
 }
