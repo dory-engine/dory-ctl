@@ -346,9 +346,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 
 		defKind.ErrMsg = pipeline.ErrMsgPipelineDef
 		defKind.Metadata.Labels = map[string]string{
-			"branchName":     pipeline.BranchName,
-			"envs":           strings.Join(pipeline.Envs, ","),
-			"envProductions": strings.Join(pipeline.EnvProductions, ","),
+			"branchName": pipeline.BranchName,
 		}
 		dataHeader = []string{"Name", "Envs", "EnvProds", "AutoDetect", "Queue", "Builds"}
 		m := map[string]interface{}{}
