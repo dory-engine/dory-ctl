@@ -577,6 +577,8 @@ type Metadata struct {
 type DefKind struct {
 	Kind     string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
 	Metadata Metadata      `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
-	ErrMsg   string        `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
 	Items    []interface{} `yaml:"items" json:"items" bson:"items" validate:""`
+	Status   struct {
+		ErrMsg string `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
 }

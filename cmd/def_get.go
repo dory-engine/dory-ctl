@@ -249,7 +249,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 				defKind.Items = append(defKind.Items, def)
 			}
 		}
-		defKind.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
+		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
 		dataHeader = []string{"Name", "Builds", "From", "Dockerfile"}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defKind)
@@ -308,7 +308,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 				defKind.Items = append(defKind.Items, def)
 			}
 		}
-		defKind.ErrMsg = projectAvailableEnv.ErrMsgDeployContainerDefs
+		defKind.Status.ErrMsg = projectAvailableEnv.ErrMsgDeployContainerDefs
 		defKind.Metadata.Labels = map[string]string{
 			"envName": projectAvailableEnv.EnvName,
 		}
@@ -344,7 +344,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 		dataRows = append(dataRows, dataRow)
 		defKind.Items = append(defKind.Items, def)
 
-		defKind.ErrMsg = pipeline.ErrMsgPipelineDef
+		defKind.Status.ErrMsg = pipeline.ErrMsgPipelineDef
 		defKind.Metadata.Labels = map[string]string{
 			"branchName": pipeline.BranchName,
 		}
@@ -385,7 +385,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 				defKind.Items = append(defKind.Items, def)
 			}
 		}
-		defKind.ErrMsg = project.ProjectDef.ErrMsgCustomOpsDefs
+		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgCustomOpsDefs
 		dataHeader = []string{"Name", "Desc", "Steps"}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defKind)
@@ -456,7 +456,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 			}
 		}
 
-		defKind.ErrMsg = errMsg
+		defKind.Status.ErrMsg = errMsg
 		defKind.Metadata.Labels = map[string]string{
 			"envName":    o.EnvName,
 			"stepName":   o.StepName,
@@ -474,7 +474,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 			dataRows = append(dataRows, dataRow)
 			defKind.Items = append(defKind.Items, def)
 		}
-		defKind.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
+		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
 		dataHeader = []string{"Name", "Desc", "Action", "EnvDiff", "Params"}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defKind)
@@ -482,8 +482,8 @@ func (o *OptionsDefGet) Run(args []string) error {
 		dataOutput = pkg.RemoveMapEmptyItems(m)
 	}
 
-	if defKind.ErrMsg != "" {
-		log.Error(defKind.ErrMsg)
+	if defKind.Status.ErrMsg != "" {
+		log.Error(defKind.Status.ErrMsg)
 	}
 
 	switch o.Output {
