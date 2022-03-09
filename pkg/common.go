@@ -11,6 +11,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"reflect"
 	"regexp"
 	"strings"
 	"syscall"
@@ -178,4 +179,73 @@ func YamlIndent(obj interface{}) ([]byte, error) {
 	bs = b.Bytes()
 
 	return bs, err
+}
+
+func RemoveMapEmptyItems(m map[string]interface{}) map[string]interface{} {
+	for k, v := range m {
+		vv := reflect.ValueOf(v)
+		switch v.(type) {
+		case int, float32, float64:
+			if vv.IsZero() {
+				delete(m, k)
+			}
+		case bool:
+			if vv.Bool() == false {
+				delete(m, k)
+			}
+		case string:
+			if vv.String() == "" {
+				delete(m, k)
+			}
+		}
+		if !vv.IsValid() {
+			delete(m, k)
+		}
+		if vv.Kind() == reflect.Slice {
+			if vv.Len() == 0 {
+				delete(m, k)
+			} else {
+				var isMap bool
+				var x []map[string]interface{}
+				for i := 0; i < vv.Len(); i++ {
+					vvv := reflect.ValueOf(vv.Index(i))
+					if vvv.Kind() == reflect.Map {
+						vm, ok := vv.Index(i).Interface().(map[string]interface{})
+						if ok {
+							isMap = true
+							v3 := RemoveMapEmptyItems(vm)
+							x = append(x, v3)
+						}
+					} else if vvv.Kind() == reflect.Struct {
+						vm, ok := vv.Index(i).Interface().(map[string]interface{})
+						if ok {
+							isMap = true
+							v3 := RemoveMapEmptyItems(vm)
+							x = append(x, v3)
+						}
+					}
+				}
+				if isMap {
+					m[k] = x
+				}
+			}
+		}
+		if vv.Kind() == reflect.Struct {
+			v2 := RemoveMapEmptyItems(v.(map[string]interface{}))
+			if len(v2) == 0 {
+				delete(m, k)
+			} else {
+				m[k] = v2
+			}
+		} else if vv.Kind() == reflect.Map {
+			v2 := RemoveMapEmptyItems(v.(map[string]interface{}))
+			if len(v2) == 0 {
+				delete(m, k)
+			} else {
+				m[k] = v2
+			}
+		}
+	}
+	m2 := m
+	return m2
 }

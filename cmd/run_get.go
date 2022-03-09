@@ -44,10 +44,11 @@ func NewCmdRunGet() *cobra.Command {
 	o := NewOptionsRunGet()
 
 	msgUse := fmt.Sprintf("get [runName]")
-	msgShort := fmt.Sprintf("get pipeline run resoures")
+	msgShort := fmt.Sprintf("get pipeline run resources")
 	msgLong := fmt.Sprintf(`get pipeline run resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get all pipeline run resoures
+	msgExample := fmt.Sprintf(`  # get all pipeline run resources
   doryctl run get
+
   # get single pipeline run resoure
   doryctl run get test-project1-develop-1`)
 

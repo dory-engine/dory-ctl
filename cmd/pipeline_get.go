@@ -31,13 +31,15 @@ func NewCmdPipelineGet() *cobra.Command {
 	o := NewOptionsPipelineGet()
 
 	msgUse := fmt.Sprintf("get [pipelineName] ...")
-	msgShort := fmt.Sprintf("get pipeline resoures")
+	msgShort := fmt.Sprintf("get pipeline resources")
 	msgLong := fmt.Sprintf(`get pipeline resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get all pipeline resoures
+	msgExample := fmt.Sprintf(`  # get all pipeline resources
   doryctl pipeline get
+
   # get single pipeline resoure
   doryctl pipeline get test-project1-develop
-  # get multiple pipeline resoures
+
+  # get multiple pipeline resources
   doryctl pipeline get test-project1-develop test-project1-ops`)
 
 	cmd := &cobra.Command{

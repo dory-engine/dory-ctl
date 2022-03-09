@@ -179,7 +179,7 @@ func NewCmdRoot() *cobra.Command {
 	cmd.AddCommand(NewCmdProject())
 	cmd.AddCommand(NewCmdPipeline())
 	cmd.AddCommand(NewCmdRun())
-
+	cmd.AddCommand(NewCmdDef())
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
 	return cmd

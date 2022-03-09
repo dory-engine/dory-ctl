@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-func NewCmdProject() *cobra.Command {
-	msgUse := fmt.Sprintf("project")
-	msgShort := fmt.Sprintf("manage project resources")
-	msgLong := fmt.Sprintf(`manage project resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get project resources
-  doryctl project get`)
+func NewCmdDef() *cobra.Command {
+	msgUse := fmt.Sprintf("def")
+	msgShort := fmt.Sprintf("manage project definition")
+	msgLong := fmt.Sprintf(`manage project definition in dory-core server`)
+	msgExample := fmt.Sprintf(`  # get project build modules definition
+  doryctl def get test-project1 build`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -27,6 +27,6 @@ func NewCmdProject() *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(NewCmdProjectGet())
+	cmd.AddCommand(NewCmdDefGet())
 	return cmd
 }

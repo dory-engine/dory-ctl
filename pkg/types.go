@@ -191,7 +191,11 @@ type ProjectNodePort struct {
 }
 
 type ProjectAvailableEnv struct {
-	EnvName string `yaml:"envName" json:"envName" bson:"envName" validate:""`
+	EnvName                   string               `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+	DeployContainerDefs       []DeployContainerDef `yaml:"deployContainerDefs" json:"deployContainerDefs" bson:"deployContainerDefs" validate:""`
+	CustomStepDefs            CustomStepDefs       `yaml:"customStepDefs" json:"customStepDefs" bson:"customStepDefs" validate:""`
+	ErrMsgDeployContainerDefs string               `yaml:"errMsgDeployContainerDefs" json:"errMsgDeployContainerDefs" bson:"errMsgDeployContainerDefs" validate:""`
+	ErrMsgCustomStepDefs      map[string]string    `yaml:"errMsgCustomStepDefs" json:"errMsgCustomStepDefs" bson:"errMsgCustomStepDefs" validate:""`
 }
 
 type Module struct {
@@ -322,4 +326,257 @@ type WsAdminLog struct {
 	StartTime string `yaml:"startTime" json:"startTime" bson:"startTime" validate:""`
 	EndTime   string `yaml:"endTime" json:"endTime" bson:"endTime" validate:""`
 	Duration  string `yaml:"duration" json:"duration" bson:"duration" validate:""`
+}
+
+type CustomStepModuleDef struct {
+	ModuleName         string   `yaml:"moduleName" json:"moduleName" bson:"moduleName" validate:"required"`
+	RelatedStepModules []string `yaml:"relatedStepModules" json:"relatedStepModules" bson:"relatedStepModules" validate:""`
+	ManualEnable       bool     `yaml:"manualEnable" json:"manualEnable" bson:"manualEnable" validate:""`
+	ParamInputYaml     string   `yaml:"paramInputYaml" json:"paramInputYaml" bson:"paramInputYaml" validate:""`
+}
+
+type CustomStepDef struct {
+	EnableMode           string                `yaml:"enableMode" json:"enableMode" bson:"enableMode" validate:""`
+	CustomStepModuleDefs []CustomStepModuleDef `yaml:"customStepModuleDefs" json:"customStepModuleDefs" bson:"customStepModuleDefs" validate:""`
+}
+
+type CustomStepInsertDefs map[string][]string
+
+type CustomStepDefs map[string]CustomStepDef
+
+type CustomOpsDef struct {
+	CustomOpsName  string   `yaml:"customOpsName" json:"customOpsName" bson:"customOpsName" validate:"required"`
+	CustomOpsDesc  string   `yaml:"customOpsDesc" json:"customOpsDesc" bson:"customOpsDesc" validate:"required"`
+	CustomOpsSteps []string `yaml:"customOpsSteps" json:"customOpsSteps" bson:"customOpsSteps" validate:"required"`
+}
+
+type BuildDef struct {
+	BuildName    string   `yaml:"buildName" json:"buildName" bson:"buildName" validate:"required"`
+	BuildPhaseID int      `yaml:"buildPhaseID" json:"buildPhaseID" bson:"buildPhaseID" validate:"required,gt=0"`
+	BuildPath    string   `yaml:"buildPath" json:"buildPath" bson:"buildPath" validate:"required"`
+	BuildEnv     string   `yaml:"buildEnv" json:"buildEnv" bson:"buildEnv" validate:"required"`
+	BuildCmds    []string `yaml:"buildCmds" json:"buildCmds" bson:"buildCmds" validate:"required,dive,required"`
+	BuildChecks  []string `yaml:"buildChecks" json:"buildChecks" bson:"buildChecks" validate:"required,dive,required"`
+}
+
+type PackageDef struct {
+	PackageName   string   `yaml:"packageName" json:"packageName" bson:"packageName" validate:"required"`
+	RelatedBuilds []string `yaml:"relatedBuilds" json:"relatedBuilds" bson:"relatedBuilds" validate:"required"`
+	PackageFrom   string   `yaml:"packageFrom" json:"packageFrom" bson:"packageFrom" validate:"required"`
+	Packages      []string `yaml:"packages" json:"packages" bson:"packages" validate:"required"`
+}
+
+type DeployContainerDef struct {
+	DeployName                          string            `yaml:"deployName" json:"deployName" bson:"deployName" validate:"required"`
+	RelatedPackage                      string            `yaml:"relatedPackage" json:"relatedPackage" bson:"relatedPackage" validate:"required"`
+	DeployImageTag                      string            `yaml:"deployImageTag" json:"deployImageTag" bson:"deployImageTag" validate:""`
+	DeployLabels                        map[string]string `yaml:"deployLabels" json:"deployLabels" bson:"deployLabels" validate:""`
+	DeploySessionAffinityTimeoutSeconds int               `yaml:"deploySessionAffinityTimeoutSeconds" json:"deploySessionAffinityTimeoutSeconds" bson:"deploySessionAffinityTimeoutSeconds" validate:""`
+	DeployNodePorts                     []struct {
+		Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		NodePort int    `yaml:"nodePort" json:"nodePort" bson:"nodePort" validate:"required"`
+		Protocol string `yaml:"protocol" json:"protocol" bson:"protocol" validate:"omitempty,oneof=tcp http"`
+	} `yaml:"deployNodePorts" json:"deployNodePorts" bson:"deployNodePorts" validate:"dive"`
+	DeployLocalPorts []struct {
+		Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		Protocol string `yaml:"protocol" json:"protocol" bson:"protocol" validate:"omitempty,oneof=tcp http"`
+		Ingress  struct {
+			DomainName string `yaml:"domainName" json:"domainName" bson:"domainName" validate:""`
+			PathPrefix string `yaml:"pathPrefix" json:"pathPrefix" bson:"pathPrefix" validate:""`
+		} `yaml:"ingress" json:"ingress" bson:"ingress" validate:""`
+	} `yaml:"deployLocalPorts" json:"deployLocalPorts" bson:"deployLocalPorts" validate:"dive"`
+	DeployReplicas int `yaml:"deployReplicas" json:"deployReplicas" bson:"deployReplicas" validate:"required"`
+	HpaConfig      struct {
+		MaxReplicas                 int    `yaml:"maxReplicas" json:"maxReplicas" bson:"maxReplicas" validate:""`
+		MemoryAverageValue          string `yaml:"memoryAverageValue" json:"memoryAverageValue" bson:"memoryAverageValue" validate:""`
+		MemoryAverageRequestPercent int    `yaml:"memoryAverageRequestPercent" json:"memoryAverageRequestPercent" bson:"memoryAverageRequestPercent" validate:""`
+		CpuAverageValue             string `yaml:"cpuAverageValue" json:"cpuAverageValue" bson:"cpuAverageValue" validate:""`
+		CpuAverageRequestPercent    int    `yaml:"cpuAverageRequestPercent" json:"cpuAverageRequestPercent" bson:"cpuAverageRequestPercent" validate:""`
+	} `yaml:"hpaConfig" json:"hpaConfig" bson:"hpaConfig" validate:""`
+	DeployEnvs      []string `yaml:"deployEnvs" json:"deployEnvs" bson:"deployEnvs" validate:""`
+	DeployCommand   string   `yaml:"deployCommand" json:"deployCommand" bson:"deployCommand" validate:""`
+	DeployCmd       []string `yaml:"deployCmd" json:"deployCmd" bson:"deployCmd" validate:""`
+	DeployResources struct {
+		MemoryRequest string `yaml:"memoryRequest" json:"memoryRequest" bson:"memoryRequest" validate:""`
+		MemoryLimit   string `yaml:"memoryLimit" json:"memoryLimit" bson:"memoryLimit" validate:""`
+		CpuRequest    string `yaml:"cpuRequest" json:"cpuRequest" bson:"cpuRequest" validate:""`
+		CpuLimit      string `yaml:"cpuLimit" json:"cpuLimit" bson:"cpuLimit" validate:""`
+	} `yaml:"deployResources" json:"deployResources" bson:"deployResources" validate:""`
+	DeployVolumes []struct {
+		PathInPod string `yaml:"pathInPod" json:"pathInPod" bson:"pathInPod" validate:"required"`
+		PathInPv  string `yaml:"pathInPv" json:"pathInPv" bson:"pathInPv" validate:"required"`
+		Pvc       string `yaml:"pvc" json:"pvc" bson:"pvc" validate:""`
+	} `yaml:"deployVolumes" json:"deployVolumes" bson:"deployVolumes" validate:"dive"`
+	DeployHealthCheck struct {
+		CheckPort int `yaml:"checkPort" json:"checkPort" bson:"checkPort" validate:""`
+		HttpGet   struct {
+			Path        string `yaml:"path" json:"path" bson:"path" validate:""`
+			Port        int    `yaml:"port" json:"port" bson:"port" validate:""`
+			HttpHeaders []struct {
+				Name  string `yaml:"name" json:"name" bson:"name" validate:"required"`
+				Value string `yaml:"value" json:"value" bson:"value" validate:"required"`
+			} `yaml:"httpHeaders" json:"httpHeaders" bson:"httpHeaders" validate:"dive"`
+		} `yaml:"httpGet" json:"httpGet" bson:"httpGet" validate:""`
+		ReadinessDelaySeconds  int `yaml:"readinessDelaySeconds" json:"readinessDelaySeconds" bson:"readinessDelaySeconds" validate:""`
+		ReadinessPeriodSeconds int `yaml:"readinessPeriodSeconds" json:"readinessPeriodSeconds" bson:"readinessPeriodSeconds" validate:""`
+		LivenessDelaySeconds   int `yaml:"livenessDelaySeconds" json:"livenessDelaySeconds" bson:"livenessDelaySeconds" validate:""`
+		LivenessPeriodSeconds  int `yaml:"livenessPeriodSeconds" json:"livenessPeriodSeconds" bson:"livenessPeriodSeconds" validate:""`
+	} `yaml:"deployHealthCheck" json:"deployHealthCheck" bson:"deployHealthCheck" validate:""`
+	DependServices []struct {
+		DependName string `yaml:"dependName" json:"dependName" bson:"dependName" validate:"required"`
+		DependPort int    `yaml:"dependPort" json:"dependPort" bson:"dependPort" validate:"required"`
+		DependType string `yaml:"dependType" json:"dependType" bson:"dependType" validate:"oneof=TCP UDP"`
+	} `yaml:"dependServices" json:"dependServices" bson:"dependServices" validate:"dive"`
+	HostAliases []struct {
+		Ip        string   `yaml:"ip" json:"ip" bson:"ip" validate:"required,ip"`
+		Hostnames []string `yaml:"hostnames" json:"hostnames" bson:"hostnames" validate:"required"`
+	} `yaml:"hostAliases" json:"hostAliases" bson:"hostAliases" validate:"dive"`
+	SecurityContext struct {
+		RunAsUser  int `yaml:"runAsUser" json:"runAsUser" bson:"runAsUser" validate:""`
+		RunAsGroup int `yaml:"runAsGroup" json:"runAsGroup" bson:"runAsGroup" validate:""`
+	} `yaml:"securityContext" json:"securityContext" bson:"securityContext" validate:""`
+	DeployConfigSettings []string `yaml:"deployConfigSettings" json:"deployConfigSettings" bson:"deployConfigSettings" validate:""`
+}
+
+type PipelineBuildDef struct {
+	Name string `yaml:"name" json:"name" bson:"name" validate:"required"`
+	Run  bool   `yaml:"run" json:"run" bson:"run" validate:""`
+}
+
+type GitPullStepDef struct {
+	Timeout int `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+}
+
+type BuildStepDef struct {
+	Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+	Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type PackageImageStepDef struct {
+	Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+	Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type SyncImageStepDef struct {
+	Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type DeployContainerStepDef struct {
+	Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type ApplyIngressStepDef struct {
+	Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type CheckDeployStepDef struct {
+	Enable      bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	IgnoreError bool `yaml:"ignoreError" json:"ignoreError" bson:"ignoreError" validate:""`
+	Retry       int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type CheckQuotaStepDef struct {
+	Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type PipelineStepDef struct {
+	GitPullStepDef         GitPullStepDef         `yaml:"gitPull" json:"gitPull" bson:"gitPull" validate:""`
+	BuildStepDef           BuildStepDef           `yaml:"build" json:"build" bson:"build" validate:""`
+	PackageImageStepDef    PackageImageStepDef    `yaml:"packageImage" json:"packageImage" bson:"packageImage" validate:""`
+	SyncImageStepDef       SyncImageStepDef       `yaml:"syncImage" json:"syncImage" bson:"syncImage" validate:""`
+	DeployContainerStepDef DeployContainerStepDef `yaml:"deploy" json:"deploy" bson:"deploy" validate:""`
+	ApplyIngressStepDef    ApplyIngressStepDef    `yaml:"applyIngress" json:"applyIngress" bson:"applyIngress" validate:""`
+	CheckDeployStepDef     CheckDeployStepDef     `yaml:"checkDeploy" json:"checkDeploy" bson:"checkDeploy" validate:""`
+	CheckQuotaStepDef      CheckQuotaStepDef      `yaml:"checkQuota" json:"checkQuota" bson:"checkQuota" validate:""`
+}
+
+type CustomStepPhaseDef struct {
+	Enable      bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
+	IgnoreError bool `yaml:"ignoreError" json:"ignoreError" bson:"ignoreError" validate:""`
+	Timeout     int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
+	Retry       int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
+}
+
+type CustomStepPhaseDefs map[string]CustomStepPhaseDef
+
+type PipelineDef struct {
+	IsAutoDetectBuild    bool                 `yaml:"isAutoDetectBuild" json:"isAutoDetectBuild" bson:"isAutoDetectBuild" validate:""`
+	IsQueue              bool                 `yaml:"isQueue" json:"isQueue" bson:"isQueue" validate:""`
+	Builds               []PipelineBuildDef   `yaml:"builds" json:"builds" bson:"builds" validate:"dive"`
+	PipelineStep         PipelineStepDef      `yaml:"pipelineStep" json:"pipelineStep" bson:"pipelineStep" validate:"required"`
+	CustomStepPhaseDefs  CustomStepPhaseDefs  `yaml:"customStepPhaseDefs" json:"customStepPhaseDefs" bson:"customStepPhaseDefs" validate:""`
+	CustomStepInsertDefs CustomStepInsertDefs `yaml:"customStepInsertDefs" json:"customStepInsertDefs" bson:"customStepInsertDefs" validate:""`
+}
+
+type ProjectDef struct {
+	BuildDefs            []BuildDef        `yaml:"buildDefs" json:"buildDefs" bson:"buildDefs" validate:""`
+	PackageDefs          []PackageDef      `yaml:"packageDefs" json:"packageDefs" bson:"packageDefs" validate:""`
+	DockerIgnoreDefs     []string          `yaml:"dockerIgnoreDefs" json:"dockerIgnoreDefs" bson:"dockerIgnoreDefs" validate:""`
+	CustomStepDefs       CustomStepDefs    `yaml:"customStepDefs" json:"customStepDefs" bson:"customStepDefs" validate:""`
+	CustomOpsDefs        []CustomOpsDef    `yaml:"customOpsDefs" json:"customOpsDefs" bson:"customOpsDefs" validate:""`
+	ErrMsgPackageDefs    string            `yaml:"errMsgPackageDefs" json:"errMsgPackageDefs" bson:"errMsgPackageDefs" validate:""`
+	ErrMsgCustomStepDefs map[string]string `yaml:"errMsgCustomStepDefs" json:"errMsgCustomStepDefs" bson:"errMsgCustomStepDefs" validate:""`
+	ErrMsgCustomOpsDefs  string            `yaml:"errMsgCustomOpsDefs" json:"errMsgCustomOpsDefs" bson:"errMsgCustomOpsDefs" validate:""`
+}
+
+type ProjectInfo struct {
+	ProjectGroup     string `yaml:"projectGroup" json:"projectGroup" bson:"projectGroup" validate:""`
+	ProjectName      string `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	ProjectDesc      string `yaml:"projectDesc" json:"projectDesc" bson:"projectDesc" validate:""`
+	ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:""`
+	ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:""`
+}
+
+type ModuleRun struct {
+	ModuleName   string `yaml:"moduleName" json:"moduleName" bson:"moduleName" validate:""`
+	ModuleEnable bool   `yaml:"moduleEnable" json:"moduleEnable" bson:"moduleEnable" validate:""`
+}
+
+type ProjectPipeline struct {
+	BranchName        string                 `yaml:"branchName" json:"branchName" bson:"branchName" validate:"required"`
+	IsDefault         bool                   `yaml:"isDefault" json:"isDefault" bson:"isDefault" validate:""`
+	WebhookPushEvent  bool                   `yaml:"webhookPushEvent" json:"webhookPushEvent" bson:"webhookPushEvent" validate:""`
+	TagSuffix         string                 `yaml:"tagSuffix" json:"tagSuffix" bson:"tagSuffix" validate:""`
+	Envs              []string               `yaml:"envs" json:"envs" bson:"envs" validate:""`
+	EnvProductions    []string               `yaml:"envProductions" json:"envProductions" bson:"envProductions" validate:""`
+	PipelineDef       PipelineDef            `yaml:"pipelineDef" json:"pipelineDef" bson:"pipelineDef" validate:""`
+	ErrMsgPipelineDef string                 `yaml:"errMsgPipelineDef" json:"errMsgPipelineDef" bson:"errMsgPipelineDef" validate:""`
+	Modules           map[string][]ModuleRun `yaml:"modules" json:"modules" bson:"modules" validate:""`
+}
+
+type CustomStepConf struct {
+	CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
+	CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:""`
+	CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:""`
+	CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:""`
+	IsEnvDiff            bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
+	ParamInputYamlDef    string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
+	ParamOutputYamlDef   string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
+}
+
+type ProjectOutput struct {
+	ProjectInfo          ProjectInfo           `yaml:"projectInfo" json:"projectInfo" bson:"projectInfo" validate:""`
+	ProjectPipelines     []ProjectPipeline     `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
+	ProjectAvailableEnvs []ProjectAvailableEnv `yaml:"projectAvailableEnvs" json:"projectAvailableEnvs" bson:"projectAvailableEnvs" validate:""`
+	ProjectDef           ProjectDef            `yaml:"projectDef" json:"projectDef" bson:"projectDef" validate:""`
+	CustomStepConfs      []CustomStepConf      `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+}
+
+type Metadata struct {
+	Name        string            `yaml:"name" json:"name" bson:"name" validate:"required"`
+	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	Labels      map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
+}
+
+type DefKind struct {
+	Kind     string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Metadata Metadata      `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
+	ErrMsg   string        `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
+	Items    []interface{} `yaml:"items" json:"items" bson:"items" validate:""`
 }

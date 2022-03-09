@@ -30,13 +30,15 @@ func NewCmdProjectGet() *cobra.Command {
 	o := NewOptionsProjectGet()
 
 	msgUse := fmt.Sprintf("get [projectName] ...")
-	msgShort := fmt.Sprintf("get project resoures")
+	msgShort := fmt.Sprintf("get project resources")
 	msgLong := fmt.Sprintf(`get project resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get all project resoures
+	msgExample := fmt.Sprintf(`  # get all project resources
   doryctl project get
+
   # get single project resoure
   doryctl project get test-project1
-  # get multiple project resoures
+
+  # get multiple project resources
   doryctl project get test-project1 test-project2`)
 
 	cmd := &cobra.Command{

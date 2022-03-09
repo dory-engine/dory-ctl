@@ -22,8 +22,7 @@ func NewCmdVersion() *cobra.Command {
 	msgUse := fmt.Sprintf("version")
 	msgShort := fmt.Sprintf("show doryctl version info")
 	msgLong := fmt.Sprintf(`show doryctl and isntall dory-core, dory-dashboard version info`)
-	msgExample := fmt.Sprintf(`  ##############################
-  show doryctl and dory-core, dory-dashboard version info:
+	msgExample := fmt.Sprintf(`  # show doryctl and dory-core, dory-dashboard version info:
   doryctl version`)
 
 	cmd := &cobra.Command{
