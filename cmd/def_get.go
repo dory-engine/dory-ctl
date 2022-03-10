@@ -38,7 +38,6 @@ var kinds = []string{
 	"ignore",
 	"ops",
 	"step",
-	"steps",
 }
 
 func NewCmdDefGet() *cobra.Command {
@@ -48,7 +47,11 @@ func NewCmdDefGet() *cobra.Command {
   # kind options: %s`, strings.Join(kinds, " / "))
 	msgShort := fmt.Sprintf("get project definition")
 	msgLong := fmt.Sprintf(`get project definition in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get project build modules definition
+	msgExample := fmt.Sprintf(`  # get project definition summary
+  # doryctl def get [projectName]
+  doryctl def get test-project1
+
+  # get project build modules definition
   # doryctl def get [projectName] build [moduleName]...
   doryctl def get test-project1 build tp1-go-demo tp1-gin-demo
 
@@ -78,12 +81,7 @@ func NewCmdDefGet() *cobra.Command {
 
   # get project custom step modules definition (environment related custom step)
   # doryctl def get [projectName] step [moduleName]... --step [customStepName] --env [envName]
-  doryctl def get test-project1 step tp1-go-demo --step testApi --env test
-
-  # get project all available custom steps
-  # doryctl def get [projectName] steps
-  doryctl def get steps test-project1
-`)
+  doryctl def get test-project1 step tp1-go-demo --step testApi --env test`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -116,30 +114,41 @@ func (o *OptionsDefGet) Validate(args []string) error {
 		err = fmt.Errorf("projectName required")
 		return err
 	}
-	if len(args) == 1 {
-		err = fmt.Errorf("kind required")
-		return err
-	}
 	var projectName, kind string
 	var moduleNames []string
 	projectName = args[0]
-	kind = args[1]
-
-	var found bool
-	for _, k := range kinds {
-		if k == kind {
-			found = true
-			break
+	if len(args) > 1 {
+		kind = args[1]
+	}
+	if len(args) > 2 {
+		moduleNames = args[2:]
+		for _, moduleName := range moduleNames {
+			err = pkg.ValidateMinusNameID(moduleName)
+			if err != nil {
+				err = fmt.Errorf("moduleName %s format error: %s", moduleName, err.Error())
+				return err
+			}
 		}
 	}
-	if !found {
-		err = fmt.Errorf("kind must be %s", strings.Join(kinds, ","))
-		return err
-	}
+
 	err = pkg.ValidateMinusNameID(projectName)
 	if err != nil {
 		err = fmt.Errorf("projectNames error: %s", err.Error())
 		return err
+	}
+
+	if kind != "" {
+		var found bool
+		for _, k := range kinds {
+			if k == kind {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = fmt.Errorf("kind must be %s", strings.Join(kinds, ","))
+			return err
+		}
 	}
 	if kind == "deploy" && o.EnvName == "" {
 		err = fmt.Errorf("kind is deploy, --env is required")
@@ -152,14 +161,6 @@ func (o *OptionsDefGet) Validate(args []string) error {
 	if kind == "step" && o.StepName == "" {
 		err = fmt.Errorf("kind is step, --step is required")
 		return err
-	}
-	moduleNames = args[2:]
-	for _, moduleName := range moduleNames {
-		err = pkg.ValidateMinusNameID(moduleName)
-		if err != nil {
-			err = fmt.Errorf("moduleName %s format error: %s", moduleName, err.Error())
-			return err
-		}
 	}
 	o.Param.Kind = kind
 	o.Param.ProjectName = projectName
@@ -203,6 +204,50 @@ func (o *OptionsDefGet) Run(args []string) error {
 	dataHeader := []string{}
 	dataRows := [][]string{}
 	switch o.Param.Kind {
+	case "":
+		defKind.Kind = "projectSummary"
+		var customSteps []string
+		for _, conf := range project.CustomStepConfs {
+			var isEnvDiff string
+			if conf.IsEnvDiff {
+				isEnvDiff = "[env]"
+			}
+			s := fmt.Sprintf("%s%s", conf.CustomStepName, isEnvDiff)
+			customSteps = append(customSteps, s)
+		}
+		var nodePorts []string
+		for _, port := range project.NodePorts {
+			s := fmt.Sprintf("%d", port)
+			nodePorts = append(nodePorts, s)
+		}
+		var branchNames []string
+		for _, pipeline := range project.ProjectPipelines {
+			branchNames = append(branchNames, pipeline.BranchName)
+		}
+		var envNames []string
+		for _, pae := range project.ProjectAvailableEnvs {
+			envNames = append(envNames, pae.EnvName)
+		}
+
+		dataRow := []string{strings.Join(project.BuildNames, "\n"), strings.Join(project.PackageNames, "\n"), strings.Join(customSteps, "\n"), strings.Join(branchNames, "\n"), strings.Join(envNames, "\n"), strings.Join(nodePorts, "\n")}
+		dataRows = append(dataRows, dataRow)
+
+		def := map[string]interface{}{
+			"buildEnvs":       project.BuildEnvs,
+			"buildNames":      project.BuildNames,
+			"customStepConfs": project.CustomStepConfs,
+			"packageNames":    project.PackageNames,
+			"branchNames":     branchNames,
+			"envNames":        envNames,
+			"nodePorts":       nodePorts,
+		}
+		defKind.Items = append(defKind.Items, def)
+
+		dataHeader = []string{"Builds", "Packages", "CustomSteps", "Branches", "Envs", "NodePorts"}
+		m := map[string]interface{}{}
+		bs, _ = json.Marshal(defKind)
+		_ = json.Unmarshal(bs, &m)
+		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "build":
 		defKind.Kind = "buildDefs"
 		for _, def := range project.ProjectDef.BuildDefs {
@@ -347,6 +392,13 @@ func (o *OptionsDefGet) Run(args []string) error {
 		defKind.Metadata.Labels = map[string]string{
 			"branchName": pipeline.BranchName,
 		}
+		defKind.Metadata.Annotations = map[string]string{
+			"envs":             strings.Join(pipeline.Envs, ","),
+			"envProductions":   strings.Join(pipeline.EnvProductions, ","),
+			"isDefault":        fmt.Sprintf("%v", pipeline.IsDefault),
+			"webhookPushEvent": fmt.Sprintf("%v", pipeline.WebhookPushEvent),
+			"tagSuffix":        pipeline.TagSuffix,
+		}
 		dataHeader = []string{"Name", "Envs", "EnvProds", "AutoDetect", "Queue", "Builds"}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defKind)
@@ -462,19 +514,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 			"enableMode": customStepDef.EnableMode,
 		}
 		dataHeader = []string{"Name", "EnableMode", "RelateModules", "ManualEnable", "Params"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
-	case "steps":
-		defKind.Kind = "customStepConfs"
-		for _, def := range project.CustomStepConfs {
-			dataRow := []string{def.CustomStepName, def.CustomStepDesc, def.CustomStepActionDesc, fmt.Sprintf("%v", def.IsEnvDiff), def.ParamInputYamlDef}
-			dataRows = append(dataRows, dataRow)
-			defKind.Items = append(defKind.Items, def)
-		}
-		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
-		dataHeader = []string{"Name", "Desc", "Action", "EnvDiff", "Params"}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defKind)
 		_ = json.Unmarshal(bs, &m)

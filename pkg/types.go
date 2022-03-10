@@ -565,12 +565,17 @@ type ProjectOutput struct {
 	ProjectPipelines     []ProjectPipeline     `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
 	ProjectAvailableEnvs []ProjectAvailableEnv `yaml:"projectAvailableEnvs" json:"projectAvailableEnvs" bson:"projectAvailableEnvs" validate:""`
 	ProjectDef           ProjectDef            `yaml:"projectDef" json:"projectDef" bson:"projectDef" validate:""`
+	BuildEnvs            []string              `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
+	BuildNames           []string              `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
+	PackageNames         []string              `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
+	NodePorts            []int                 `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
 	CustomStepConfs      []CustomStepConf      `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
 }
 
 type Metadata struct {
 	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
 	Labels      map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
+	Annotations map[string]string `yaml:"annotations" json:"annotations" bson:"annotations" validate:""`
 }
 
 type DefKind struct {
