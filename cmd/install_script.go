@@ -14,7 +14,9 @@ type OptionsInstallScript struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 	FileName       string `yaml:"fileName" json:"fileName" bson:"fileName" validate:""`
 	OutputDir      string `yaml:"outputDir" json:"outputDir" bson:"outputDir" validate:""`
-	Stdin          []byte `yaml:"stdin" json:"stdin" bson:"stdin" validate:""`
+	Param          struct {
+		Stdin []byte `yaml:"stdin" json:"stdin" bson:"stdin" validate:""`
+	}
 }
 
 func NewOptionsInstallScript() *OptionsInstallScript {
@@ -69,8 +71,8 @@ func (o *OptionsInstallScript) Validate(args []string) error {
 		if err != nil {
 			return err
 		}
-		o.Stdin = bs
-		if len(o.Stdin) == 0 {
+		o.Param.Stdin = bs
+		if len(o.Param.Stdin) == 0 {
 			err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s install script -o readme-install -f -", pkg.BaseCmdName)
 			return err
 		}
@@ -95,7 +97,7 @@ func (o *OptionsInstallScript) Run(args []string) error {
 	}()
 
 	if o.FileName == "-" {
-		bs = o.Stdin
+		bs = o.Param.Stdin
 	} else {
 		bs, err = os.ReadFile(o.FileName)
 		if err != nil {

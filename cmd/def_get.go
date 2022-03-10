@@ -30,21 +30,11 @@ func NewOptionsDefGet() *OptionsDefGet {
 	return &o
 }
 
-var kinds = []string{
-	"build",
-	"package",
-	"deploy",
-	"pipeline",
-	"ignore",
-	"ops",
-	"step",
-}
-
 func NewCmdDefGet() *cobra.Command {
 	o := NewOptionsDefGet()
 
 	msgUse := fmt.Sprintf(`get [projectName] [kind] [moduleName]...
-  # kind options: %s`, strings.Join(kinds, " / "))
+  # kind options: %s`, strings.Join(pkg.DefCmdKinds, " / "))
 	msgShort := fmt.Sprintf("get project definition")
 	msgLong := fmt.Sprintf(`get project definition in dory-core server`)
 	msgExample := fmt.Sprintf(`  # get project definition summary
@@ -139,14 +129,14 @@ func (o *OptionsDefGet) Validate(args []string) error {
 
 	if kind != "" {
 		var found bool
-		for _, k := range kinds {
+		for _, k := range pkg.DefCmdKinds {
 			if k == kind {
 				found = true
 				break
 			}
 		}
 		if !found {
-			err = fmt.Errorf("kind must be %s", strings.Join(kinds, ","))
+			err = fmt.Errorf("kind must be %s", strings.Join(pkg.DefCmdKinds, ","))
 			return err
 		}
 	}

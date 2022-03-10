@@ -37,4 +37,24 @@ var (
 	FsInstallScripts embed.FS
 	//go:embed install_configs/*
 	FsInstallConfigs embed.FS
+
+	DefCmdKinds = []string{
+		"build",
+		"package",
+		"deploy",
+		"pipeline",
+		"ignore",
+		"ops",
+		"step",
+	}
+
+	DefKinds = []string{
+		"buildDefs",
+		"packageDefs",
+		"deployContainerDefs",
+		"pipelineDef",
+		"dockerIgnoreDefs",
+		"customOpsDefs",
+		"customStepDefs",
+	}
 )
