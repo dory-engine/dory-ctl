@@ -61,6 +61,7 @@ func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
 		if err == nil {
 			defs = append(defs, def)
 		} else {
+			err = nil
 			dec := yaml.NewDecoder(bytes.NewReader(bs))
 			for dec.Decode(&def) == nil {
 				defs = append(defs, def)
@@ -92,6 +93,5 @@ func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
 			return defs, err
 		}
 	}
-
 	return defs, err
 }
