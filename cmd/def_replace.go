@@ -18,8 +18,8 @@ type OptionsDefReplace struct {
 	Recursive      bool     `yaml:"recursive" json:"recursive" bson:"recursive" validate:""`
 	Output         string   `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		FileNames []string `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
-		Stdin     []byte   `yaml:"stdin" json:"stdin" bson:"stdin" validate:""`
+		FileNames []string      `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
+		Defs      []pkg.DefKind `yaml:"defs" json:"defs" bson:"defs" validate:""`
 	}
 }
 
@@ -96,11 +96,15 @@ func (o *OptionsDefReplace) Validate(args []string) error {
 		if err != nil {
 			return err
 		}
-		o.Param.Stdin = bs
-		if len(o.Param.Stdin) == 0 {
-			err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s install script -o readme-install -f -", pkg.BaseCmdName)
+		if len(bs) == 0 {
+			err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s def replace -f -", pkg.BaseCmdName)
 			return err
 		}
+		defs, err := GetDefKinds("", bs)
+		if err != nil {
+			return err
+		}
+		o.Param.Defs = append(o.Param.Defs, defs...)
 	} else {
 		for _, fileName := range fileNames {
 			fi, err := os.Stat(fileName)
@@ -155,52 +159,19 @@ func (o *OptionsDefReplace) Validate(args []string) error {
 		sort.Strings(fileNames)
 		o.Param.FileNames = fileNames
 
-		//for _, fileName := range o.Param.FileNames {
-		//	bs, err := os.ReadFile(fileName)
-		//	if err != nil {
-		//		err = fmt.Errorf("read file %s error: %s", fileName, err.Error())
-		//		return err
-		//	}
-		//
-		//	var def pkg.DefKind
-		//	ext := filepath.Ext(fileName)
-		//	if ext == ".json" {
-		//		err = json.Unmarshal(bs, &def)
-		//		if err != nil {
-		//			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
-		//			return err
-		//		}
-		//	} else if ext == ".yaml" || ext == ".yml" {
-		//		err = yaml.Unmarshal(bs, &def)
-		//		if err != nil {
-		//			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
-		//			return err
-		//		}
-		//	} else {
-		//		err = fmt.Errorf("file extension name not json, yaml or yml")
-		//		return err
-		//	}
-		//
-		//	if def.Kind == "" {
-		//		err = fmt.Errorf("parse file %s error: kind is empty", fileName)
-		//		return err
-		//	}
-		//	if def.Metadata.ProjectName == "" {
-		//		err = fmt.Errorf("parse file %s error: metadata.projectName is empty", fileName)
-		//		return err
-		//	}
-		//	var found bool
-		//	for _, dk := range pkg.DefKinds {
-		//		if def.Kind == dk {
-		//			found = true
-		//			break
-		//		}
-		//	}
-		//	if !found {
-		//		err = fmt.Errorf("parse file %s error: metadata.projectName is empty", fileName)
-		//		return err
-		//	}
-		//}
+		for _, fileName := range o.Param.FileNames {
+			bs, err := os.ReadFile(fileName)
+			if err != nil {
+				err = fmt.Errorf("read file %s error: %s", fileName, err.Error())
+				return err
+			}
+
+			defs, err := GetDefKinds(fileName, bs)
+			if err != nil {
+				return err
+			}
+			o.Param.Defs = append(o.Param.Defs, defs...)
+		}
 	}
 
 	if o.Output != "" {
