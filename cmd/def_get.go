@@ -406,15 +406,15 @@ func (o *OptionsDefGet) Run(args []string) error {
 		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgCustomOpsDefs
 		dataHeader = []string{"Name", "Desc", "Steps"}
 	case "step":
-		defKind.Kind = "customStepDefs"
-		customStepDefs := map[string]pkg.CustomStepDef{}
+		defKind.Kind = "customStepDef"
+		csds := map[string]pkg.CustomStepDef{}
 		mapErrMsg := map[string]string{}
 		if o.EnvName != "" {
 			var found bool
 			for _, pae := range project.ProjectAvailableEnvs {
 				if pae.EnvName == o.EnvName {
 					mapErrMsg = pae.ErrMsgCustomStepDefs
-					customStepDefs = pae.CustomStepDefs
+					csds = pae.CustomStepDefs
 					found = true
 					break
 				}
@@ -425,12 +425,12 @@ func (o *OptionsDefGet) Run(args []string) error {
 			}
 		} else {
 			mapErrMsg = project.ProjectDef.ErrMsgCustomStepDefs
-			customStepDefs = project.ProjectDef.CustomStepDefs
+			csds = project.ProjectDef.CustomStepDefs
 		}
 
 		var found bool
 		var customStepDef pkg.CustomStepDef
-		for stepName, def := range customStepDefs {
+		for stepName, def := range csds {
 			if stepName == o.StepName {
 				customStepDef = def
 				found = true

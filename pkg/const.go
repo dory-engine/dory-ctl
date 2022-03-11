@@ -55,6 +55,6 @@ var (
 		"pipelineDef",
 		"dockerIgnoreDefs",
 		"customOpsDefs",
-		"customStepDefs",
+		"customStepDef",
 	}
 )

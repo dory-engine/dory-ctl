@@ -266,7 +266,7 @@ func CheckDefKind(def pkg.DefKind) error {
 				return err
 			}
 		}
-	case "customStepDefs":
+	case "customStepDef":
 		var stepName string
 		for k, v := range def.Metadata.Labels {
 			if k == "stepName" {
@@ -275,7 +275,7 @@ func CheckDefKind(def pkg.DefKind) error {
 			}
 		}
 		if stepName == "" {
-			err = fmt.Errorf("kind is customStepDefs, but projectName %s metadata.Labels.stepName is empty", def.Metadata.ProjectName)
+			err = fmt.Errorf("kind is customStepDef, but projectName %s metadata.Labels.stepName is empty", def.Metadata.ProjectName)
 			return err
 		}
 		for _, item := range def.Items {
@@ -283,30 +283,30 @@ func CheckDefKind(def pkg.DefKind) error {
 			bs, _ := pkg.YamlIndent(item)
 			err = yaml.Unmarshal(bs, &d)
 			if err != nil {
-				err = fmt.Errorf("kind is customStepDefs, but item parse error: %s\n%s", err.Error(), string(bs))
+				err = fmt.Errorf("kind is customStepDef, but item parse error: %s\n%s", err.Error(), string(bs))
 				return err
 			}
 			if d.ModuleName == "" {
-				err = fmt.Errorf("kind is customStepDefs, but item parse error: moduleName is empty\n%s", string(bs))
+				err = fmt.Errorf("kind is customStepDef, but item parse error: moduleName is empty\n%s", string(bs))
 				return err
 			}
 			err = pkg.ValidateMinusNameID(d.ModuleName)
 			if err != nil {
-				err = fmt.Errorf("kind is customStepDefs, but item parse error: moduleName %s format error: %s\n%s", d.ModuleName, err.Error(), string(bs))
+				err = fmt.Errorf("kind is customStepDef, but item parse error: moduleName %s format error: %s\n%s", d.ModuleName, err.Error(), string(bs))
 				return err
 			}
 			if d.ParamInputYaml != "" {
 				var m map[string]interface{}
 				err = yaml.Unmarshal([]byte(d.ParamInputYaml), &m)
 				if err != nil {
-					err = fmt.Errorf("kind is customStepDefs, but item parse error: paramInputYaml parse error: %s\n%s", err.Error(), string(bs))
+					err = fmt.Errorf("kind is customStepDef, but item parse error: paramInputYaml parse error: %s\n%s", err.Error(), string(bs))
 					return err
 				}
 			}
 			for _, s := range d.RelatedStepModules {
 				err = pkg.ValidateMinusNameID(s)
 				if err != nil {
-					err = fmt.Errorf("kind is customStepDefs, but item parse error: relatedStepModules %s format error: %s\n%s", s, err.Error(), string(bs))
+					err = fmt.Errorf("kind is customStepDef, but item parse error: relatedStepModules %s format error: %s\n%s", s, err.Error(), string(bs))
 					return err
 				}
 			}
@@ -671,7 +671,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 					}
 					project.ProjectDef.UpdateCustomOpsDefs = true
 				}
-			case "customStepDefs":
+			case "customStepDef":
 				var stepName string
 				var envName string
 				var enableMode string
@@ -697,7 +697,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 						}
 					}
 					if projectAvailableEnv.EnvName == "" {
-						err = fmt.Errorf("kind is customStepDefs, but projectName %s metadata.Labels.envName %s not exists", def.Metadata.ProjectName, envName)
+						err = fmt.Errorf("kind is customStepDef, but projectName %s metadata.Labels.envName %s not exists", def.Metadata.ProjectName, envName)
 						return err
 					}
 					var found bool
@@ -710,7 +710,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 						}
 					}
 					if !found {
-						err = fmt.Errorf("kind is customStepDefs, but projectName %s metadata.Labels.stepName %s not exists", def.Metadata.ProjectName, stepName)
+						err = fmt.Errorf("kind is customStepDef, but projectName %s metadata.Labels.stepName %s not exists", def.Metadata.ProjectName, stepName)
 						return err
 					}
 					for _, item := range def.Items {
@@ -745,7 +745,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 						}
 					}
 					if !found {
-						err = fmt.Errorf("kind is customStepDefs, but projectName %s metadata.Labels.stepName %s not exists", def.Metadata.ProjectName, stepName)
+						err = fmt.Errorf("kind is customStepDef, but projectName %s metadata.Labels.stepName %s not exists", def.Metadata.ProjectName, stepName)
 						return err
 					}
 					for _, item := range def.Items {
@@ -825,7 +825,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 						return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
 					})
 					defApply := pkg.DefApply{
-						Kind:        "customStepDefs",
+						Kind:        "customStepDef",
 						ProjectName: project.ProjectInfo.ProjectName,
 						Def:         csd,
 						Param: map[string]string{
@@ -844,7 +844,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 					return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
 				})
 				defApply := pkg.DefApply{
-					Kind:        "customStepDefs",
+					Kind:        "customStepDef",
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         csd,
 					Param: map[string]string{
@@ -922,12 +922,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 
 	if !o.Verify {
 		for _, defApply := range defApplies {
-			// must remove all empty items to apply
-			var m map[string]interface{}
-			bs, _ := json.Marshal(defApply)
-			_ = json.Unmarshal(bs, &m)
-			mapDef := pkg.RemoveMapEmptyItems(m)
-			bs, _ = pkg.YamlIndent(mapDef["def"])
+			bs, _ = pkg.YamlIndent(defApply.Def)
 
 			param := map[string]interface{}{}
 			for k, v := range defApply.Param {
@@ -942,13 +937,22 @@ func (o *OptionsDefApply) Run(args []string) error {
 				param["packageDefsYaml"] = string(bs)
 			case "deployContainerDefs":
 				param["deployContainerDefsYaml"] = string(bs)
-			case "customStepDefs":
+			case "customStepDef":
 				param["customStepDefYaml"] = string(bs)
+				var found bool
+				for k, v := range defApply.Param {
+					if k == "envName" && v != "" {
+						found = true
+						break
+					}
+				}
+				if found {
+					urlKind = fmt.Sprintf("%s/env", urlKind)
+				}
 			case "dockerIgnoreDefs":
 				param["dockerIgnoreDefsYaml"] = string(bs)
 			case "customOpsDefs":
 				param["customOpsDefsYaml"] = string(bs)
-				urlKind = "customOpsDef"
 			case "pipelineDef":
 				param["pipelineDefYaml"] = string(bs)
 			}
