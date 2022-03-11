@@ -922,7 +922,13 @@ func (o *OptionsDefApply) Run(args []string) error {
 
 	if !o.Verify {
 		for _, defApply := range defApplies {
-			bs, _ = pkg.YamlIndent(defApply.Def)
+			// must remove all empty items to apply
+			var m map[string]interface{}
+			bs, _ := json.Marshal(defApply)
+			_ = json.Unmarshal(bs, &m)
+			mapDef := pkg.RemoveMapEmptyItems(m)
+			bs, _ = pkg.YamlIndent(mapDef["def"])
+
 			param := map[string]interface{}{}
 			for k, v := range defApply.Param {
 				param[k] = v
