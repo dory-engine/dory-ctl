@@ -193,6 +193,7 @@ type ProjectNodePort struct {
 type ProjectAvailableEnv struct {
 	EnvName                   string               `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
 	DeployContainerDefs       []DeployContainerDef `yaml:"deployContainerDefs" json:"deployContainerDefs" bson:"deployContainerDefs" validate:""`
+	UpdateDeployContainerDefs bool                 `yaml:"updateDeployContainerDefs" json:"updateDeployContainerDefs" bson:"updateDeployContainerDefs" validate:""`
 	CustomStepDefs            CustomStepDefs       `yaml:"customStepDefs" json:"customStepDefs" bson:"customStepDefs" validate:""`
 	ErrMsgDeployContainerDefs string               `yaml:"errMsgDeployContainerDefs" json:"errMsgDeployContainerDefs" bson:"errMsgDeployContainerDefs" validate:""`
 	ErrMsgCustomStepDefs      map[string]string    `yaml:"errMsgCustomStepDefs" json:"errMsgCustomStepDefs" bson:"errMsgCustomStepDefs" validate:""`
@@ -336,8 +337,9 @@ type CustomStepModuleDef struct {
 }
 
 type CustomStepDef struct {
-	EnableMode           string                `yaml:"enableMode" json:"enableMode" bson:"enableMode" validate:""`
-	CustomStepModuleDefs []CustomStepModuleDef `yaml:"customStepModuleDefs" json:"customStepModuleDefs" bson:"customStepModuleDefs" validate:""`
+	EnableMode                 string                `yaml:"enableMode" json:"enableMode" bson:"enableMode" validate:""`
+	CustomStepModuleDefs       []CustomStepModuleDef `yaml:"customStepModuleDefs" json:"customStepModuleDefs" bson:"customStepModuleDefs" validate:""`
+	UpdateCustomStepModuleDefs bool                  `yaml:"updateCustomStepModuleDefs" json:"updateCustomStepModuleDefs" bson:"updateCustomStepModuleDefs" validate:""`
 }
 
 type CustomStepInsertDefs map[string][]string
@@ -515,14 +517,18 @@ type PipelineDef struct {
 }
 
 type ProjectDef struct {
-	BuildDefs            []BuildDef        `yaml:"buildDefs" json:"buildDefs" bson:"buildDefs" validate:""`
-	PackageDefs          []PackageDef      `yaml:"packageDefs" json:"packageDefs" bson:"packageDefs" validate:""`
-	DockerIgnoreDefs     []string          `yaml:"dockerIgnoreDefs" json:"dockerIgnoreDefs" bson:"dockerIgnoreDefs" validate:""`
-	CustomStepDefs       CustomStepDefs    `yaml:"customStepDefs" json:"customStepDefs" bson:"customStepDefs" validate:""`
-	CustomOpsDefs        []CustomOpsDef    `yaml:"customOpsDefs" json:"customOpsDefs" bson:"customOpsDefs" validate:""`
-	ErrMsgPackageDefs    string            `yaml:"errMsgPackageDefs" json:"errMsgPackageDefs" bson:"errMsgPackageDefs" validate:""`
-	ErrMsgCustomStepDefs map[string]string `yaml:"errMsgCustomStepDefs" json:"errMsgCustomStepDefs" bson:"errMsgCustomStepDefs" validate:""`
-	ErrMsgCustomOpsDefs  string            `yaml:"errMsgCustomOpsDefs" json:"errMsgCustomOpsDefs" bson:"errMsgCustomOpsDefs" validate:""`
+	BuildDefs              []BuildDef        `yaml:"buildDefs" json:"buildDefs" bson:"buildDefs" validate:""`
+	UpdateBuildDefs        bool              `yaml:"updateBuildDefs" json:"updateBuildDefs" bson:"updateBuildDefs" validate:""`
+	PackageDefs            []PackageDef      `yaml:"packageDefs" json:"packageDefs" bson:"packageDefs" validate:""`
+	UpdatePackageDefs      bool              `yaml:"updatePackageDefs" json:"updatePackageDefs" bson:"updatePackageDefs" validate:""`
+	DockerIgnoreDefs       []string          `yaml:"dockerIgnoreDefs" json:"dockerIgnoreDefs" bson:"dockerIgnoreDefs" validate:""`
+	UpdateDockerIgnoreDefs bool              `yaml:"updateDockerIgnoreDefs" json:"updateDockerIgnoreDefs" bson:"updateDockerIgnoreDefs" validate:""`
+	CustomStepDefs         CustomStepDefs    `yaml:"customStepDefs" json:"customStepDefs" bson:"customStepDefs" validate:""`
+	CustomOpsDefs          []CustomOpsDef    `yaml:"customOpsDefs" json:"customOpsDefs" bson:"customOpsDefs" validate:""`
+	UpdateCustomOpsDefs    bool              `yaml:"updateCustomOpsDefs" json:"updateCustomOpsDefs" bson:"updateCustomOpsDefs" validate:""`
+	ErrMsgPackageDefs      string            `yaml:"errMsgPackageDefs" json:"errMsgPackageDefs" bson:"errMsgPackageDefs" validate:""`
+	ErrMsgCustomStepDefs   map[string]string `yaml:"errMsgCustomStepDefs" json:"errMsgCustomStepDefs" bson:"errMsgCustomStepDefs" validate:""`
+	ErrMsgCustomOpsDefs    string            `yaml:"errMsgCustomOpsDefs" json:"errMsgCustomOpsDefs" bson:"errMsgCustomOpsDefs" validate:""`
 }
 
 type ProjectInfo struct {
@@ -546,6 +552,7 @@ type ProjectPipeline struct {
 	Envs              []string               `yaml:"envs" json:"envs" bson:"envs" validate:""`
 	EnvProductions    []string               `yaml:"envProductions" json:"envProductions" bson:"envProductions" validate:""`
 	PipelineDef       PipelineDef            `yaml:"pipelineDef" json:"pipelineDef" bson:"pipelineDef" validate:""`
+	UpdatePipelineDef bool                   `yaml:"updatePipelineDef" json:"updatePipelineDef" bson:"updatePipelineDef" validate:""`
 	ErrMsgPipelineDef string                 `yaml:"errMsgPipelineDef" json:"errMsgPipelineDef" bson:"errMsgPipelineDef" validate:""`
 	Modules           map[string][]ModuleRun `yaml:"modules" json:"modules" bson:"modules" validate:""`
 }
@@ -585,4 +592,11 @@ type DefKind struct {
 	Status   struct {
 		ErrMsg string `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
 	} `yaml:"status" json:"status" bson:"status" validate:""`
+}
+
+type DefApply struct {
+	Kind        string            `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	Def         interface{}       `yaml:"def" json:"def" bson:"def" validate:""`
+	Param       map[string]string `yaml:"param" json:"param" bson:"param" validate:""`
 }

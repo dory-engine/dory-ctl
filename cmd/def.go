@@ -1,14 +1,9 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"os"
-	"path/filepath"
 )
 
 func NewCmdDef() *cobra.Command {
@@ -33,65 +28,6 @@ func NewCmdDef() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCmdDefGet())
-	cmd.AddCommand(NewCmdDefReplace())
+	cmd.AddCommand(NewCmdDefApply())
 	return cmd
-}
-
-func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
-	var err error
-	defs := []pkg.DefKind{}
-	ext := filepath.Ext(fileName)
-	if ext == ".json" {
-		var def pkg.DefKind
-		err = json.Unmarshal(bs, &def)
-		if err != nil {
-			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
-			return defs, err
-		}
-		defs = append(defs, def)
-	} else if ext == ".yaml" || ext == ".yml" {
-		dec := yaml.NewDecoder(bytes.NewReader(bs))
-		var def pkg.DefKind
-		for dec.Decode(&def) == nil {
-			defs = append(defs, def)
-		}
-	} else if fileName == "" {
-		var def pkg.DefKind
-		err = json.Unmarshal(bs, &def)
-		if err == nil {
-			defs = append(defs, def)
-		} else {
-			err = nil
-			dec := yaml.NewDecoder(bytes.NewReader(bs))
-			for dec.Decode(&def) == nil {
-				defs = append(defs, def)
-			}
-		}
-	} else {
-		err = fmt.Errorf("file extension name not json, yaml or yml")
-		return defs, err
-	}
-
-	for _, def := range defs {
-		if def.Kind == "" {
-			err = fmt.Errorf("parse file %s error: kind is empty", fileName)
-			return defs, err
-		}
-		if def.Metadata.ProjectName == "" {
-			err = fmt.Errorf("parse file %s error: metadata.projectName is empty", fileName)
-			return defs, err
-		}
-		var found bool
-		for _, d := range pkg.DefKinds {
-			if def.Kind == d {
-				found = true
-				break
-			}
-		}
-		if !found {
-			err = fmt.Errorf("parse file %s error: kind %s not correct", fileName, def.Kind)
-			return defs, err
-		}
-	}
-	return defs, err
 }

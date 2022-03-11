@@ -16,6 +16,7 @@ type OptionsDefGet struct {
 	EnvName        string `yaml:"envName" json:"envName" bson:"envName" validate:""`
 	BranchName     string `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
 	StepName       string `yaml:"stepName" json:"stepName" bson:"stepName" validate:""`
+	Full           bool   `yaml:"full" json:"full" bson:"full" validate:""`
 	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
 		Kind        string   `yaml:"kind" json:"kind" bson:"kind" validate:""`
@@ -89,6 +90,7 @@ func NewCmdDefGet() *cobra.Command {
 	cmd.Flags().StringVar(&o.EnvName, "env", "", "envName, required if kind is deploy")
 	cmd.Flags().StringVar(&o.BranchName, "branch", "", "branchName, required if kind is pipeline")
 	cmd.Flags().StringVar(&o.StepName, "step", "", "stepName, required if kind is step")
+	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definition in full version, use with --output option")
 	return cmd
 }
 
@@ -232,12 +234,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 			"nodePorts":       nodePorts,
 		}
 		defKind.Items = append(defKind.Items, def)
-
 		dataHeader = []string{"Builds", "Packages", "CustomSteps", "Branches", "Envs", "NodePorts"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "build":
 		defKind.Kind = "buildDefs"
 		for _, def := range project.ProjectDef.BuildDefs {
@@ -259,10 +256,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 			}
 		}
 		dataHeader = []string{"Name", "Env", "Path", "PhaseID", "Cmds"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "package":
 		defKind.Kind = "packageDefs"
 		for _, def := range project.ProjectDef.PackageDefs {
@@ -285,10 +278,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 		}
 		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
 		dataHeader = []string{"Name", "Builds", "From", "Dockerfile"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "deploy":
 		defKind.Kind = "deployContainerDefs"
 		projectAvailableEnv := pkg.ProjectAvailableEnv{}
@@ -347,10 +336,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 			"envName": projectAvailableEnv.EnvName,
 		}
 		dataHeader = []string{"Name", "Package", "Replicas", "Ports", "Depends"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "pipeline":
 		defKind.Kind = "pipelineDef"
 		pipeline := pkg.ProjectPipeline{}
@@ -390,10 +375,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 			"tagSuffix":        pipeline.TagSuffix,
 		}
 		dataHeader = []string{"Name", "Envs", "EnvProds", "AutoDetect", "Queue", "Builds"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "ignore":
 		defKind.Kind = "dockerIgnoreDefs"
 		for _, def := range project.ProjectDef.DockerIgnoreDefs {
@@ -402,10 +383,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 			defKind.Items = append(defKind.Items, def)
 		}
 		dataHeader = []string{"Ignore"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "ops":
 		defKind.Kind = "customOpsDefs"
 		for _, def := range project.ProjectDef.CustomOpsDefs {
@@ -428,10 +405,6 @@ func (o *OptionsDefGet) Run(args []string) error {
 		}
 		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgCustomOpsDefs
 		dataHeader = []string{"Name", "Desc", "Steps"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
-		dataOutput = pkg.RemoveMapEmptyItems(m)
 	case "step":
 		defKind.Kind = "customStepDefs"
 		customStepDefs := map[string]pkg.CustomStepDef{}
@@ -504,9 +477,13 @@ func (o *OptionsDefGet) Run(args []string) error {
 			"enableMode": customStepDef.EnableMode,
 		}
 		dataHeader = []string{"Name", "EnableMode", "RelateModules", "ManualEnable", "Params"}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defKind)
-		_ = json.Unmarshal(bs, &m)
+	}
+	m := map[string]interface{}{}
+	bs, _ = json.Marshal(defKind)
+	_ = json.Unmarshal(bs, &m)
+	if o.Full {
+		dataOutput = m
+	} else {
 		dataOutput = pkg.RemoveMapEmptyItems(m)
 	}
 
