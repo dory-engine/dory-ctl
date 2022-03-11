@@ -928,7 +928,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 				param[k] = v
 			}
 
-			urlStr := defApply.Kind
+			urlKind := defApply.Kind
 			switch defApply.Kind {
 			case "buildDefs":
 				param["buildDefsYaml"] = string(bs)
@@ -942,15 +942,13 @@ func (o *OptionsDefApply) Run(args []string) error {
 				param["dockerIgnoreDefsYaml"] = string(bs)
 			case "customOpsDefs":
 				param["customOpsDefsYaml"] = string(bs)
-				urlStr = "customOpsDef"
+				urlKind = "customOpsDef"
 			case "pipelineDef":
 				param["pipelineDefYaml"] = string(bs)
 			}
-			url := fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlStr)
-			method := http.MethodPost
 			bs, _ = json.Marshal(defApply.Param)
 			logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
-			result, _, err := o.QueryAPI(url, method, "", param, false)
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlKind), http.MethodPost, "", param, false)
 			if err != nil {
 				err = fmt.Errorf("%s: %s", logHeader, err.Error())
 				return err
