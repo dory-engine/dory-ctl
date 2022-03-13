@@ -594,6 +594,24 @@ type DefKind struct {
 	} `yaml:"status" json:"status" bson:"status" validate:""`
 }
 
+type ProjectSummary struct {
+	BuildEnvs       []string         `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
+	BuildNames      []string         `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
+	CustomStepConfs []CustomStepConf `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+	PackageNames    []string         `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
+	BranchNames     []string         `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
+	EnvNames        []string         `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
+	NodePorts       []int            `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
+}
+
+type DefKindList struct {
+	Kind   string    `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Defs   []DefKind `yaml:"defs" json:"defs" bson:"defs" validate:""`
+	Status struct {
+		ErrMsgs []string `yaml:"errMsgs" json:"errMsgs" bson:"errMsgs" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+}
+
 type DefApply struct {
 	Kind        string            `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
 	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
