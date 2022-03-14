@@ -442,7 +442,79 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				}
 			}
 		} else {
+			csds := pkg.CustomStepDefs{}
+			for stepName, csd := range project.ProjectDef.CustomStepDefs {
+				if len(o.StepNames) == 0 {
+					csds[stepName] = csd
+				} else {
+					for _, name := range o.StepNames {
+						if name == stepName {
+							csds[stepName] = csd
+							break
+						}
+					}
+				}
+			}
+			for stepName, csd := range csds {
+				defKind := defKindProject
+				defKind.Kind = "customStepDef"
+				var errMsg string
+				for name, msg := range project.ProjectDef.ErrMsgCustomStepDefs {
+					if name == stepName {
+						errMsg = msg
+					}
+				}
+				defKind.Status.ErrMsg = errMsg
+				defKind.Metadata.Labels = map[string]string{
+					"stepName":   stepName,
+					"enableMode": csd.EnableMode,
+				}
 
+				ids := []int{}
+				for i, csmd := range csd.CustomStepModuleDefs {
+					var found bool
+					for _, moduleName := range o.ModuleNames {
+						if csmd.ModuleName == moduleName {
+							found = true
+							break
+						}
+					}
+					if found {
+						ids = append(ids, i)
+					}
+				}
+
+				csmds := []pkg.CustomStepModuleDef{}
+				for i, csmd := range csd.CustomStepModuleDefs {
+					var found bool
+					for _, id := range ids {
+						if i == id {
+							found = true
+							break
+						}
+					}
+					if !found {
+						defKind.Items = append(defKind.Items, csmd)
+						csmds = append(csmds, csmd)
+					}
+				}
+
+				defKinds = append(defKinds, defKind)
+
+				defApply := pkg.DefApply{
+					Kind:        "customStepDef",
+					ProjectName: project.ProjectInfo.ProjectName,
+					Def: pkg.CustomStepDef{
+						EnableMode:                 csd.EnableMode,
+						CustomStepModuleDefs:       csmds,
+						UpdateCustomStepModuleDefs: false,
+					},
+					Param: map[string]string{
+						"customStepName": stepName,
+					},
+				}
+				defApplies = append(defApplies, defApply)
+			}
 		}
 	}
 
