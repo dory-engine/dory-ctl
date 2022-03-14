@@ -260,14 +260,10 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	case "deploy":
 		paes := []pkg.ProjectAvailableEnv{}
 		for _, pae := range project.ProjectAvailableEnvs {
-			if len(o.EnvNames) == 0 {
-				paes = append(paes, pae)
-			} else {
-				for _, envName := range o.EnvNames {
-					if envName == pae.EnvName {
-						paes = append(paes, pae)
-						break
-					}
+			for _, envName := range o.EnvNames {
+				if envName == pae.EnvName {
+					paes = append(paes, pae)
+					break
 				}
 			}
 		}
@@ -356,6 +352,91 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defApplies = append(defApplies, defApply)
 	case "step":
+		if len(o.EnvNames) > 0 {
+			paes := []pkg.ProjectAvailableEnv{}
+			for _, pae := range project.ProjectAvailableEnvs {
+				for _, envName := range o.EnvNames {
+					if envName == pae.EnvName {
+						paes = append(paes, pae)
+						break
+					}
+				}
+			}
+			for _, pae := range paes {
+				if len(pae.CustomStepDefs) > 0 {
+					csds := pkg.CustomStepDefs{}
+					for stepName, csd := range pae.CustomStepDefs {
+						if len(o.StepNames) == 0 {
+							csds[stepName] = csd
+						} else {
+							for _, name := range o.StepNames {
+								if name == stepName {
+									csds[stepName] = csd
+									break
+								}
+							}
+						}
+					}
+					for stepName, csd := range csds {
+						defKind := defKindProject
+						defKind.Kind = "customStepDef"
+						var errMsg string
+						for name, msg := range pae.ErrMsgCustomStepDefs {
+							if name == stepName {
+								errMsg = msg
+							}
+						}
+						defKind.Status.ErrMsg = errMsg
+						defKind.Metadata.Labels = map[string]string{
+							"envName":    pae.EnvName,
+							"stepName":   stepName,
+							"enableMode": csd.EnableMode,
+						}
+
+						ids := []int{}
+						for i, csmd := range csd.CustomStepModuleDefs {
+							var found bool
+							for _, moduleName := range o.ModuleNames {
+								if csmd.ModuleName == moduleName {
+									found = true
+									break
+								}
+							}
+							if found {
+								ids = append(ids, i)
+							}
+						}
+						for i, csmd := range csd.CustomStepModuleDefs {
+							var found bool
+							for _, id := range ids {
+								if i == id {
+									found = true
+									break
+								}
+							}
+							if !found {
+								defKind.Items = append(defKind.Items, csmd)
+							}
+						}
+
+						defKinds = append(defKinds, defKind)
+
+						defApply := pkg.DefApply{
+							Kind:        "customStepDef",
+							ProjectName: project.ProjectInfo.ProjectName,
+							Def:         defKind.Items,
+							Param: map[string]string{
+								"envName":  pae.EnvName,
+								"stepName": stepName,
+							},
+						}
+						defApplies = append(defApplies, defApply)
+					}
+				}
+			}
+		} else {
+
+		}
 	}
 
 	defKindList := pkg.DefKindList{
