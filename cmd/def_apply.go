@@ -20,7 +20,7 @@ type OptionsDefApply struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 	FileNames      []string `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
 	Recursive      bool     `yaml:"recursive" json:"recursive" bson:"recursive" validate:""`
-	Verify         bool     `yaml:"verify" json:"verify" bson:"verify" validate:""`
+	Try            bool     `yaml:"try" json:"try" bson:"try" validate:""`
 	Full           bool     `yaml:"full" json:"full" bson:"full" validate:""`
 	Output         string   `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
@@ -65,7 +65,7 @@ func NewCmdDefApply() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVarP(&o.Recursive, "recursive", "r", false, "process the directory used in -f, --file recursively")
-	cmd.Flags().BoolVar(&o.Verify, "verify", false, "verify input project definitions only, not apply to dory-core server, use with --output option")
+	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definition in full version, use with --output option")
 	cmd.Flags().StringSliceVarP(&o.FileNames, "file", "f", []string{}, "project definition file name or directory, support *.json and *.yaml and *.yml files")
 	return cmd
@@ -991,7 +991,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 		fmt.Println(string(bs))
 	}
 
-	if !o.Verify {
+	if !o.Try {
 		for _, defApply := range defApplies {
 			bs, _ = pkg.YamlIndent(defApply.Def)
 
