@@ -315,63 +315,135 @@ func CheckDefKind(def pkg.DefKind) error {
 	return err
 }
 
-func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
+func GetDefKindsFromJson(fileName string, bs []byte) ([]pkg.DefKind, error) {
 	var err error
-	defs := []pkg.DefKind{}
-	ext := filepath.Ext(fileName)
-	if ext == ".json" {
+	defKinds := []pkg.DefKind{}
+	var list pkg.DefKindList
+	err = json.Unmarshal(bs, &list)
+	if err == nil {
+		if list.Kind == "list" {
+			defKinds = append(defKinds, list.Defs...)
+		} else {
+			var def pkg.DefKind
+			err = json.Unmarshal(bs, &def)
+			if err != nil {
+				err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
+				return defKinds, err
+			}
+			defKinds = append(defKinds, def)
+		}
+	} else {
 		var def pkg.DefKind
 		err = json.Unmarshal(bs, &def)
 		if err != nil {
 			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
-			return defs, err
+			return defKinds, err
 		}
-		defs = append(defs, def)
-	} else if ext == ".yaml" || ext == ".yml" {
-		dec := yaml.NewDecoder(bytes.NewReader(bs))
-		for {
-			var def pkg.DefKind
-			e := dec.Decode(&def)
-			if e == nil {
-				defs = append(defs, def)
+		defKinds = append(defKinds, def)
+	}
+	return defKinds, err
+}
+
+func GetDefKindsFromYaml(fileName string, bs []byte) ([]pkg.DefKind, error) {
+	var err error
+	defKinds := []pkg.DefKind{}
+	dec := yaml.NewDecoder(bytes.NewReader(bs))
+	for {
+		var list pkg.DefKindList
+		err = dec.Decode(&list)
+		if err == io.EOF {
+			err = nil
+			break
+		} else if err == io.EOF {
+			err = nil
+			break
+		} else if err == nil {
+			if list.Kind == "list" {
+				defKinds = append(defKinds, list.Defs...)
 			} else {
-				break
+				var def pkg.DefKind
+				err = dec.Decode(&def)
+				if err == io.EOF {
+					err = nil
+					break
+				} else if err != nil {
+					err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
+					return defKinds, err
+				}
+				defKinds = append(defKinds, def)
 			}
+		} else {
+			var def pkg.DefKind
+			err = dec.Decode(&def)
+			if err == io.EOF {
+				err = nil
+				break
+			} else if err != nil {
+				err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
+				return defKinds, err
+			}
+			defKinds = append(defKinds, def)
+		}
+	}
+
+	for _, dk := range defKinds {
+		fmt.Println(dk.Kind, dk.Metadata)
+	}
+
+	return defKinds, err
+}
+
+func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
+	var err error
+	defKinds := []pkg.DefKind{}
+	ext := filepath.Ext(fileName)
+	if ext == ".json" {
+		defKinds, err = GetDefKindsFromJson(fileName, bs)
+		if err != nil {
+			return defKinds, err
+		}
+	} else if ext == ".yaml" || ext == ".yml" {
+		defKinds, err = GetDefKindsFromYaml(fileName, bs)
+		if err != nil {
+			return defKinds, err
 		}
 	} else if fileName == "" {
-		var def pkg.DefKind
-		err = json.Unmarshal(bs, &def)
-		if err == nil {
-			defs = append(defs, def)
-		} else {
-			err = nil
-			dec := yaml.NewDecoder(bytes.NewReader(bs))
-			for dec.Decode(&def) == nil {
-				defs = append(defs, def)
+		defKinds, err = GetDefKindsFromJson(fileName, bs)
+		if err != nil {
+			defKinds, err = GetDefKindsFromYaml(fileName, bs)
+			if err != nil {
+				return defKinds, err
 			}
 		}
 	} else {
 		err = fmt.Errorf("file extension name not json, yaml or yml")
-		return defs, err
+		return defKinds, err
 	}
 
-	for _, def := range defs {
+	for _, def := range defKinds {
 		if def.Kind == "" {
 			err = fmt.Errorf("parse file %s error: kind is empty", fileName)
-			return defs, err
+			return defKinds, err
 		}
 		if def.Metadata.ProjectName == "" {
 			err = fmt.Errorf("parse file %s error: metadata.projectName is empty", fileName)
-			return defs, err
+			return defKinds, err
 		}
 		err = pkg.ValidateMinusNameID(def.Metadata.ProjectName)
 		if err != nil {
 			err = fmt.Errorf("parse file %s error: metadata.projectName %s format error: %s", fileName, def.Metadata.ProjectName, err.Error())
-			return defs, err
+			return defKinds, err
 		}
 
 		var found bool
-		for _, d := range pkg.DefKinds {
+
+		var kinds []string
+		for _, v := range pkg.DefCmdKinds {
+			if v != "" {
+				kinds = append(kinds, v)
+			}
+		}
+		for _, d := range kinds {
 			if def.Kind == d {
 				found = true
 				break
@@ -379,14 +451,14 @@ func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
 		}
 		if !found {
 			err = fmt.Errorf("parse file %s error: kind %s not correct", fileName, def.Kind)
-			return defs, err
+			return defKinds, err
 		}
 		err = CheckDefKind(def)
 		if err != nil {
-			return defs, err
+			return defKinds, err
 		}
 	}
-	return defs, err
+	return defKinds, err
 }
 
 func (o *OptionsDefApply) Complete(cmd *cobra.Command) error {

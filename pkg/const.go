@@ -48,14 +48,4 @@ var (
 		"ops":      "customOpsDefs",
 		"step":     "customStepDef",
 	}
-
-	DefKinds = []string{
-		"buildDefs",
-		"packageDefs",
-		"deployContainerDefs",
-		"pipelineDef",
-		"dockerIgnoreDefs",
-		"customOpsDefs",
-		"customStepDef",
-	}
 )
