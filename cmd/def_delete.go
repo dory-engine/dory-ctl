@@ -222,6 +222,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	case "package":
 		defKind := defKindProject
 		defKind.Kind = "packageDefs"
+		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
 		ids := []int{}
 		for i, def := range project.ProjectDef.PackageDefs {
 			var found bool
@@ -257,6 +258,66 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defApplies = append(defApplies, defApply)
 	case "deploy":
+		paes := []pkg.ProjectAvailableEnv{}
+		for _, pae := range project.ProjectAvailableEnvs {
+			if len(o.EnvNames) == 0 {
+				paes = append(paes, pae)
+			} else {
+				for _, envName := range o.EnvNames {
+					if envName == pae.EnvName {
+						paes = append(paes, pae)
+						break
+					}
+				}
+			}
+		}
+		for _, pae := range paes {
+			if len(pae.DeployContainerDefs) > 0 {
+				defKind := defKindProject
+				defKind.Kind = "deployContainerDefs"
+				defKind.Status.ErrMsg = pae.ErrMsgDeployContainerDefs
+				defKind.Metadata.Labels = map[string]string{
+					"envName": pae.EnvName,
+				}
+				ids := []int{}
+				for i, def := range pae.DeployContainerDefs {
+					var found bool
+					for _, moduleName := range o.ModuleNames {
+						if def.DeployName == moduleName {
+							found = true
+							break
+						}
+					}
+					if found {
+						ids = append(ids, i)
+					}
+				}
+				for i, def := range pae.DeployContainerDefs {
+					var found bool
+					for _, id := range ids {
+						if i == id {
+							found = true
+							break
+						}
+					}
+					if !found {
+						defKind.Items = append(defKind.Items, def)
+					}
+				}
+
+				defKinds = append(defKinds, defKind)
+
+				defApply := pkg.DefApply{
+					Kind:        "deployContainerDefs",
+					ProjectName: project.ProjectInfo.ProjectName,
+					Def:         pae.DeployContainerDefs,
+					Param: map[string]string{
+						"envName": pae.EnvName,
+					},
+				}
+				defApplies = append(defApplies, defApply)
+			}
+		}
 	case "ops":
 		defKind := defKindProject
 		defKind.Kind = "customOpsDefs"
