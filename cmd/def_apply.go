@@ -65,9 +65,9 @@ func NewCmdDefApply() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVarP(&o.Recursive, "recursive", "r", false, "process the directory used in -f, --file recursively")
-	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definition in full version, use with --output option")
 	cmd.Flags().StringSliceVarP(&o.FileNames, "file", "f", []string{}, "project definition file name or directory, support *.json and *.yaml and *.yml files")
+	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	return cmd
 }
 

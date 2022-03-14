@@ -73,6 +73,7 @@ doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --env=
 	cmd.Flags().StringSliceVar(&o.StepNames, "step", []string{}, "filter project definitions in stepNames, required if kind is step")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
+	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	return cmd
 }
 
@@ -170,6 +171,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	}
 
 	defKinds := []pkg.DefKind{}
+	defApplies := []pkg.DefApply{}
 	defKindProject := pkg.DefKind{
 		Kind: "",
 		Metadata: pkg.Metadata{
@@ -209,6 +211,14 @@ func (o *OptionsDefDelete) Run(args []string) error {
 			}
 		}
 		defKinds = append(defKinds, defKind)
+
+		defApply := pkg.DefApply{
+			Kind:        "buildDefs",
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         defKind.Items,
+			Param:       map[string]string{},
+		}
+		defApplies = append(defApplies, defApply)
 	case "package":
 	case "deploy":
 	case "ops":
@@ -239,53 +249,53 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		fmt.Println(string(bs))
 	}
 
-	//if !o.Try {
-	//	for _, defApply := range defApplies {
-	//		bs, _ = pkg.YamlIndent(defApply.Def)
-	//
-	//		param := map[string]interface{}{}
-	//		for k, v := range defApply.Param {
-	//			param[k] = v
-	//		}
-	//
-	//		urlKind := defApply.Kind
-	//		switch defApply.Kind {
-	//		case "buildDefs":
-	//			param["buildDefsYaml"] = string(bs)
-	//		case "packageDefs":
-	//			param["packageDefsYaml"] = string(bs)
-	//		case "deployContainerDefs":
-	//			param["deployContainerDefsYaml"] = string(bs)
-	//		case "customStepDef":
-	//			param["customStepDefYaml"] = string(bs)
-	//			var found bool
-	//			for k, v := range defApply.Param {
-	//				if k == "envName" && v != "" {
-	//					found = true
-	//					break
-	//				}
-	//			}
-	//			if found {
-	//				urlKind = fmt.Sprintf("%s/env", urlKind)
-	//			}
-	//		case "dockerIgnoreDefs":
-	//			param["dockerIgnoreDefsYaml"] = string(bs)
-	//		case "customOpsDefs":
-	//			param["customOpsDefsYaml"] = string(bs)
-	//		case "pipelineDef":
-	//			param["pipelineDefYaml"] = string(bs)
-	//		}
-	//		bs, _ = json.Marshal(defApply.Param)
-	//		logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
-	//		result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlKind), http.MethodPost, "", param, false)
-	//		if err != nil {
-	//			err = fmt.Errorf("%s: %s", logHeader, err.Error())
-	//			return err
-	//		}
-	//		msg := result.Get("msg").String()
-	//		log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
-	//	}
-	//}
+	if !o.Try {
+		for _, defApply := range defApplies {
+			bs, _ = pkg.YamlIndent(defApply.Def)
+
+			param := map[string]interface{}{}
+			for k, v := range defApply.Param {
+				param[k] = v
+			}
+
+			urlKind := defApply.Kind
+			switch defApply.Kind {
+			case "buildDefs":
+				param["buildDefsYaml"] = string(bs)
+			case "packageDefs":
+				param["packageDefsYaml"] = string(bs)
+			case "deployContainerDefs":
+				param["deployContainerDefsYaml"] = string(bs)
+			case "customStepDef":
+				param["customStepDefYaml"] = string(bs)
+				var found bool
+				for k, v := range defApply.Param {
+					if k == "envName" && v != "" {
+						found = true
+						break
+					}
+				}
+				if found {
+					urlKind = fmt.Sprintf("%s/env", urlKind)
+				}
+			case "dockerIgnoreDefs":
+				param["dockerIgnoreDefsYaml"] = string(bs)
+			case "customOpsDefs":
+				param["customOpsDefsYaml"] = string(bs)
+			case "pipelineDef":
+				param["pipelineDefYaml"] = string(bs)
+			}
+			bs, _ = json.Marshal(defApply.Param)
+			logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlKind), http.MethodPost, "", param, false)
+			if err != nil {
+				err = fmt.Errorf("%s: %s", logHeader, err.Error())
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+		}
+	}
 
 	return err
 }
