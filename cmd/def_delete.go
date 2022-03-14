@@ -406,6 +406,8 @@ func (o *OptionsDefDelete) Run(args []string) error {
 								ids = append(ids, i)
 							}
 						}
+
+						csmds := []pkg.CustomStepModuleDef{}
 						for i, csmd := range csd.CustomStepModuleDefs {
 							var found bool
 							for _, id := range ids {
@@ -416,6 +418,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 							}
 							if !found {
 								defKind.Items = append(defKind.Items, csmd)
+								csmds = append(csmds, csmd)
 							}
 						}
 
@@ -424,7 +427,11 @@ func (o *OptionsDefDelete) Run(args []string) error {
 						defApply := pkg.DefApply{
 							Kind:        "customStepDef",
 							ProjectName: project.ProjectInfo.ProjectName,
-							Def:         defKind.Items,
+							Def: pkg.CustomStepDef{
+								EnableMode:                 csd.EnableMode,
+								CustomStepModuleDefs:       csmds,
+								UpdateCustomStepModuleDefs: false,
+							},
 							Param: map[string]string{
 								"customStepName": stepName,
 								"envName":        pae.EnvName,
