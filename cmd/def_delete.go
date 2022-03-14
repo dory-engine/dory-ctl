@@ -184,7 +184,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	switch o.Param.Kind {
 	case "build":
 		defKind := defKindProject
-		defKind.Kind = "buildDefs"
+		defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 		ids := []int{}
 		for i, def := range project.ProjectDef.BuildDefs {
 			var found bool
@@ -213,7 +213,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		defKinds = append(defKinds, defKind)
 
 		defApply := pkg.DefApply{
-			Kind:        "buildDefs",
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
 			Param:       map[string]string{},
@@ -221,7 +221,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		defApplies = append(defApplies, defApply)
 	case "package":
 		defKind := defKindProject
-		defKind.Kind = "packageDefs"
+		defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 		defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
 		ids := []int{}
 		for i, def := range project.ProjectDef.PackageDefs {
@@ -251,7 +251,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		defKinds = append(defKinds, defKind)
 
 		defApply := pkg.DefApply{
-			Kind:        "packageDefs",
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
 			Param:       map[string]string{},
@@ -270,7 +270,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		for _, pae := range paes {
 			if len(pae.DeployContainerDefs) > 0 {
 				defKind := defKindProject
-				defKind.Kind = "deployContainerDefs"
+				defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 				defKind.Status.ErrMsg = pae.ErrMsgDeployContainerDefs
 				defKind.Metadata.Labels = map[string]string{
 					"envName": pae.EnvName,
@@ -304,7 +304,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				defKinds = append(defKinds, defKind)
 
 				defApply := pkg.DefApply{
-					Kind:        "deployContainerDefs",
+					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         defKind.Items,
 					Param: map[string]string{
@@ -316,7 +316,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 	case "ops":
 		defKind := defKindProject
-		defKind.Kind = "customOpsDefs"
+		defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 		ids := []int{}
 		for i, def := range project.ProjectDef.CustomOpsDefs {
 			var found bool
@@ -345,7 +345,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		defKinds = append(defKinds, defKind)
 
 		defApply := pkg.DefApply{
-			Kind:        "customOpsDefs",
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
 			Param:       map[string]string{},
@@ -379,7 +379,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 					}
 					for stepName, csd := range csds {
 						defKind := defKindProject
-						defKind.Kind = "customStepDef"
+						defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 						var errMsg string
 						for name, msg := range pae.ErrMsgCustomStepDefs {
 							if name == stepName {
@@ -425,7 +425,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 						defKinds = append(defKinds, defKind)
 
 						defApply := pkg.DefApply{
-							Kind:        "customStepDef",
+							Kind:        pkg.DefCmdKinds[o.Param.Kind],
 							ProjectName: project.ProjectInfo.ProjectName,
 							Def: pkg.CustomStepDef{
 								EnableMode:                 csd.EnableMode,
@@ -457,7 +457,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 			}
 			for stepName, csd := range csds {
 				defKind := defKindProject
-				defKind.Kind = "customStepDef"
+				defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
 				var errMsg string
 				for name, msg := range project.ProjectDef.ErrMsgCustomStepDefs {
 					if name == stepName {
@@ -502,7 +502,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				defKinds = append(defKinds, defKind)
 
 				defApply := pkg.DefApply{
-					Kind:        "customStepDef",
+					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def: pkg.CustomStepDef{
 						EnableMode:                 csd.EnableMode,
