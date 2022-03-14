@@ -220,8 +220,80 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defApplies = append(defApplies, defApply)
 	case "package":
+		defKind := defKindProject
+		defKind.Kind = "packageDefs"
+		ids := []int{}
+		for i, def := range project.ProjectDef.PackageDefs {
+			var found bool
+			for _, moduleName := range o.ModuleNames {
+				if def.PackageName == moduleName {
+					found = true
+					break
+				}
+			}
+			if found {
+				ids = append(ids, i)
+			}
+		}
+		for i, def := range project.ProjectDef.PackageDefs {
+			var found bool
+			for _, id := range ids {
+				if i == id {
+					found = true
+					break
+				}
+			}
+			if !found {
+				defKind.Items = append(defKind.Items, def)
+			}
+		}
+		defKinds = append(defKinds, defKind)
+
+		defApply := pkg.DefApply{
+			Kind:        "packageDefs",
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         defKind.Items,
+			Param:       map[string]string{},
+		}
+		defApplies = append(defApplies, defApply)
 	case "deploy":
 	case "ops":
+		defKind := defKindProject
+		defKind.Kind = "customOpsDefs"
+		ids := []int{}
+		for i, def := range project.ProjectDef.CustomOpsDefs {
+			var found bool
+			for _, moduleName := range o.ModuleNames {
+				if def.CustomOpsName == moduleName {
+					found = true
+					break
+				}
+			}
+			if found {
+				ids = append(ids, i)
+			}
+		}
+		for i, def := range project.ProjectDef.CustomOpsDefs {
+			var found bool
+			for _, id := range ids {
+				if i == id {
+					found = true
+					break
+				}
+			}
+			if !found {
+				defKind.Items = append(defKind.Items, def)
+			}
+		}
+		defKinds = append(defKinds, defKind)
+
+		defApply := pkg.DefApply{
+			Kind:        "customOpsDefs",
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         defKind.Items,
+			Param:       map[string]string{},
+		}
+		defApplies = append(defApplies, defApply)
 	case "step":
 	}
 
