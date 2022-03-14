@@ -348,25 +348,31 @@ func GetDefKindsFromYaml(fileName string, bs []byte) ([]pkg.DefKind, error) {
 	var err error
 	defKinds := []pkg.DefKind{}
 	dec := yaml.NewDecoder(bytes.NewReader(bs))
+	ms := []map[string]interface{}{}
 	for {
-		var list pkg.DefKindList
-		err = dec.Decode(&list)
+		var m map[string]interface{}
+		err = dec.Decode(&m)
 		if err == io.EOF {
 			err = nil
 			break
-		} else if err == io.EOF {
-			err = nil
-			break
-		} else if err == nil {
+		} else if err != nil {
+			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
+			return defKinds, err
+		} else {
+			ms = append(ms, m)
+		}
+	}
+	for _, m := range ms {
+		b, _ := yaml.Marshal(m)
+		var list pkg.DefKindList
+		err = yaml.Unmarshal(b, &list)
+		if err == nil {
 			if list.Kind == "list" {
 				defKinds = append(defKinds, list.Defs...)
 			} else {
 				var def pkg.DefKind
-				err = dec.Decode(&def)
-				if err == io.EOF {
-					err = nil
-					break
-				} else if err != nil {
+				err = yaml.Unmarshal(b, &def)
+				if err != nil {
 					err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 					return defKinds, err
 				}
@@ -374,20 +380,13 @@ func GetDefKindsFromYaml(fileName string, bs []byte) ([]pkg.DefKind, error) {
 			}
 		} else {
 			var def pkg.DefKind
-			err = dec.Decode(&def)
-			if err == io.EOF {
-				err = nil
-				break
-			} else if err != nil {
+			err = yaml.Unmarshal(b, &def)
+			if err != nil {
 				err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 				return defKinds, err
 			}
 			defKinds = append(defKinds, def)
 		}
-	}
-
-	for _, dk := range defKinds {
-		fmt.Println(dk.Kind, dk.Metadata)
 	}
 
 	return defKinds, err
