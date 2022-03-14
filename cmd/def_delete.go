@@ -426,8 +426,8 @@ func (o *OptionsDefDelete) Run(args []string) error {
 							ProjectName: project.ProjectInfo.ProjectName,
 							Def:         defKind.Items,
 							Param: map[string]string{
-								"envName":  pae.EnvName,
-								"stepName": stepName,
+								"customStepName": stepName,
+								"envName":        pae.EnvName,
 							},
 						}
 						defApplies = append(defApplies, defApply)
