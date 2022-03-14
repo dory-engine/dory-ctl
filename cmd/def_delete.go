@@ -310,7 +310,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				defApply := pkg.DefApply{
 					Kind:        "deployContainerDefs",
 					ProjectName: project.ProjectInfo.ProjectName,
-					Def:         pae.DeployContainerDefs,
+					Def:         defKind.Items,
 					Param: map[string]string{
 						"envName": pae.EnvName,
 					},
@@ -411,12 +411,8 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				if found {
 					urlKind = fmt.Sprintf("%s/env", urlKind)
 				}
-			case "dockerIgnoreDefs":
-				param["dockerIgnoreDefsYaml"] = string(bs)
 			case "customOpsDefs":
 				param["customOpsDefsYaml"] = string(bs)
-			case "pipelineDef":
-				param["pipelineDefYaml"] = string(bs)
 			}
 			bs, _ = json.Marshal(defApply.Param)
 			logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
