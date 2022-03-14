@@ -220,12 +220,22 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		Defs: defKinds,
 	}
 
+	dataOutput := map[string]interface{}{}
+	m := map[string]interface{}{}
+	bs, _ := json.Marshal(defKindList)
+	_ = json.Unmarshal(bs, &m)
+	if o.Full {
+		dataOutput = m
+	} else {
+		dataOutput = pkg.RemoveMapEmptyItems(m)
+	}
+
 	switch o.Output {
 	case "json":
-		bs, _ := json.MarshalIndent(defKindList, "", "  ")
+		bs, _ := json.MarshalIndent(dataOutput, "", "  ")
 		fmt.Println(string(bs))
 	case "yaml":
-		bs, _ := pkg.YamlIndent(defKindList)
+		bs, _ := pkg.YamlIndent(dataOutput)
 		fmt.Println(string(bs))
 	}
 
