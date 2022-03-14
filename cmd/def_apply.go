@@ -330,7 +330,9 @@ func GetDefKindsFromJson(fileName string, bs []byte) ([]pkg.DefKind, error) {
 				err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 				return defKinds, err
 			}
-			defKinds = append(defKinds, def)
+			if def.Kind != "" {
+				defKinds = append(defKinds, def)
+			}
 		}
 	} else {
 		var def pkg.DefKind
@@ -339,7 +341,9 @@ func GetDefKindsFromJson(fileName string, bs []byte) ([]pkg.DefKind, error) {
 			err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 			return defKinds, err
 		}
-		defKinds = append(defKinds, def)
+		if def.Kind != "" {
+			defKinds = append(defKinds, def)
+		}
 	}
 	return defKinds, err
 }
@@ -376,7 +380,9 @@ func GetDefKindsFromYaml(fileName string, bs []byte) ([]pkg.DefKind, error) {
 					err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 					return defKinds, err
 				}
-				defKinds = append(defKinds, def)
+				if def.Kind != "" {
+					defKinds = append(defKinds, def)
+				}
 			}
 		} else {
 			var def pkg.DefKind
@@ -385,7 +391,9 @@ func GetDefKindsFromYaml(fileName string, bs []byte) ([]pkg.DefKind, error) {
 				err = fmt.Errorf("parse file %s error: %s", fileName, err.Error())
 				return defKinds, err
 			}
-			defKinds = append(defKinds, def)
+			if def.Kind != "" {
+				defKinds = append(defKinds, def)
+			}
 		}
 	}
 
