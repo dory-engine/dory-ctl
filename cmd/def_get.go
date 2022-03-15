@@ -678,6 +678,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 			table.SetNoWhiteSpace(true)
 			table.AppendBulk(dataRows)
 			table.Render()
+			fmt.Println("------")
 			fmt.Println()
 		}
 
