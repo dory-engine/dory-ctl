@@ -268,35 +268,26 @@ func (o *OptionsDefClone) Run(args []string) error {
 		fmt.Println(string(bs))
 	}
 
-	//if !o.Try {
-	//	urlKind := defClone.Kind
-	//	param["envNames"] = o.ToEnvNames
-	//	switch defClone.Kind {
-	//	case "deployContainerDefs":
-	//		param["deployContainerDefsYaml"] = string(bs)
-	//	case "customStepDef":
-	//		param["customStepDefYaml"] = string(bs)
-	//		var found bool
-	//		for k, v := range defClone.Param {
-	//			if k == "envName" && v != "" {
-	//				found = true
-	//				break
-	//			}
-	//		}
-	//		if found {
-	//			urlKind = fmt.Sprintf("%s/env", urlKind)
-	//		}
-	//	}
-	//	bs, _ = json.Marshal(defClone.Param)
-	//	logHeader := fmt.Sprintf("[%s/%s] %s", defClone.ProjectName, defClone.Kind, string(bs))
-	//	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defClone.ProjectName, urlKind), http.MethodPost, "", param, false)
-	//	if err != nil {
-	//		err = fmt.Errorf("%s: %s", logHeader, err.Error())
-	//		return err
-	//	}
-	//	msg := result.Get("msg").String()
-	//	log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
-	//}
+	if !o.Try {
+		urlKind := defClone.Kind
+		param["envNames"] = o.ToEnvNames
+		switch defClone.Kind {
+		case "deployContainerDefs":
+			param["deployContainerDefsYaml"] = string(bs)
+		case "customStepDef":
+			urlKind = fmt.Sprintf("%s/env", urlKind)
+			param["customStepName"] = o.StepName
+			param["customStepDefYaml"] = string(bs)
+		}
+		logHeader := fmt.Sprintf("[%s/%s]", defClone.ProjectName, defClone.Kind)
+		result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defClone.ProjectName, urlKind), http.MethodPut, "", param, false)
+		if err != nil {
+			err = fmt.Errorf("%s: %s", logHeader, err.Error())
+			return err
+		}
+		msg := result.Get("msg").String()
+		log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+	}
 
 	return err
 }
