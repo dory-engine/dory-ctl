@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type OptionsDefGet struct {
+type OptionsDefPatch struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
 	ModuleNames    []string `yaml:"moduleNames" json:"moduleNames" bson:"moduleNames" validate:""`
 	EnvNames       []string `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
@@ -22,22 +22,25 @@ type OptionsDefGet struct {
 	Param          struct {
 		Kinds       []string `yaml:"kinds" json:"kinds" bson:"kinds" validate:""`
 		ProjectName string   `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-		IsAllKind   bool     `yaml:"isAllKind" json:"isAllKind" bson:"isAllKind" validate:""`
 	}
 }
 
-func NewOptionsDefGet() *OptionsDefGet {
-	var o OptionsDefGet
+func NewOptionsDefPatch() *OptionsDefPatch {
+	var o OptionsDefPatch
 	o.OptionsCommon = OptCommon
 	return &o
 }
 
-func NewCmdDefGet() *cobra.Command {
-	o := NewOptionsDefGet()
+func NewCmdDefPatch() *cobra.Command {
+	o := NewOptionsDefPatch()
 
-	defCmdKinds := []string{}
-	for k, _ := range pkg.DefCmdKinds {
-		defCmdKinds = append(defCmdKinds, k)
+	defCmdKinds := []string{
+		"build",
+		"package",
+		"deploy",
+		"ops",
+		"step",
+		"pipeline",
 	}
 
 	msgUse := fmt.Sprintf(`get [projectName] [kind],[kind]... [--output=json|yaml] [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--steps=stepName1,stepName2]
@@ -86,13 +89,13 @@ func NewCmdDefGet() *cobra.Command {
 	return cmd
 }
 
-func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
+func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	var err error
 	err = o.GetOptionsCommon()
 	return err
 }
 
-func (o *OptionsDefGet) Validate(args []string) error {
+func (o *OptionsDefPatch) Validate(args []string) error {
 	var err error
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")
@@ -110,7 +113,6 @@ func (o *OptionsDefGet) Validate(args []string) error {
 				kinds = append(kinds, a)
 			}
 		}
-		var foundAll bool
 		for _, kind := range kinds {
 			var found bool
 			for cmdKind, _ := range pkg.DefCmdKinds {
@@ -127,13 +129,7 @@ func (o *OptionsDefGet) Validate(args []string) error {
 				err = fmt.Errorf("kind %s format error: not correct, options: %s", kind, strings.Join(defCmdKinds, " / "))
 				return err
 			}
-			if kind == "all" {
-				foundAll = true
-			}
 			kindParams = append(kindParams, pkg.DefCmdKinds[kind])
-		}
-		if foundAll == true {
-			o.Param.IsAllKind = true
 		}
 		o.Param.Kinds = kindParams
 	}
@@ -162,7 +158,7 @@ func (o *OptionsDefGet) Validate(args []string) error {
 	return err
 }
 
-func (o *OptionsDefGet) Run(args []string) error {
+func (o *OptionsDefPatch) Run(args []string) error {
 	var err error
 
 	bs, _ := pkg.YamlIndent(o)
@@ -471,7 +467,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 	}
 
 	defKindFilters := []pkg.DefKind{}
-	if len(o.Param.Kinds) == 0 || o.Param.IsAllKind {
+	if len(o.Param.Kinds) == 0 {
 		defKindFilters = defKinds
 	} else {
 		for _, defKind := range defKinds {

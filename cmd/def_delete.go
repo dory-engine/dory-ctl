@@ -40,21 +40,21 @@ func NewCmdDefDelete() *cobra.Command {
 		"step",
 	}
 
-	msgUse := fmt.Sprintf(`delete [projectName] [kind] [--module=moduleName1,moduleName2] [--env=envName1,envName2] [--branch=branchName1,branchName2] [--step=stepName1,stepName2] [--output=json|yaml]
+	msgUse := fmt.Sprintf(`delete [projectName] [kind] [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--steps=stepName1,stepName2] [--output=json|yaml]
 # kind options: %s`, strings.Join(defCmdKinds, " / "))
 	msgShort := fmt.Sprintf("delete modules from project definitions")
 	msgLong := fmt.Sprintf(`delete modules from project definitions in dory-core server`)
 	msgExample := fmt.Sprintf(`  # delete modules from project build definitions
-  doryctl def delete test-project1 build --module=tp1-gin-demo,tp1-node-demo
+  doryctl def delete test-project1 build --modules=tp1-gin-demo,tp1-node-demo
 
   # delete modules from project deploy definitions in envNames
-  doryctl def delete test-project1 deploy --module=tp1-gin-demo,tp1-node-demo --env=test
+  doryctl def delete test-project1 deploy --modules=tp1-gin-demo,tp1-node-demo --envs=test
 
   # delete modules from project step definitions in stepNames
-  doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --step=scanCode
+  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --steps=scanCode
 
   # delete modules from project step definitions in envNames and stepNames
-  doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --env=test --step=scanCode`)
+  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --envs=test --steps=scanCode`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -68,9 +68,9 @@ func NewCmdDefDelete() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringSliceVar(&o.ModuleNames, "module", []string{}, "moduleNames to delete")
-	cmd.Flags().StringSliceVar(&o.EnvNames, "env", []string{}, "filter project definitions in envNames, required if kind is deploy")
-	cmd.Flags().StringSliceVar(&o.StepNames, "step", []string{}, "filter project definitions in stepNames, required if kind is step")
+	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "moduleNames to delete")
+	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter project definitions in envNames, required if kind is deploy")
+	cmd.Flags().StringSliceVar(&o.StepNames, "steps", []string{}, "filter project definitions in stepNames, required if kind is step")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
@@ -127,7 +127,7 @@ func (o *OptionsDefDelete) Validate(args []string) error {
 	o.Param.Kind = kind
 
 	if len(o.ModuleNames) == 0 {
-		err = fmt.Errorf("--module required")
+		err = fmt.Errorf("--modules required")
 		return err
 	}
 	for _, moduleName := range o.ModuleNames {
@@ -139,11 +139,11 @@ func (o *OptionsDefDelete) Validate(args []string) error {
 	}
 
 	if o.Param.Kind == "deploy" && len(o.EnvNames) == 0 {
-		err = fmt.Errorf("kind is deploy, --env required")
+		err = fmt.Errorf("kind is deploy, --envs required")
 		return err
 	}
 	if o.Param.Kind == "step" && len(o.StepNames) == 0 {
-		err = fmt.Errorf("kind is step, --step required")
+		err = fmt.Errorf("kind is step, --steps required")
 		return err
 	}
 

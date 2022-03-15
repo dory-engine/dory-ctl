@@ -1,0 +1,55 @@
+{
+  "defs": [
+    {
+      "items": [
+        {
+          "deployCommand": "sh -c \"./dp1-gin-demo 2\u003e\u00261 | sed \\\"s/^/[$(hostname)] /\\\" | tee -a /dp1-gin-demo/logs/dp1-gin-demo.logs\"",
+          "deployConfigSettings": [
+            "Codes/Backend/dp1-gin-demo/config1/:dp1-gin-demo/config1/",
+            "Codes/Backend/dp1-gin-demo/config2/:dp1-gin-demo/config2/"
+          ],
+          "deployName": "dp1-gin-demo",
+          "deployNodePorts": [
+            {
+              "nodePort": 30103,
+              "port": 8000,
+              "protocol": "http"
+            }
+          ]
+        },
+        {
+          "deployCommand": "sh -c \"java -jar example.smallest-0.0.1-SNAPSHOT.war 2\u003e\u00261 | sed \\\"s/^/[$(hostname)] /\\\" | tee -a /dp1-spring-demo/logs/dp1-spring-demo.logs\"",
+          "deployEnvs": [
+            "JAVA_OPTS=-Xms256m -Xmx256m"
+          ],
+          "deployHealthCheck": {
+            "httpGet": {
+              "path": "/",
+              "port": 9000
+            },
+            "livenessDelaySeconds": 150,
+            "livenessPeriodSeconds": 30,
+            "readinessDelaySeconds": 15,
+            "readinessPeriodSeconds": 5
+          },
+          "deployName": "dp1-spring-demo",
+          "deployVolumes": [
+            {
+              "pathInPod": "/dp1-spring-demo/logs",
+              "pathInPv": "dp1-spring-demo/logs"
+            }
+          ],
+          "relatedPackage": "dp1-spring-demo"
+        }
+      ],
+      "kind": "deployContainerDefs",
+      "metadata": {
+        "labels": {
+          "envName": "test"
+        },
+        "projectName": "demo-project1"
+      }
+    }
+  ],
+  "kind": "list"
+}

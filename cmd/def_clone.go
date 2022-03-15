@@ -38,15 +38,15 @@ func NewCmdDefClone() *cobra.Command {
 		"step",
 	}
 
-	msgUse := fmt.Sprintf(`clone [projectName] [kind] [--env=envName] [--step=stepName] [--module=moduleName1,moduleName2] [--to=envName1,envName2] [--output=json|yaml]
+	msgUse := fmt.Sprintf(`clone [projectName] [kind] [--from-env=envName] [--step=stepName] [--modules=moduleName1,moduleName2] [--to-envs=envName1,envName2] [--output=json|yaml]
 # kind options: %s`, strings.Join(defCmdKinds, " / "))
 	msgShort := fmt.Sprintf("clone project definitions modules to another environments")
 	msgLong := fmt.Sprintf(`clone project definitions modules to another environments in dory-core server`)
 	msgExample := fmt.Sprintf(`  # clone project definitions deploy modules to another environments
-  doryctl def clone test-project1 deploy --env=test --module=tp1-gin-demo,tp1-node-demo --to=uat,prod
+  doryctl def clone test-project1 deploy --from-env=test --modules=tp1-gin-demo,tp1-node-demo --to-envs=uat,prod
 
   # clone project definitions step modules to another environments
-  doryctl def clone test-project1 deploy --env=test --step=testApi --module=tp1-gin-demo,tp1-node-demo --to=uat,prod`)
+  doryctl def clone test-project1 deploy --from-env=test --step=testApi --modules=tp1-gin-demo,tp1-node-demo --to-envs=uat,prod`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -60,10 +60,10 @@ func NewCmdDefClone() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVar(&o.FromEnvName, "env", "", "which environment modules clone from")
+	cmd.Flags().StringVar(&o.FromEnvName, "from-env", "", "which environment modules clone from")
 	cmd.Flags().StringVar(&o.StepName, "step", "", "which step modules clone from, required if kind is step")
-	cmd.Flags().StringSliceVar(&o.ModuleNames, "module", []string{}, "which modules to clone")
-	cmd.Flags().StringSliceVar(&o.ToEnvNames, "to", []string{}, "which environments modules clone to")
+	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "which modules to clone")
+	cmd.Flags().StringSliceVar(&o.ToEnvNames, "to-envs", []string{}, "which environments modules clone to")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
@@ -117,7 +117,7 @@ func (o *OptionsDefClone) Validate(args []string) error {
 	o.Param.Kind = kind
 
 	if len(o.ModuleNames) == 0 {
-		err = fmt.Errorf("--module required")
+		err = fmt.Errorf("--modules required")
 		return err
 	}
 	for _, moduleName := range o.ModuleNames {
@@ -129,12 +129,12 @@ func (o *OptionsDefClone) Validate(args []string) error {
 	}
 
 	if o.FromEnvName == "" {
-		err = fmt.Errorf("--env required")
+		err = fmt.Errorf("--from-env required")
 		return err
 	}
 
 	if len(o.ToEnvNames) == 0 {
-		err = fmt.Errorf("--to required")
+		err = fmt.Errorf("--to-envs required")
 		return err
 	}
 
@@ -191,7 +191,7 @@ func (o *OptionsDefClone) Run(args []string) error {
 			}
 		}
 		if pae.EnvName == "" {
-			err = fmt.Errorf("envName %s not exists", o.FromEnvName)
+			err = fmt.Errorf("from envName %s not exists", o.FromEnvName)
 			return err
 		}
 		defs := []pkg.DeployContainerDef{}
@@ -219,7 +219,7 @@ func (o *OptionsDefClone) Run(args []string) error {
 			}
 		}
 		if pae.EnvName == "" {
-			err = fmt.Errorf("envName %s not exists", o.FromEnvName)
+			err = fmt.Errorf("from envName %s not exists", o.FromEnvName)
 			return err
 		}
 
