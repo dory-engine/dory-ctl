@@ -43,9 +43,9 @@ var (
 		"build":    "buildDefs",
 		"package":  "packageDefs",
 		"deploy":   "deployContainerDefs",
+		"step":     "customStepDef",
 		"pipeline": "pipelineDef",
 		"ignore":   "dockerIgnoreDefs",
 		"ops":      "customOpsDefs",
-		"step":     "customStepDef",
 	}
 )

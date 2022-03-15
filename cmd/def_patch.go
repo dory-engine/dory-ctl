@@ -43,30 +43,30 @@ func NewCmdDefPatch() *cobra.Command {
 		"pipeline",
 	}
 
-	msgUse := fmt.Sprintf(`get [projectName] [kind],[kind]... [--output=json|yaml] [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--steps=stepName1,stepName2]
+	msgUse := fmt.Sprintf(`patch [projectName] [kind],[kind]... [--output=json|yaml] [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--steps=stepName1,stepName2]
   # kind options: %s`, strings.Join(defCmdKinds, " / "))
-	msgShort := fmt.Sprintf("get project definitions")
-	msgLong := fmt.Sprintf(`get project definitions in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get project definitions summary
-  doryctl def get test-project1
+	msgShort := fmt.Sprintf("patch project definitions")
+	msgLong := fmt.Sprintf(`patch project definitions in dory-core server`)
+	msgExample := fmt.Sprintf(`  # patch project definitions summary
+  doryctl def patch test-project1
 
-  # get project all definitions
-  doryctl def get test-project1 all --output=yaml
+  # patch project all definitions
+  doryctl def patch test-project1 all --output=yaml
 
-  # get project all definitions, and show in full version
-  doryctl def get test-project1 all --output=yaml --full
+  # patch project all definitions, and show in full version
+  doryctl def patch test-project1 all --output=yaml --full
 
-  # get project build and package modules definitions
-  doryctl def get test-project1 build,package
+  # patch project build and package modules definitions
+  doryctl def patch test-project1 build,package
 
-  # get project deploy modules definitions, and filter by moduleNames and envNames
-  doryctl def get test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test
+  # patch project deploy modules definitions, and filter by moduleNames and envNames
+  doryctl def patch test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test
 
-  # get project pipeline definitions, and filter by branchNames
-  doryctl def get test-project1 pipeline --branches=develop,release
+  # patch project pipeline definitions, and filter by branchNames
+  doryctl def patch test-project1 pipeline --branches=develop,release
 
-  # get project custom step modules definitions, and filter by envNames and stepNames
-  doryctl def get test-project1 step --envs=test --steps=testApi`)
+  # patch project custom step modules definitions, and filter by envNames and stepNames
+  doryctl def patch test-project1 step --envs=test --steps=testApi`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
