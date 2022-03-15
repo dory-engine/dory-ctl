@@ -195,6 +195,7 @@ func (o *OptionsDefClone) Run(args []string) error {
 			return err
 		}
 		defs := []pkg.DeployContainerDef{}
+		fmt.Println(o.ModuleNames)
 		for _, def := range pae.DeployContainerDefs {
 			var found bool
 			for _, moduleName := range o.ModuleNames {
