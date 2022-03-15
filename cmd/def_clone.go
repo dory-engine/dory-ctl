@@ -195,7 +195,6 @@ func (o *OptionsDefClone) Run(args []string) error {
 			return err
 		}
 		defs := []pkg.DeployContainerDef{}
-		fmt.Println(o.ModuleNames)
 		for _, def := range pae.DeployContainerDefs {
 			var found bool
 			for _, moduleName := range o.ModuleNames {
@@ -252,7 +251,7 @@ func (o *OptionsDefClone) Run(args []string) error {
 
 	dataOutput := map[string]interface{}{}
 	m := map[string]interface{}{}
-	bs, _ := json.Marshal(defClone.Def)
+	bs, _ := json.Marshal(defClone)
 	_ = json.Unmarshal(bs, &m)
 	if o.Full {
 		dataOutput = m
@@ -262,10 +261,10 @@ func (o *OptionsDefClone) Run(args []string) error {
 
 	switch o.Output {
 	case "json":
-		bs, _ := json.MarshalIndent(dataOutput, "", "  ")
+		bs, _ := json.MarshalIndent(dataOutput["def"], "", "  ")
 		fmt.Println(string(bs))
 	case "yaml":
-		bs, _ := pkg.YamlIndent(dataOutput)
+		bs, _ := pkg.YamlIndent(dataOutput["def"])
 		fmt.Println(string(bs))
 	}
 
