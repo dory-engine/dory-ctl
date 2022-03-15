@@ -269,6 +269,7 @@ func (o *OptionsDefClone) Run(args []string) error {
 	}
 
 	if !o.Try {
+		bs, _ = pkg.YamlIndent(dataOutput["def"])
 		urlKind := defClone.Kind
 		param["envNames"] = o.ToEnvNames
 		switch defClone.Kind {
