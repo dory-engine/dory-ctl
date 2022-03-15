@@ -33,5 +33,6 @@ func NewCmdDef() *cobra.Command {
 	cmd.AddCommand(NewCmdDefGet())
 	cmd.AddCommand(NewCmdDefApply())
 	cmd.AddCommand(NewCmdDefDelete())
+	cmd.AddCommand(NewCmdDefClone())
 	return cmd
 }

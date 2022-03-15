@@ -618,3 +618,9 @@ type DefApply struct {
 	Def         interface{}       `yaml:"def" json:"def" bson:"def" validate:""`
 	Param       map[string]string `yaml:"param" json:"param" bson:"param" validate:""`
 }
+
+type DefClone struct {
+	Kind        string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	ProjectName string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	Def         interface{} `yaml:"def" json:"def" bson:"def" validate:""`
+}

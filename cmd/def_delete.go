@@ -45,16 +45,16 @@ func NewCmdDefDelete() *cobra.Command {
 	msgShort := fmt.Sprintf("delete modules from project definitions")
 	msgLong := fmt.Sprintf(`delete modules from project definitions in dory-core server`)
 	msgExample := fmt.Sprintf(`  # delete modules from project build definitions
-doryctl def delete test-project1 build --module=tp1-gin-demo,tp1-node-demo
+  doryctl def delete test-project1 build --module=tp1-gin-demo,tp1-node-demo
 
-# delete modules from project deploy definitions in envNames
-doryctl def delete test-project1 deploy --module=tp1-gin-demo,tp1-node-demo --env=test
+  # delete modules from project deploy definitions in envNames
+  doryctl def delete test-project1 deploy --module=tp1-gin-demo,tp1-node-demo --env=test
 
-# delete modules from project step definitions in stepNames
-doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --step=scanCode
+  # delete modules from project step definitions in stepNames
+  doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --step=scanCode
 
-# delete modules from project step definitions in envNames and stepNames
-doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --env=test --step=scanCode`)
+  # delete modules from project step definitions in envNames and stepNames
+  doryctl def delete test-project1 step --module=tp1-gin-demo,tp1-node-demo --env=test --step=scanCode`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
