@@ -626,6 +626,11 @@ type DefUpdate struct {
 	Def            interface{} `yaml:"def" json:"def" bson:"def" validate:""`
 }
 
+type DefUpdateList struct {
+	Kind string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Defs []DefUpdate `yaml:"defs" json:"defs" bson:"defs" validate:""`
+}
+
 type DefClone struct {
 	Kind        string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
 	ProjectName string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`

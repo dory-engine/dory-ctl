@@ -534,6 +534,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 				defUpdate := pkg.DefUpdate{
 					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
+					EnvName:     pae.EnvName,
 					Def:         defs,
 				}
 				defUpdates = append(defUpdates, defUpdate)
@@ -903,6 +904,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					dp = dd
 				}
 				defUpdate.Def = dp
+				defUpdates[idx] = defUpdate
 				defPatches = append(defPatches, defUpdate)
 			case "customOpsDefs":
 				defs := []pkg.CustomOpsDef{}
@@ -951,36 +953,35 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		}
 	}
 
-	defOutputs := []pkg.DefUpdate{}
-	if len(defPatches) == 0 {
-		defOutputs = defUpdates
-	} else {
-		defOutputs = defPatches
+	defUpdateList := pkg.DefUpdateList{
+		Kind: "list",
 	}
-	mapOutputs := []map[string]interface{}{}
-	for _, defOutput := range defOutputs {
-		mapOutput := map[string]interface{}{}
-		m := map[string]interface{}{}
-		bs, _ = json.Marshal(defOutput)
-		_ = json.Unmarshal(bs, &m)
-		if o.Full {
-			mapOutput = m
-		} else {
-			mapOutput = pkg.RemoveMapEmptyItems(m)
-		}
-		mapOutputs = append(mapOutputs, mapOutput)
+	if len(defPatches) == 0 {
+		defUpdateList.Defs = defUpdates
+	} else {
+		defUpdateList.Defs = defPatches
+	}
+
+	mapOutput := map[string]interface{}{}
+	m := map[string]interface{}{}
+	bs, _ = json.Marshal(defUpdateList)
+	_ = json.Unmarshal(bs, &m)
+	if o.Full {
+		mapOutput = m
+	} else {
+		mapOutput = pkg.RemoveMapEmptyItems(m)
 	}
 
 	switch o.Output {
 	case "json":
-		bs, _ = json.MarshalIndent(mapOutputs, "", "  ")
+		bs, _ = json.MarshalIndent(mapOutput, "", "  ")
 		fmt.Println(string(bs))
 	case "yaml":
-		bs, _ = pkg.YamlIndent(mapOutputs)
+		bs, _ = pkg.YamlIndent(mapOutput)
 		fmt.Println(string(bs))
 	}
 
-	if !o.Try {
+	if !o.Try && len(defPatches) > 0 {
 		for _, defUpdate := range defUpdates {
 			bs, _ = pkg.YamlIndent(defUpdate.Def)
 
