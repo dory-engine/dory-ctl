@@ -100,6 +100,7 @@ func NewCmdDefPatch() *cobra.Command {
   # patch project pipeline definitions from file, support JSON and YAML
   doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
+	projectNames := o.GetProjectNames()
 	cmd := &cobra.Command{
 		Use:                   msgUse,
 		DisableFlagsInUseLine: true,
@@ -113,7 +114,7 @@ func NewCmdDefPatch() *cobra.Command {
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
-				return o.GetProjectNames(), cobra.ShellCompDirectiveNoFileComp
+				return projectNames, cobra.ShellCompDirectiveNoFileComp
 			}
 			if len(args) == 1 {
 				return defCmdKinds, cobra.ShellCompDirectiveNoFileComp
