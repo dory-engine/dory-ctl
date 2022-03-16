@@ -628,7 +628,8 @@ type DefClone struct {
 }
 
 type PatchAction struct {
-	Action string `yaml:"action" json:"action" bson:"action" validate:"required"`
-	Path   string `yaml:"path" json:"path" bson:"path" validate:"required"`
-	Value  string `yaml:"value" json:"value" bson:"value" validate:""`
+	Action string      `yaml:"action" json:"action" bson:"action" validate:"required"`
+	Path   string      `yaml:"path" json:"path" bson:"path" validate:"required"`
+	Value  string      `yaml:"value" json:"value" bson:"value" validate:""`
+	Object interface{} `yaml:"object" json:"object" bson:"object" validate:""`
 }

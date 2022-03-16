@@ -16,7 +16,7 @@ type OptionsDefPatch struct {
 	EnvNames       []string `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
 	BranchNames    []string `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
 	StepName       string   `yaml:"stepName" json:"stepName" bson:"stepName" validate:""`
-	Patches        []string `yaml:"patches" json:"patches" bson:"patches" validate:""`
+	Patch          string   `yaml:"patch" json:"patch" bson:"patch" validate:""`
 	FileNames      []string `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
 	Runs           []string `yaml:"runs" json:"runs" bson:"runs" validate:""`
 	NoRuns         []string `yaml:"noRuns" json:"noRuns" bson:"noRuns" validate:""`
@@ -48,7 +48,7 @@ func NewCmdDefPatch() *cobra.Command {
 		"pipeline",
 	}
 
-	msgUse := fmt.Sprintf(`patch [projectName] [kind] [--output=json|yaml] [--patches=patchAction]... [--files=patchFile]... [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--step=stepName1,stepName2]
+	msgUse := fmt.Sprintf(`patch [projectName] [kind] [--output=json|yaml] [--patch=patchAction] [--files=patchFile]... [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--step=stepName1,stepName2]
   # kind options: %s`, strings.Join(defCmdKinds, " / "))
 	msgShort := fmt.Sprintf("patch project definitions")
 	msgLong := fmt.Sprintf(`patch project definitions in dory-core server`)
@@ -56,16 +56,16 @@ func NewCmdDefPatch() *cobra.Command {
   doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo
 
   # patch project build modules definitions, update tp1-gin-demo,tp1-go-demo buildChecks commands
-  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo --patches='[{"action": "update", "path": "buildChecks", "value": ["ls -alh"]}]'
+  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo --patch='[{"action": "update", "path": "buildChecks", "value": ["ls -alh"]}]'
 
   # patch project deploy modules definitions, delete test environment tp1-go-demo,tp1-gin-demo deployResources settings
-  doryctl def patch test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test --patches='[{"action": "delete", "path": "deployResources"}]'
+  doryctl def patch test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test --patch='[{"action": "delete", "path": "deployResources"}]'
 
   # patch project deploy modules definitions, delete test environment tp1-gin-demo deployNodePorts.0.nodePort to 30109
-  doryctl def patch test-project1 deploy --modules=tp1-gin-demo --envs=test --patches='[{"action": "update", "path": "deployNodePorts.0.nodePort", "value": 30109}]'
+  doryctl def patch test-project1 deploy --modules=tp1-gin-demo --envs=test --patch='[{"action": "update", "path": "deployNodePorts.0.nodePort", "value": 30109}]'
 
   # patch project pipeline definitions, update builds dp1-gin-demo run setting to true 
-  doryctl def patch test-project1 pipeline --branches=develop,release --patches='[{"action": "update", "path": "builds.#(name==\"dp1-gin-demo\").run", "value": true}]'
+  doryctl def patch test-project1 pipeline --branches=develop,release --patch='[{"action": "update", "path": "builds.#(name==\"dp1-gin-demo\").run", "value": true}]'
 
   # patch project pipeline definitions, update builds dp1-gin-demo,dp1-go-demo run setting to true 
   doryctl def patch test-project1 pipeline --branches=develop,release --runs=dp1-gin-demo,dp1-go-demo
@@ -74,7 +74,7 @@ func NewCmdDefPatch() *cobra.Command {
   doryctl def patch test-project1 pipeline --branches=develop,release --no-runs=dp1-gin-demo,dp1-go-demo
 
   # patch project custom step modules definitions, update testApi step in test environment tp1-gin-demo paramInputYaml
-  doryctl def patch test-project1 step --envs=test --step=testApi --modules=tp1-gin-demo --patches='[{"action": "update", "path": "paramInputYaml", "value": "path: Tests"}]'
+  doryctl def patch test-project1 step --envs=test --step=testApi --modules=tp1-gin-demo --patch='[{"action": "update", "path": "paramInputYaml", "value": "path: Tests"}]'
 
   # patch project pipeline definitions from stdin, support JSON and YAML
   cat << EOF | doryctl def patch test-project1 pipeline --branches=develop,release -f -
@@ -121,7 +121,7 @@ func NewCmdDefPatch() *cobra.Command {
 	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter envNames to patch, required if kind is deploy")
 	cmd.Flags().StringSliceVar(&o.BranchNames, "branches", []string{}, "filter branchNames to patch, required if kind is pipeline")
 	cmd.Flags().StringVar(&o.StepName, "step", "", "filter stepName to patch, required if kind is step")
-	cmd.Flags().StringSliceVarP(&o.Patches, "patches", "p", []string{}, "patch actions in JSON format")
+	cmd.Flags().StringVarP(&o.Patch, "patch", "p", "", "patch actions in JSON format")
 	cmd.Flags().StringSliceVarP(&o.FileNames, "files", "f", []string{}, "project definitions file name or directory, support *.json and *.yaml and *.yml files")
 	cmd.Flags().StringSliceVar(&o.Runs, "runs", []string{}, "set pipeline which build modules enable run, only use with kind is pipeline")
 	cmd.Flags().StringSliceVar(&o.NoRuns, "no-runs", []string{}, "set pipeline which build modules disable run, only use with kind is pipeline")
@@ -229,32 +229,37 @@ func (o *OptionsDefPatch) Validate(args []string) error {
 		}
 	}
 
-	if len(o.Patches) > 0 {
-		for _, patch := range o.Patches {
-			patchAction := pkg.PatchAction{}
-			err = json.Unmarshal([]byte(patch), &patchAction)
-			if err != nil {
-				err = fmt.Errorf("--patches %s parse error: %s", patch, err.Error())
+	if o.Patch != "" {
+		patchActions := []pkg.PatchAction{}
+		err = json.Unmarshal([]byte(o.Patch), &patchActions)
+		if err != nil {
+			err = fmt.Errorf("--patch %s parse error: %s", o.Patch, err.Error())
+			return err
+		}
+		for _, patchAction := range patchActions {
+			bs, _ := json.Marshal(patchAction)
+			if patchAction.Action != "update" && patchAction.Action != "delete" {
+				err = fmt.Errorf("--patch %s parse error: action must be update or delete", string(bs))
 				return err
 			}
-			if patchAction.Action != "update" && patchAction.Action != "delete" {
-				err = fmt.Errorf("--patches %s parse error: action must be update or delete", patch)
+			if patchAction.Path == "" {
+				err = fmt.Errorf("--patch %s parse error: path can not be empty", string(bs))
 				return err
 			}
 			if patchAction.Action == "update" && patchAction.Value == "" {
-				err = fmt.Errorf("--patches %s parse error: action is update value can not be empty", patch)
+				err = fmt.Errorf("--patch %s parse error: action is update value can not be empty", string(bs))
 				return err
 			}
 			if patchAction.Action == "delete" && patchAction.Value != "" {
-				err = fmt.Errorf("--patches %s parse error: action is delete value must be empty", patch)
+				err = fmt.Errorf("--patch %s parse error: action is delete value must be empty", string(bs))
 				return err
 			}
 			if patchAction.Value != "" {
 				var v interface{}
-				err = json.Unmarshal([]byte(patchAction.Value), &v)
-				if err != nil {
-					err = fmt.Errorf("--patches %s parse value %s error: %s", patch, patchAction.Value, err.Error())
-					return err
+				if json.Unmarshal([]byte(patchAction.Value), &v) != nil {
+					patchAction.Object = patchAction.Value
+				} else {
+					patchAction.Object = v
 				}
 			}
 			o.Param.PatchActions = append(o.Param.PatchActions, patchAction)
@@ -372,10 +377,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		defOutput := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
-			Def:         project.ProjectDef.BuildDefs,
+			Def:         defs,
 		}
 		defOutputs = append(defOutputs, defOutput)
-
 	case "package":
 		sort.SliceStable(project.ProjectDef.PackageDefs, func(i, j int) bool {
 			return project.ProjectDef.PackageDefs[i].PackageName < project.ProjectDef.PackageDefs[j].PackageName
@@ -399,6 +403,26 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			Def:         project.ProjectDef.PackageDefs,
 		}
 		defUpdates = append(defUpdates, defUpdate)
+
+		defs := []pkg.PackageDef{}
+		for _, def := range project.ProjectDef.PackageDefs {
+			var found bool
+			for _, moduleName := range o.ModuleNames {
+				if def.PackageName == moduleName {
+					found = true
+					break
+				}
+			}
+			if found {
+				defs = append(defs, def)
+			}
+		}
+		defOutput := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         defs,
+		}
+		defOutputs = append(defOutputs, defOutput)
 	case "deploy":
 		for _, pae := range project.ProjectAvailableEnvs {
 			var found bool
@@ -432,6 +456,27 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					EnvName:     pae.EnvName,
 				}
 				defUpdates = append(defUpdates, defUpdate)
+
+				defs := []pkg.DeployContainerDef{}
+				for _, def := range pae.DeployContainerDefs {
+					var found bool
+					for _, moduleName := range o.ModuleNames {
+						if def.DeployName == moduleName {
+							found = true
+							break
+						}
+					}
+					if found {
+						defs = append(defs, def)
+					}
+				}
+				defOutput := pkg.DefUpdate{
+					Kind:        pkg.DefCmdKinds[o.Param.Kind],
+					ProjectName: project.ProjectInfo.ProjectName,
+					Def:         defs,
+					EnvName:     pae.EnvName,
+				}
+				defOutputs = append(defOutputs, defOutput)
 			}
 		}
 	case "step":
@@ -461,6 +506,29 @@ func (o *OptionsDefPatch) Run(args []string) error {
 						CustomStepName: stepName,
 					}
 					defUpdates = append(defUpdates, defUpdate)
+
+					defs := []pkg.CustomStepModuleDef{}
+					for _, def := range csd.CustomStepModuleDefs {
+						var found bool
+						for _, moduleName := range o.ModuleNames {
+							if def.ModuleName == moduleName {
+								found = true
+								break
+							}
+						}
+						if found {
+							defs = append(defs, def)
+						}
+					}
+					csd.CustomStepModuleDefs = defs
+					defOutput := pkg.DefUpdate{
+						Kind:           pkg.DefCmdKinds[o.Param.Kind],
+						ProjectName:    project.ProjectInfo.ProjectName,
+						Def:            csd,
+						CustomStepName: stepName,
+					}
+					defOutputs = append(defOutputs, defOutput)
+
 					break
 				}
 			}
@@ -499,6 +567,29 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							CustomStepName: stepName,
 						}
 						defUpdates = append(defUpdates, defUpdate)
+
+						defs := []pkg.CustomStepModuleDef{}
+						for _, def := range csd.CustomStepModuleDefs {
+							var found bool
+							for _, moduleName := range o.ModuleNames {
+								if def.ModuleName == moduleName {
+									found = true
+									break
+								}
+							}
+							if found {
+								defs = append(defs, def)
+							}
+						}
+						csd.CustomStepModuleDefs = defs
+						defOutput := pkg.DefUpdate{
+							Kind:           pkg.DefCmdKinds[o.Param.Kind],
+							ProjectName:    project.ProjectInfo.ProjectName,
+							Def:            csd,
+							EnvName:        pae.EnvName,
+							CustomStepName: stepName,
+						}
+						defOutputs = append(defOutputs, defOutput)
 					}
 				}
 			}
@@ -522,6 +613,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
+		defOutputs = defUpdates
 	case "ops":
 		sort.SliceStable(project.ProjectDef.CustomOpsDefs, func(i, j int) bool {
 			return project.ProjectDef.CustomOpsDefs[i].CustomOpsName < project.ProjectDef.CustomOpsDefs[j].CustomOpsName
@@ -545,6 +637,26 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			Def:         project.ProjectDef.CustomOpsDefs,
 		}
 		defUpdates = append(defUpdates, defUpdate)
+
+		defs := []pkg.CustomOpsDef{}
+		for _, def := range project.ProjectDef.CustomOpsDefs {
+			var found bool
+			for _, moduleName := range o.ModuleNames {
+				if def.CustomOpsName == moduleName {
+					found = true
+					break
+				}
+			}
+			if found {
+				defs = append(defs, def)
+			}
+		}
+		defOutput := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         defs,
+		}
+		defOutputs = append(defOutputs, defOutput)
 	}
 
 	if len(defUpdates) == 0 {
@@ -552,30 +664,26 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		return err
 	}
 
-	dataOutputs := []map[string]interface{}{}
-	if len(o.Param.PatchActions) == 0 {
-		for _, defUpdate := range defUpdates {
-			dataOutput := map[string]interface{}{}
-			m := map[string]interface{}{}
-			bs, _ = json.Marshal(defUpdate)
-			_ = json.Unmarshal(bs, &m)
-			if o.Full {
-				dataOutput = m
-			} else {
-				dataOutput = pkg.RemoveMapEmptyItems(m)
-			}
-			dataOutputs = append(dataOutputs, dataOutput)
+	mapOutputs := []map[string]interface{}{}
+	for _, defOutput := range defOutputs {
+		mapOutput := map[string]interface{}{}
+		m := map[string]interface{}{}
+		bs, _ = json.Marshal(defOutput)
+		_ = json.Unmarshal(bs, &m)
+		if o.Full {
+			mapOutput = m
+		} else {
+			mapOutput = pkg.RemoveMapEmptyItems(m)
 		}
-	} else {
-
+		mapOutputs = append(mapOutputs, mapOutput)
 	}
 
 	switch o.Output {
 	case "json":
-		bs, _ = json.MarshalIndent(dataOutputs, "", "  ")
+		bs, _ = json.MarshalIndent(mapOutputs, "", "  ")
 		fmt.Println(string(bs))
 	case "yaml":
-		bs, _ = pkg.YamlIndent(dataOutputs)
+		bs, _ = pkg.YamlIndent(mapOutputs)
 		fmt.Println(string(bs))
 	}
 
