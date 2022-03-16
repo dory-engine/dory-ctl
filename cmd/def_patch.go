@@ -135,12 +135,20 @@ func NewCmdDefPatch() *cobra.Command {
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
+
+	_ = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveDefault
+	})
+
 	return cmd
 }
 
 func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	var err error
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
 	return err
 }
 
