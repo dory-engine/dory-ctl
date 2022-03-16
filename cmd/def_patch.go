@@ -117,6 +117,7 @@ func NewCmdDefPatch() *cobra.Command {
 				if err != nil {
 					return nil, cobra.ShellCompDirectiveNoFileComp
 				}
+				fmt.Println(projectNames)
 				return projectNames, cobra.ShellCompDirectiveNoFileComp
 			}
 			if len(args) == 1 {
