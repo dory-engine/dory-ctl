@@ -3,49 +3,76 @@
     {
       "items": [
         {
-          "deployCommand": "sh -c \"./dp1-gin-demo 2\u003e\u00261 | sed \\\"s/^/[$(hostname)] /\\\" | tee -a /dp1-gin-demo/logs/dp1-gin-demo.logs\"",
-          "deployConfigSettings": [
-            "Codes/Backend/dp1-gin-demo/config1/:dp1-gin-demo/config1/",
-            "Codes/Backend/dp1-gin-demo/config2/:dp1-gin-demo/config2/"
-          ],
-          "deployName": "dp1-gin-demo",
-          "deployNodePorts": [
+          "builds": [
             {
-              "nodePort": 30103,
-              "port": 8000,
-              "protocol": "http"
-            }
-          ]
-        },
-        {
-          "deployCommand": "sh -c \"java -jar example.smallest-0.0.1-SNAPSHOT.war 2\u003e\u00261 | sed \\\"s/^/[$(hostname)] /\\\" | tee -a /dp1-spring-demo/logs/dp1-spring-demo.logs\"",
-          "deployEnvs": [
-            "JAVA_OPTS=-Xms256m -Xmx256m"
-          ],
-          "deployHealthCheck": {
-            "httpGet": {
-              "path": "/",
-              "port": 9000
+              "name": "dp1-gin-demo",
+              "run": true
             },
-            "livenessDelaySeconds": 150,
-            "livenessPeriodSeconds": 30,
-            "readinessDelaySeconds": 15,
-            "readinessPeriodSeconds": 5
-          },
-          "deployName": "dp1-spring-demo",
-          "deployVolumes": [
             {
-              "pathInPod": "/dp1-spring-demo/logs",
-              "pathInPv": "dp1-spring-demo/logs"
+              "name": "dp1-go-demo"
+            },
+            {
+              "name": "dp1-gradle-demo"
+            },
+            {
+              "name": "dp1-node-demo"
+            },
+            {
+              "name": "dp1-python-demo"
+            },
+            {
+              "name": "dp1-spring-demo"
+            },
+            {
+              "name": "dp1-vue-demo"
             }
           ],
-          "relatedPackage": "dp1-spring-demo"
+          "customStepPhaseDefs": {
+            "scanCode": {
+              "enable": true,
+              "retry": 2
+            },
+            "testApi": {
+              "enable": true
+            }
+          },
+          "pipelineStep": {
+            "applyIngress": {
+              "enable": true
+            },
+            "build": {
+              "enable": true
+            },
+            "checkDeploy": {
+              "enable": true
+            },
+            "checkQuota": {
+              "enable": true
+            },
+            "deploy": {
+              "enable": true
+            },
+            "gitPull": {
+              "timeout": 60
+            },
+            "packageImage": {
+              "enable": true
+            },
+            "syncImage": {
+              "enable": true
+            }
+          }
         }
       ],
-      "kind": "deployContainerDefs",
+      "kind": "pipelineDef",
       "metadata": {
+        "annotations": {
+          "envs": "test",
+          "isDefault": "false",
+          "webhookPushEvent": "false"
+        },
         "labels": {
-          "envName": "test"
+          "branchName": "develop"
         },
         "projectName": "demo-project1"
       }

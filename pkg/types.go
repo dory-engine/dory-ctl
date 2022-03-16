@@ -612,11 +612,13 @@ type DefKindList struct {
 	} `yaml:"status" json:"status" bson:"status" validate:""`
 }
 
-type DefApply struct {
-	Kind        string            `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	Def         interface{}       `yaml:"def" json:"def" bson:"def" validate:""`
-	Param       map[string]string `yaml:"param" json:"param" bson:"param" validate:""`
+type DefUpdate struct {
+	Kind           string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	ProjectName    string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	EnvName        string      `yaml:"envName" json:"envName" bson:"envName" validate:""`
+	CustomStepName string      `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
+	BranchName     string      `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
+	Def            interface{} `yaml:"def" json:"def" bson:"def" validate:""`
 }
 
 type DefClone struct {
@@ -629,11 +631,4 @@ type PatchAction struct {
 	Action string `yaml:"action" json:"action" bson:"action" validate:"required"`
 	Path   string `yaml:"path" json:"path" bson:"path" validate:"required"`
 	Value  string `yaml:"value" json:"value" bson:"value" validate:""`
-}
-
-type DefPatch struct {
-	Kind         string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	ProjectName  string        `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	Def          interface{}   `yaml:"def" json:"def" bson:"def" validate:""`
-	PatchActions []PatchAction `yaml:"patchActions" json:"patchActions" bson:"patchActions" validate:""`
 }

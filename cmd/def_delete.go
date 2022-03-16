@@ -171,7 +171,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	}
 
 	defKinds := []pkg.DefKind{}
-	defApplies := []pkg.DefApply{}
+	defUpdates := []pkg.DefUpdate{}
 	defKindProject := pkg.DefKind{
 		Kind: "",
 		Metadata: pkg.Metadata{
@@ -212,13 +212,12 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defKinds = append(defKinds, defKind)
 
-		defApply := pkg.DefApply{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
-			Param:       map[string]string{},
 		}
-		defApplies = append(defApplies, defApply)
+		defUpdates = append(defUpdates, defUpdate)
 	case "package":
 		defKind := defKindProject
 		defKind.Kind = pkg.DefCmdKinds[o.Param.Kind]
@@ -250,13 +249,12 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defKinds = append(defKinds, defKind)
 
-		defApply := pkg.DefApply{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
-			Param:       map[string]string{},
 		}
-		defApplies = append(defApplies, defApply)
+		defUpdates = append(defUpdates, defUpdate)
 	case "deploy":
 		paes := []pkg.ProjectAvailableEnv{}
 		for _, pae := range project.ProjectAvailableEnvs {
@@ -303,15 +301,13 @@ func (o *OptionsDefDelete) Run(args []string) error {
 
 				defKinds = append(defKinds, defKind)
 
-				defApply := pkg.DefApply{
+				defUpdate := pkg.DefUpdate{
 					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         defKind.Items,
-					Param: map[string]string{
-						"envName": pae.EnvName,
-					},
+					EnvName:     pae.EnvName,
 				}
-				defApplies = append(defApplies, defApply)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
 	case "ops":
@@ -344,13 +340,12 @@ func (o *OptionsDefDelete) Run(args []string) error {
 		}
 		defKinds = append(defKinds, defKind)
 
-		defApply := pkg.DefApply{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defKind.Items,
-			Param:       map[string]string{},
 		}
-		defApplies = append(defApplies, defApply)
+		defUpdates = append(defUpdates, defUpdate)
 	case "step":
 		if len(o.EnvNames) > 0 {
 			paes := []pkg.ProjectAvailableEnv{}
@@ -424,7 +419,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 
 						defKinds = append(defKinds, defKind)
 
-						defApply := pkg.DefApply{
+						defUpdate := pkg.DefUpdate{
 							Kind:        pkg.DefCmdKinds[o.Param.Kind],
 							ProjectName: project.ProjectInfo.ProjectName,
 							Def: pkg.CustomStepDef{
@@ -432,12 +427,10 @@ func (o *OptionsDefDelete) Run(args []string) error {
 								CustomStepModuleDefs:       csmds,
 								UpdateCustomStepModuleDefs: false,
 							},
-							Param: map[string]string{
-								"customStepName": stepName,
-								"envName":        pae.EnvName,
-							},
+							CustomStepName: stepName,
+							EnvName:        pae.EnvName,
 						}
-						defApplies = append(defApplies, defApply)
+						defUpdates = append(defUpdates, defUpdate)
 					}
 				}
 			}
@@ -501,7 +494,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 
 				defKinds = append(defKinds, defKind)
 
-				defApply := pkg.DefApply{
+				defUpdate := pkg.DefUpdate{
 					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def: pkg.CustomStepDef{
@@ -509,11 +502,9 @@ func (o *OptionsDefDelete) Run(args []string) error {
 						CustomStepModuleDefs:       csmds,
 						UpdateCustomStepModuleDefs: false,
 					},
-					Param: map[string]string{
-						"customStepName": stepName,
-					},
+					CustomStepName: stepName,
 				}
-				defApplies = append(defApplies, defApply)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
 	}
@@ -543,16 +534,21 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	}
 
 	if !o.Try {
-		for _, defApply := range defApplies {
-			bs, _ = pkg.YamlIndent(defApply.Def)
+		for _, defUpdate := range defUpdates {
+			bs, _ = pkg.YamlIndent(defUpdate.Def)
 
-			param := map[string]interface{}{}
-			for k, v := range defApply.Param {
-				param[k] = v
+			param := map[string]interface{}{
+				"envName":        defUpdate.EnvName,
+				"customStepName": defUpdate.CustomStepName,
+				"branchName":     defUpdate.BranchName,
+			}
+			paramOutput := map[string]interface{}{}
+			for k, v := range param {
+				paramOutput[k] = v
 			}
 
-			urlKind := defApply.Kind
-			switch defApply.Kind {
+			urlKind := defUpdate.Kind
+			switch defUpdate.Kind {
 			case "buildDefs":
 				param["buildDefsYaml"] = string(bs)
 			case "packageDefs":
@@ -561,22 +557,16 @@ func (o *OptionsDefDelete) Run(args []string) error {
 				param["deployContainerDefsYaml"] = string(bs)
 			case "customStepDef":
 				param["customStepDefYaml"] = string(bs)
-				var found bool
-				for k, v := range defApply.Param {
-					if k == "envName" && v != "" {
-						found = true
-						break
-					}
-				}
-				if found {
+				if defUpdate.EnvName != "" {
 					urlKind = fmt.Sprintf("%s/env", urlKind)
 				}
 			case "customOpsDefs":
 				param["customOpsDefsYaml"] = string(bs)
 			}
-			bs, _ = json.Marshal(defApply.Param)
-			logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
-			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlKind), http.MethodPost, "", param, false)
+			paramOutput = pkg.RemoveMapEmptyItems(paramOutput)
+			bs, _ = json.Marshal(paramOutput)
+			logHeader := fmt.Sprintf("[%s/%s] %s", defUpdate.ProjectName, defUpdate.Kind, string(bs))
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defUpdate.ProjectName, urlKind), http.MethodPost, "", param, false)
 			if err != nil {
 				err = fmt.Errorf("%s: %s", logHeader, err.Error())
 				return err

@@ -18,18 +18,18 @@ func main() {
 	_ = json.Unmarshal(bs, &m)
 	bs, _ = json.Marshal(m)
 
-	value := gjson.Get(string(bs), `defs.0.items.#(deployName=="dp1-gin-demo")`)
+	value := gjson.Get(string(bs), `defs.0.items.0.builds`)
 	fmt.Println(value)
 
-	str, _ := sjson.Set(string(bs), `defs.#.items.#(deployName=="dp1-gin-demo").deployCommand`, []string{"ok"})
-	value = gjson.Get(str, "defs.0.items.0")
+	str, _ := sjson.Set(string(bs), `defs.0.items.0.builds.#(name=="dp1-gin-demo").run`, false)
+	value = gjson.Get(str, `defs.0.items.0.builds`)
 	fmt.Println(value)
 
-	str, _ = sjson.Delete(string(bs), `defs.0.items.0.deployNodePorts`)
-	value = gjson.Get(str, "defs.0.items.0")
-	fmt.Println(value)
-
-	m = true
-	bs, _ = json.Marshal(m)
-	fmt.Println(string(bs))
+	//str, _ = sjson.Delete(string(bs), `defs.0.items.0.deployNodePorts`)
+	//value = gjson.Get(str, "defs.0.items.0")
+	//fmt.Println(value)
+	//
+	//m = true
+	//bs, _ = json.Marshal(m)
+	//fmt.Println(string(bs))
 }

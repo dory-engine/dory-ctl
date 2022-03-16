@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"net/http"
-	"os"
+	"sort"
 	"strings"
 )
 
@@ -16,12 +15,18 @@ type OptionsDefPatch struct {
 	ModuleNames    []string `yaml:"moduleNames" json:"moduleNames" bson:"moduleNames" validate:""`
 	EnvNames       []string `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
 	BranchNames    []string `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
-	StepNames      []string `yaml:"stepNames" json:"stepNames" bson:"stepNames" validate:""`
+	StepName       string   `yaml:"stepName" json:"stepName" bson:"stepName" validate:""`
+	Patches        []string `yaml:"patches" json:"patches" bson:"patches" validate:""`
+	FileNames      []string `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
+	Runs           []string `yaml:"runs" json:"runs" bson:"runs" validate:""`
+	NoRuns         []string `yaml:"noRuns" json:"noRuns" bson:"noRuns" validate:""`
+	Try            bool     `yaml:"try" json:"try" bson:"try" validate:""`
 	Full           bool     `yaml:"full" json:"full" bson:"full" validate:""`
 	Output         string   `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		Kinds       []string `yaml:"kinds" json:"kinds" bson:"kinds" validate:""`
-		ProjectName string   `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+		Kind         string            `yaml:"kind" json:"kind" bson:"kind" validate:""`
+		ProjectName  string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+		PatchActions []pkg.PatchAction `yaml:"patchActions" json:"patchActions" bson:"patchActions" validate:""`
 	}
 }
 
@@ -43,30 +48,62 @@ func NewCmdDefPatch() *cobra.Command {
 		"pipeline",
 	}
 
-	msgUse := fmt.Sprintf(`patch [projectName] [kind],[kind]... [--output=json|yaml] [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--steps=stepName1,stepName2]
+	msgUse := fmt.Sprintf(`patch [projectName] [kind] [--output=json|yaml] [--patches=patchAction]... [--files=patchFile]... [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--step=stepName1,stepName2]
   # kind options: %s`, strings.Join(defCmdKinds, " / "))
 	msgShort := fmt.Sprintf("patch project definitions")
 	msgLong := fmt.Sprintf(`patch project definitions in dory-core server`)
-	msgExample := fmt.Sprintf(`  # patch project definitions summary
-  doryctl def patch test-project1
+	msgExample := fmt.Sprintf(`  # print current project build modules definitions for patched
+  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo
 
-  # patch project all definitions
-  doryctl def patch test-project1 all --output=yaml
+  # patch project build modules definitions, update tp1-gin-demo,tp1-go-demo buildChecks commands
+  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo --patches='[{"action": "update", "path": "buildChecks", "value": ["ls -alh"]}]'
 
-  # patch project all definitions, and show in full version
-  doryctl def patch test-project1 all --output=yaml --full
+  # patch project deploy modules definitions, delete test environment tp1-go-demo,tp1-gin-demo deployResources settings
+  doryctl def patch test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test --patches='[{"action": "delete", "path": "deployResources"}]'
 
-  # patch project build and package modules definitions
-  doryctl def patch test-project1 build,package
+  # patch project deploy modules definitions, delete test environment tp1-gin-demo deployNodePorts.0.nodePort to 30109
+  doryctl def patch test-project1 deploy --modules=tp1-gin-demo --envs=test --patches='[{"action": "update", "path": "deployNodePorts.0.nodePort", "value": 30109}]'
 
-  # patch project deploy modules definitions, and filter by moduleNames and envNames
-  doryctl def patch test-project1 deploy --modules=tp1-go-demo,tp1-gin-demo --envs=test
+  # patch project pipeline definitions, update builds dp1-gin-demo run setting to true 
+  doryctl def patch test-project1 pipeline --branches=develop,release --patches='[{"action": "update", "path": "builds.#(name==\"dp1-gin-demo\").run", "value": true}]'
 
-  # patch project pipeline definitions, and filter by branchNames
-  doryctl def patch test-project1 pipeline --branches=develop,release
+  # patch project pipeline definitions, update builds dp1-gin-demo,dp1-go-demo run setting to true 
+  doryctl def patch test-project1 pipeline --branches=develop,release --runs=dp1-gin-demo,dp1-go-demo
 
-  # patch project custom step modules definitions, and filter by envNames and stepNames
-  doryctl def patch test-project1 step --envs=test --steps=testApi`)
+  # patch project pipeline definitions, update builds dp1-gin-demo,dp1-go-demo run setting to false 
+  doryctl def patch test-project1 pipeline --branches=develop,release --no-runs=dp1-gin-demo,dp1-go-demo
+
+  # patch project custom step modules definitions, update testApi step in test environment tp1-gin-demo paramInputYaml
+  doryctl def patch test-project1 step --envs=test --step=testApi --modules=tp1-gin-demo --patches='[{"action": "update", "path": "paramInputYaml", "value": "path: Tests"}]'
+
+  # patch project pipeline definitions from stdin, support JSON and YAML
+  cat << EOF | doryctl def patch test-project1 pipeline --branches=develop,release -f -
+  - action: update
+    path: builds
+    value:
+      - name: dp1-gin-demo
+        run: true
+      - name: dp1-go-demo
+        run: false
+      - name: dp1-gradle-demo
+        run: false
+      - name: dp1-node-demo
+        run: false
+      - name: dp1-python-demo
+        run: false
+      - name: dp1-spring-demo
+        run: false
+      - name: dp1-vue-demo
+        run: false
+  - action: update
+    path: pipelineStep.deploy.enable
+    value: false
+  - action: delete
+    value: customStepInsertDefs.build
+  EOF
+
+  # patch project pipeline definitions from file, support JSON and YAML
+  doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -80,10 +117,15 @@ func NewCmdDefPatch() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter project definitions items by moduleNames")
-	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter project definitions by envNames")
-	cmd.Flags().StringSliceVar(&o.BranchNames, "branches", []string{}, "filter project pipeline definitions by branchNames")
-	cmd.Flags().StringSliceVar(&o.StepNames, "steps", []string{}, "filter project definitions by stepNames")
+	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter moduleNames to patch")
+	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter envNames to patch, required if kind is deploy")
+	cmd.Flags().StringSliceVar(&o.BranchNames, "branches", []string{}, "filter branchNames to patch, required if kind is pipeline")
+	cmd.Flags().StringVar(&o.StepName, "step", "", "filter stepName to patch, required if kind is step")
+	cmd.Flags().StringSliceVarP(&o.Patches, "patches", "p", []string{}, "patch actions in JSON format")
+	cmd.Flags().StringSliceVarP(&o.FileNames, "files", "f", []string{}, "project definitions file name or directory, support *.json and *.yaml and *.yml files")
+	cmd.Flags().StringSliceVar(&o.Runs, "runs", []string{}, "set pipeline which build modules enable run, only use with kind is pipeline")
+	cmd.Flags().StringSliceVar(&o.NoRuns, "no-runs", []string{}, "set pipeline which build modules disable run, only use with kind is pipeline")
+	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 	return cmd
@@ -101,42 +143,58 @@ func (o *OptionsDefPatch) Validate(args []string) error {
 		err = fmt.Errorf("projectName required")
 		return err
 	}
-	var projectName string
-	var kinds, kindParams []string
-	projectName = args[0]
-	if len(args) > 1 {
-		kindsStr := args[1]
-		arr := strings.Split(kindsStr, ",")
-		for _, s := range arr {
-			a := strings.Trim(s, " ")
-			if a != "" {
-				kinds = append(kinds, a)
-			}
-		}
-		for _, kind := range kinds {
-			var found bool
-			for cmdKind, _ := range pkg.DefCmdKinds {
-				if kind == cmdKind {
-					found = true
-					break
-				}
-			}
-			if !found {
-				defCmdKinds := []string{}
-				for k, _ := range pkg.DefCmdKinds {
-					defCmdKinds = append(defCmdKinds, k)
-				}
-				err = fmt.Errorf("kind %s format error: not correct, options: %s", kind, strings.Join(defCmdKinds, " / "))
-				return err
-			}
-			kindParams = append(kindParams, pkg.DefCmdKinds[kind])
-		}
-		o.Param.Kinds = kindParams
+	if len(args) == 1 {
+		err = fmt.Errorf("kind required")
+		return err
 	}
+	var projectName string
+	var kind string
+	projectName = args[0]
+	kind = args[1]
+
+	defCmdKinds := []string{
+		"build",
+		"package",
+		"deploy",
+		"ops",
+		"step",
+		"pipeline",
+	}
+
+	var found bool
+	for _, cmdKind := range defCmdKinds {
+		if cmdKind == kind {
+			found = true
+			break
+		}
+	}
+	if !found {
+		err = fmt.Errorf("kind %s not correct, options: %s", kind, strings.Join(defCmdKinds, " / "))
+		return err
+	}
+	o.Param.Kind = kind
 
 	err = pkg.ValidateMinusNameID(projectName)
 	if err != nil {
 		err = fmt.Errorf("projectName %s format error: %s", projectName, err.Error())
+		return err
+	}
+	o.Param.ProjectName = projectName
+
+	if kind != "pipeline" && len(o.ModuleNames) == 0 {
+		err = fmt.Errorf("--modules required")
+		return err
+	}
+	if kind == "pipeline" && len(o.BranchNames) == 0 {
+		err = fmt.Errorf("kind is pipeline, --branches required")
+		return err
+	}
+	if kind == "deploy" && len(o.EnvNames) == 0 {
+		err = fmt.Errorf("kind is deploy, --envs required")
+		return err
+	}
+	if kind == "step" && o.StepName == "" {
+		err = fmt.Errorf("kind is step, --step required")
 		return err
 	}
 
@@ -147,12 +205,59 @@ func (o *OptionsDefPatch) Validate(args []string) error {
 			return err
 		}
 	}
-	o.Param.ProjectName = projectName
+
+	for _, moduleName := range o.Runs {
+		err = pkg.ValidateMinusNameID(moduleName)
+		if err != nil {
+			err = fmt.Errorf("run moduleName %s format error: %s", moduleName, err.Error())
+			return err
+		}
+	}
+
+	for _, moduleName := range o.NoRuns {
+		err = pkg.ValidateMinusNameID(moduleName)
+		if err != nil {
+			err = fmt.Errorf("no-run moduleName %s format error: %s", moduleName, err.Error())
+			return err
+		}
+	}
 
 	if o.Output != "" {
 		if o.Output != "yaml" && o.Output != "json" {
 			err = fmt.Errorf("--output must be yaml or json")
 			return err
+		}
+	}
+
+	if len(o.Patches) > 0 {
+		for _, patch := range o.Patches {
+			patchAction := pkg.PatchAction{}
+			err = json.Unmarshal([]byte(patch), &patchAction)
+			if err != nil {
+				err = fmt.Errorf("--patches %s parse error: %s", patch, err.Error())
+				return err
+			}
+			if patchAction.Action != "update" && patchAction.Action != "delete" {
+				err = fmt.Errorf("--patches %s parse error: action must be update or delete", patch)
+				return err
+			}
+			if patchAction.Action == "update" && patchAction.Value == "" {
+				err = fmt.Errorf("--patches %s parse error: action is update value can not be empty", patch)
+				return err
+			}
+			if patchAction.Action == "delete" && patchAction.Value != "" {
+				err = fmt.Errorf("--patches %s parse error: action is delete value must be empty", patch)
+				return err
+			}
+			if patchAction.Value != "" {
+				var v interface{}
+				err = json.Unmarshal([]byte(patchAction.Value), &v)
+				if err != nil {
+					err = fmt.Errorf("--patches %s parse value %s error: %s", patch, patchAction.Value, err.Error())
+					return err
+				}
+			}
+			o.Param.PatchActions = append(o.Param.PatchActions, patchAction)
 		}
 	}
 	return err
@@ -175,516 +280,303 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		return err
 	}
 
-	defKinds := []pkg.DefKind{}
-	if len(o.Param.Kinds) == 0 {
-		defKind := pkg.DefKind{
-			Kind: "projectSummary",
-			Metadata: pkg.Metadata{
-				ProjectName: project.ProjectInfo.ProjectName,
-				Labels:      map[string]string{},
-			},
-			Items: []interface{}{},
-		}
-		var branchNames []string
-		for _, pipeline := range project.ProjectPipelines {
-			branchNames = append(branchNames, pipeline.BranchName)
-		}
-		var envNames []string
+	for _, envName := range o.EnvNames {
+		var found bool
 		for _, pae := range project.ProjectAvailableEnvs {
-			envNames = append(envNames, pae.EnvName)
-		}
-		def := pkg.ProjectSummary{
-			BuildEnvs:       project.BuildEnvs,
-			BuildNames:      project.BuildNames,
-			CustomStepConfs: project.CustomStepConfs,
-			PackageNames:    project.PackageNames,
-			BranchNames:     branchNames,
-			EnvNames:        envNames,
-			NodePorts:       project.NodePorts,
-		}
-		defKind.Items = append(defKind.Items, def)
-		defKinds = append(defKinds, defKind)
-	} else {
-		defKindProject := pkg.DefKind{
-			Kind: "",
-			Metadata: pkg.Metadata{
-				ProjectName: project.ProjectInfo.ProjectName,
-				Labels:      map[string]string{},
-			},
-			Items: []interface{}{},
-		}
-		if len(project.ProjectDef.BuildDefs) > 0 {
-			defKind := defKindProject
-			defKind.Kind = "buildDefs"
-			for _, def := range project.ProjectDef.BuildDefs {
-				var isShow bool
-				if len(o.ModuleNames) == 0 {
-					isShow = true
-				} else {
-					for _, moduleName := range o.ModuleNames {
-						if moduleName == def.BuildName {
-							isShow = true
-							break
-						}
-					}
-				}
-				if isShow {
-					defKind.Items = append(defKind.Items, def)
-				}
-			}
-			defKinds = append(defKinds, defKind)
-		}
-
-		if len(project.ProjectDef.PackageDefs) > 0 {
-			defKind := defKindProject
-			defKind.Kind = "packageDefs"
-			defKind.Status.ErrMsg = project.ProjectDef.ErrMsgPackageDefs
-			for _, def := range project.ProjectDef.PackageDefs {
-				var isShow bool
-				if len(o.ModuleNames) == 0 {
-					isShow = true
-				} else {
-					for _, moduleName := range o.ModuleNames {
-						if moduleName == def.PackageName {
-							isShow = true
-							break
-						}
-					}
-				}
-				if isShow {
-					defKind.Items = append(defKind.Items, def)
-				}
-			}
-			defKinds = append(defKinds, defKind)
-		}
-
-		if len(project.ProjectAvailableEnvs) > 0 {
-			paes := []pkg.ProjectAvailableEnv{}
-			for _, pae := range project.ProjectAvailableEnvs {
-				if len(o.EnvNames) == 0 {
-					paes = append(paes, pae)
-				} else {
-					for _, envName := range o.EnvNames {
-						if envName == pae.EnvName {
-							paes = append(paes, pae)
-							break
-						}
-					}
-				}
-			}
-			for _, pae := range paes {
-				if len(pae.DeployContainerDefs) > 0 {
-					defKind := defKindProject
-					defKind.Kind = "deployContainerDefs"
-					defKind.Status.ErrMsg = pae.ErrMsgDeployContainerDefs
-					defKind.Metadata.Labels = map[string]string{
-						"envName": pae.EnvName,
-					}
-					for _, def := range pae.DeployContainerDefs {
-						var isShow bool
-						if len(o.ModuleNames) == 0 {
-							isShow = true
-						} else {
-							for _, moduleName := range o.ModuleNames {
-								if moduleName == def.DeployName {
-									isShow = true
-									break
-								}
-							}
-						}
-						if isShow {
-							defKind.Items = append(defKind.Items, def)
-						}
-					}
-					defKinds = append(defKinds, defKind)
-				}
-			}
-
-			for _, pae := range paes {
-				if len(pae.CustomStepDefs) > 0 {
-					csds := pkg.CustomStepDefs{}
-					for stepName, csd := range pae.CustomStepDefs {
-						if len(o.StepNames) == 0 {
-							csds[stepName] = csd
-						} else {
-							for _, name := range o.StepNames {
-								if name == stepName {
-									csds[stepName] = csd
-									break
-								}
-							}
-						}
-					}
-					for stepName, csd := range csds {
-						defKind := defKindProject
-						defKind.Kind = "customStepDef"
-						var errMsg string
-						for name, msg := range pae.ErrMsgCustomStepDefs {
-							if name == stepName {
-								errMsg = msg
-							}
-						}
-						defKind.Status.ErrMsg = errMsg
-						defKind.Metadata.Labels = map[string]string{
-							"envName":    pae.EnvName,
-							"stepName":   stepName,
-							"enableMode": csd.EnableMode,
-						}
-						for _, csmd := range csd.CustomStepModuleDefs {
-							var isShow bool
-							if len(o.ModuleNames) == 0 {
-								isShow = true
-							} else {
-								for _, moduleName := range o.ModuleNames {
-									if moduleName == csmd.ModuleName {
-										isShow = true
-										break
-									}
-								}
-							}
-							if isShow {
-								defKind.Items = append(defKind.Items, csmd)
-							}
-						}
-						defKinds = append(defKinds, defKind)
-					}
-				}
+			if envName == pae.EnvName {
+				found = true
+				break
 			}
 		}
-
-		if len(project.ProjectDef.CustomStepDefs) > 0 {
-			csds := pkg.CustomStepDefs{}
-			for stepName, csd := range project.ProjectDef.CustomStepDefs {
-				if len(o.StepNames) == 0 {
-					csds[stepName] = csd
-				} else {
-					for _, name := range o.StepNames {
-						if name == stepName {
-							csds[stepName] = csd
-							break
-						}
-					}
-				}
-			}
-			for stepName, csd := range csds {
-				defKind := defKindProject
-				defKind.Kind = "customStepDef"
-				var errMsg string
-				for name, msg := range project.ProjectDef.ErrMsgCustomStepDefs {
-					if name == stepName {
-						errMsg = msg
-					}
-				}
-				defKind.Status.ErrMsg = errMsg
-				defKind.Metadata.Labels = map[string]string{
-					"stepName":   stepName,
-					"enableMode": csd.EnableMode,
-				}
-				for _, csmd := range csd.CustomStepModuleDefs {
-					var isShow bool
-					if len(o.ModuleNames) == 0 {
-						isShow = true
-					} else {
-						for _, moduleName := range o.ModuleNames {
-							if moduleName == csmd.ModuleName {
-								isShow = true
-								break
-							}
-						}
-					}
-					if isShow {
-						defKind.Items = append(defKind.Items, csmd)
-					}
-				}
-				defKinds = append(defKinds, defKind)
-			}
-		}
-
-		if len(project.ProjectPipelines) > 0 {
-			pps := []pkg.ProjectPipeline{}
-			for _, pp := range project.ProjectPipelines {
-				if len(o.BranchNames) == 0 {
-					pps = append(pps, pp)
-				} else {
-					for _, branchName := range o.BranchNames {
-						if branchName == pp.BranchName {
-							pps = append(pps, pp)
-							break
-						}
-					}
-				}
-			}
-			for _, pp := range pps {
-				defKind := defKindProject
-				defKind.Kind = "pipelineDef"
-				defKind.Status.ErrMsg = pp.ErrMsgPipelineDef
-				defKind.Metadata.Labels = map[string]string{
-					"branchName": pp.BranchName,
-				}
-				defKind.Metadata.Annotations = map[string]string{
-					"envs":             strings.Join(pp.Envs, ","),
-					"envProductions":   strings.Join(pp.EnvProductions, ","),
-					"isDefault":        fmt.Sprintf("%v", pp.IsDefault),
-					"webhookPushEvent": fmt.Sprintf("%v", pp.WebhookPushEvent),
-					"tagSuffix":        pp.TagSuffix,
-				}
-				defKind.Items = append(defKind.Items, pp.PipelineDef)
-				defKinds = append(defKinds, defKind)
-			}
-		}
-
-		if len(project.ProjectDef.DockerIgnoreDefs) > 0 {
-			defKind := defKindProject
-			defKind.Kind = "dockerIgnoreDefs"
-			for _, def := range project.ProjectDef.DockerIgnoreDefs {
-				defKind.Items = append(defKind.Items, def)
-			}
-			defKinds = append(defKinds, defKind)
-		}
-
-		if len(project.ProjectDef.CustomOpsDefs) > 0 {
-			defKind := defKindProject
-			defKind.Kind = "customOpsDefs"
-			defKind.Status.ErrMsg = project.ProjectDef.ErrMsgCustomOpsDefs
-			for _, def := range project.ProjectDef.CustomOpsDefs {
-				var isShow bool
-				if len(o.ModuleNames) == 0 {
-					isShow = true
-				} else {
-					for _, moduleName := range o.ModuleNames {
-						if moduleName == def.CustomOpsName {
-							isShow = true
-							break
-						}
-					}
-				}
-				if isShow {
-					defKind.Items = append(defKind.Items, def)
-				}
-			}
-			defKinds = append(defKinds, defKind)
+		if !found {
+			err = fmt.Errorf("envName %s not exists", envName)
+			return err
 		}
 	}
 
-	defKindFilters := []pkg.DefKind{}
-	if len(o.Param.Kinds) == 0 {
-		defKindFilters = defKinds
-	} else {
-		for _, defKind := range defKinds {
-			for _, kind := range o.Param.Kinds {
-				if kind == defKind.Kind {
-					defKindFilters = append(defKindFilters, defKind)
+	for _, branchName := range o.BranchNames {
+		var found bool
+		for _, pp := range project.ProjectPipelines {
+			if branchName == pp.BranchName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = fmt.Errorf("branchName %s not exists", branchName)
+			return err
+		}
+	}
+
+	if o.StepName != "" {
+		var found bool
+		for _, conf := range project.CustomStepConfs {
+			if conf.CustomStepName == o.StepName {
+				if len(o.EnvNames) == 0 && !conf.IsEnvDiff {
+					found = true
+					break
+				} else if len(o.EnvNames) > 0 && conf.IsEnvDiff {
+					found = true
 					break
 				}
 			}
 		}
-	}
-
-	errMsgs := []string{}
-	if project.ProjectDef.ErrMsgPackageDefs != "" {
-		errMsg := fmt.Sprintf("packageDefs error: %s", project.ProjectDef.ErrMsgPackageDefs)
-		errMsgs = append(errMsgs, errMsg)
-	}
-	for _, pae := range project.ProjectAvailableEnvs {
-		if pae.ErrMsgDeployContainerDefs != "" {
-			errMsg := fmt.Sprintf("deployContainerDefs envName=%s error: %s", pae.EnvName, pae.ErrMsgDeployContainerDefs)
-			errMsgs = append(errMsgs, errMsg)
-		}
-	}
-	for _, pae := range project.ProjectAvailableEnvs {
-		for stepName, msg := range pae.ErrMsgCustomStepDefs {
-			errMsg := fmt.Sprintf("customStepDef stepName=%s envName=%s error: %s", stepName, pae.EnvName, msg)
-			errMsgs = append(errMsgs, errMsg)
-		}
-	}
-	if len(project.ProjectDef.ErrMsgCustomStepDefs) > 0 {
-		for stepName, msg := range project.ProjectDef.ErrMsgCustomStepDefs {
-			errMsg := fmt.Sprintf("customStepDef stepName=%s error: %s", stepName, msg)
-			errMsgs = append(errMsgs, errMsg)
-		}
-	}
-	for _, pp := range project.ProjectPipelines {
-		if pp.ErrMsgPipelineDef != "" {
-			errMsg := fmt.Sprintf("pipelineDef branchName=%s error: %s", pp.BranchName, pp.ErrMsgPipelineDef)
-			errMsgs = append(errMsgs, errMsg)
+		if !found {
+			err = fmt.Errorf("stepName %s not exists", o.StepName)
+			return err
 		}
 	}
 
-	if project.ProjectDef.ErrMsgCustomOpsDefs != "" {
-		errMsg := fmt.Sprintf("customOpsDefs error: %s", project.ProjectDef.ErrMsgCustomOpsDefs)
-		errMsgs = append(errMsgs, errMsg)
+	defUpdates := []pkg.DefUpdate{}
+	defOutputs := []pkg.DefUpdate{}
+
+	switch o.Param.Kind {
+	case "build":
+		sort.SliceStable(project.ProjectDef.BuildDefs, func(i, j int) bool {
+			return project.ProjectDef.BuildDefs[i].BuildName < project.ProjectDef.BuildDefs[j].BuildName
+		})
+		for _, moduleName := range o.ModuleNames {
+			var found bool
+			for _, def := range project.ProjectDef.BuildDefs {
+				if def.BuildName == moduleName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				err = fmt.Errorf("%s module %s not exists", o.Param.Kind, moduleName)
+				return err
+			}
+		}
+
+		defUpdate := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         project.ProjectDef.BuildDefs,
+		}
+		defUpdates = append(defUpdates, defUpdate)
+
+		defs := []pkg.BuildDef{}
+		for _, def := range project.ProjectDef.BuildDefs {
+			var found bool
+			for _, moduleName := range o.ModuleNames {
+				if def.BuildName == moduleName {
+					found = true
+					break
+				}
+			}
+			if found {
+				defs = append(defs, def)
+			}
+		}
+		defOutput := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         project.ProjectDef.BuildDefs,
+		}
+		defOutputs = append(defOutputs, defOutput)
+
+	case "package":
+		sort.SliceStable(project.ProjectDef.PackageDefs, func(i, j int) bool {
+			return project.ProjectDef.PackageDefs[i].PackageName < project.ProjectDef.PackageDefs[j].PackageName
+		})
+		for _, moduleName := range o.ModuleNames {
+			var found bool
+			for _, def := range project.ProjectDef.PackageDefs {
+				if def.PackageName == moduleName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				err = fmt.Errorf("%s module %s not exists", o.Param.Kind, moduleName)
+				return err
+			}
+		}
+		defUpdate := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         project.ProjectDef.PackageDefs,
+		}
+		defUpdates = append(defUpdates, defUpdate)
+	case "deploy":
+		for _, pae := range project.ProjectAvailableEnvs {
+			var found bool
+			for _, envName := range o.EnvNames {
+				if pae.EnvName == envName {
+					found = true
+					break
+				}
+			}
+			if found {
+				sort.SliceStable(pae.DeployContainerDefs, func(i, j int) bool {
+					return pae.DeployContainerDefs[i].DeployName < pae.DeployContainerDefs[j].DeployName
+				})
+				for _, moduleName := range o.ModuleNames {
+					var found bool
+					for _, def := range pae.DeployContainerDefs {
+						if def.DeployName == moduleName {
+							found = true
+							break
+						}
+					}
+					if !found {
+						err = fmt.Errorf("%s module %s in envName %s not exists", o.Param.Kind, moduleName, pae.EnvName)
+						return err
+					}
+				}
+				defUpdate := pkg.DefUpdate{
+					Kind:        pkg.DefCmdKinds[o.Param.Kind],
+					ProjectName: project.ProjectInfo.ProjectName,
+					Def:         pae.DeployContainerDefs,
+					EnvName:     pae.EnvName,
+				}
+				defUpdates = append(defUpdates, defUpdate)
+			}
+		}
+	case "step":
+		if len(o.EnvNames) == 0 {
+			for stepName, csd := range project.ProjectDef.CustomStepDefs {
+				if stepName == o.StepName {
+					sort.SliceStable(csd.CustomStepModuleDefs, func(i, j int) bool {
+						return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
+					})
+					for _, moduleName := range o.ModuleNames {
+						var found bool
+						for _, def := range csd.CustomStepModuleDefs {
+							if def.ModuleName == moduleName {
+								found = true
+								break
+							}
+						}
+						if !found {
+							err = fmt.Errorf("%s module %s step %s not exists", o.Param.Kind, moduleName, stepName)
+							return err
+						}
+					}
+					defUpdate := pkg.DefUpdate{
+						Kind:           pkg.DefCmdKinds[o.Param.Kind],
+						ProjectName:    project.ProjectInfo.ProjectName,
+						Def:            csd,
+						CustomStepName: stepName,
+					}
+					defUpdates = append(defUpdates, defUpdate)
+					break
+				}
+			}
+		} else {
+			for _, pae := range project.ProjectAvailableEnvs {
+				for stepName, csd := range pae.CustomStepDefs {
+					var found bool
+					for _, envName := range o.EnvNames {
+						if pae.EnvName == envName {
+							found = true
+							break
+						}
+					}
+					if found {
+						sort.SliceStable(csd.CustomStepModuleDefs, func(i, j int) bool {
+							return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
+						})
+						for _, moduleName := range o.ModuleNames {
+							var found bool
+							for _, def := range csd.CustomStepModuleDefs {
+								if def.ModuleName == moduleName {
+									found = true
+									break
+								}
+							}
+							if !found {
+								err = fmt.Errorf("%s module %s step %s in envName %s not exists", o.Param.Kind, moduleName, stepName, pae.EnvName)
+								return err
+							}
+						}
+						defUpdate := pkg.DefUpdate{
+							Kind:           pkg.DefCmdKinds[o.Param.Kind],
+							ProjectName:    project.ProjectInfo.ProjectName,
+							Def:            csd,
+							EnvName:        pae.EnvName,
+							CustomStepName: stepName,
+						}
+						defUpdates = append(defUpdates, defUpdate)
+					}
+				}
+			}
+		}
+	case "pipeline":
+		for _, pp := range project.ProjectPipelines {
+			var found bool
+			for _, branchName := range o.BranchNames {
+				if pp.BranchName == branchName {
+					found = true
+					break
+				}
+			}
+			if found {
+				defUpdate := pkg.DefUpdate{
+					Kind:        pkg.DefCmdKinds[o.Param.Kind],
+					ProjectName: project.ProjectInfo.ProjectName,
+					Def:         pp.PipelineDef,
+					BranchName:  pp.BranchName,
+				}
+				defUpdates = append(defUpdates, defUpdate)
+			}
+		}
+	case "ops":
+		sort.SliceStable(project.ProjectDef.CustomOpsDefs, func(i, j int) bool {
+			return project.ProjectDef.CustomOpsDefs[i].CustomOpsName < project.ProjectDef.CustomOpsDefs[j].CustomOpsName
+		})
+		for _, moduleName := range o.ModuleNames {
+			var found bool
+			for _, def := range project.ProjectDef.CustomOpsDefs {
+				if def.CustomOpsName == moduleName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				err = fmt.Errorf("%s module %s not exists", o.Param.Kind, moduleName)
+				return err
+			}
+		}
+		defUpdate := pkg.DefUpdate{
+			Kind:        pkg.DefCmdKinds[o.Param.Kind],
+			ProjectName: project.ProjectInfo.ProjectName,
+			Def:         project.ProjectDef.CustomOpsDefs,
+		}
+		defUpdates = append(defUpdates, defUpdate)
 	}
 
-	defKindList := pkg.DefKindList{
-		Kind: "list",
-		Defs: defKindFilters,
+	if len(defUpdates) == 0 {
+		err = fmt.Errorf("nothing to patch")
+		return err
 	}
-	defKindList.Status.ErrMsgs = errMsgs
 
-	dataOutput := map[string]interface{}{}
-	m := map[string]interface{}{}
-	bs, _ = json.Marshal(defKindList)
-	_ = json.Unmarshal(bs, &m)
-	if o.Full {
-		dataOutput = m
+	dataOutputs := []map[string]interface{}{}
+	if len(o.Param.PatchActions) == 0 {
+		for _, defUpdate := range defUpdates {
+			dataOutput := map[string]interface{}{}
+			m := map[string]interface{}{}
+			bs, _ = json.Marshal(defUpdate)
+			_ = json.Unmarshal(bs, &m)
+			if o.Full {
+				dataOutput = m
+			} else {
+				dataOutput = pkg.RemoveMapEmptyItems(m)
+			}
+			dataOutputs = append(dataOutputs, dataOutput)
+		}
 	} else {
-		dataOutput = pkg.RemoveMapEmptyItems(m)
+
 	}
 
 	switch o.Output {
 	case "json":
-		bs, _ = json.MarshalIndent(dataOutput, "", "  ")
+		bs, _ = json.MarshalIndent(dataOutputs, "", "  ")
 		fmt.Println(string(bs))
 	case "yaml":
-		bs, _ = pkg.YamlIndent(dataOutput)
+		bs, _ = pkg.YamlIndent(dataOutputs)
 		fmt.Println(string(bs))
-	default:
-		for _, defKind := range defKindList.Defs {
-			if defKind.Status.ErrMsg != "" {
-				log.Error(defKind.Status.ErrMsg)
-			}
-
-			dataHeader := []string{}
-			dataRows := [][]string{}
-			bs, _ := json.Marshal(defKind.Items)
-			switch defKind.Kind {
-			case "projectSummary":
-				items := []pkg.ProjectSummary{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					var customSteps []string
-					for _, conf := range item.CustomStepConfs {
-						var isEnvDiff string
-						if conf.IsEnvDiff {
-							isEnvDiff = "[env]"
-						}
-						s := fmt.Sprintf("%s%s", conf.CustomStepName, isEnvDiff)
-						customSteps = append(customSteps, s)
-					}
-					var nodePorts []string
-					for _, port := range item.NodePorts {
-						s := fmt.Sprintf("%d", port)
-						nodePorts = append(nodePorts, s)
-					}
-					dataRow := []string{defKind.Kind, strings.Join(item.BuildNames, "\n"), strings.Join(item.PackageNames, "\n"), strings.Join(customSteps, "\n"), strings.Join(item.BranchNames, "\n"), strings.Join(item.EnvNames, "\n"), strings.Join(nodePorts, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"kind", "Builds", "Packages", "CustomSteps", "Branches", "Envs", "NodePorts"}
-			case "buildDefs":
-				items := []pkg.BuildDef{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.BuildName), item.BuildEnv, item.BuildPath, fmt.Sprintf("%d", item.BuildPhaseID), strings.Join(item.BuildCmds, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "Env", "Path", "PhaseID", "Cmds"}
-			case "packageDefs":
-				items := []pkg.PackageDef{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.PackageName), strings.Join(item.RelatedBuilds, "\n"), item.PackageFrom, strings.Join(item.Packages, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "Builds", "From", "Dockerfile"}
-			case "deployContainerDefs":
-				items := []pkg.DeployContainerDef{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					var ports []string
-					for _, p := range item.DeployLocalPorts {
-						if p.Protocol == "" {
-							p.Protocol = "TCP"
-						}
-						ports = append(ports, fmt.Sprintf("%d/%s", p.Port, p.Protocol))
-					}
-					for _, p := range item.DeployNodePorts {
-						if p.Protocol == "" {
-							p.Protocol = "TCP"
-						}
-						ports = append(ports, fmt.Sprintf("%d:%d/%s", p.Port, p.NodePort, p.Protocol))
-					}
-
-					dependServices := []string{}
-					for _, ds := range item.DependServices {
-						dependServices = append(dependServices, fmt.Sprintf("%s:%d", ds.DependName, ds.DependPort))
-					}
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.DeployName), defKind.Metadata.Labels["envName"], item.RelatedPackage, fmt.Sprintf("%d", item.DeployReplicas), strings.Join(ports, ","), strings.Join(dependServices, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "env", "Package", "Replicas", "Ports", "Depends"}
-			case "customStepDef":
-				items := []pkg.CustomStepModuleDef{}
-				_ = json.Unmarshal(bs, &items)
-				var envName string
-				for k, v := range defKind.Metadata.Labels {
-					if k == "envName" {
-						envName = v
-					}
-				}
-				for _, item := range items {
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.ModuleName), defKind.Metadata.Labels["stepName"], envName, defKind.Metadata.Labels["enableMode"], strings.Join(item.RelatedStepModules, "\n"), fmt.Sprintf("%v", item.ManualEnable), item.ParamInputYaml}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "StepName", "Env", "EnableMode", "RelateModules", "ManualEnable", "Params"}
-			case "pipelineDef":
-				items := []pkg.PipelineDef{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					var builds []string
-					for _, build := range item.Builds {
-						buildStr := fmt.Sprintf("%s: %v", build.Name, build.Run)
-						builds = append(builds, buildStr)
-					}
-					envs := strings.Split(defKind.Metadata.Annotations["envs"], ",")
-					envProductions := strings.Split(defKind.Metadata.Annotations["envProductions"], ",")
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, defKind.Metadata.Labels["branchName"]), strings.Join(envs, "\n"), strings.Join(envProductions, "\n"), fmt.Sprintf("%v", item.IsAutoDetectBuild), fmt.Sprintf("%v", item.IsQueue), strings.Join(builds, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "Envs", "EnvProds", "AutoDetect", "Queue", "Builds"}
-			case "dockerIgnoreDefs":
-				items := []string{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					dataRow := []string{defKind.Kind, item}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "Value"}
-			case "customOpsDefs":
-				items := []pkg.CustomOpsDef{}
-				_ = json.Unmarshal(bs, &items)
-				for _, item := range items {
-					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.CustomOpsName), item.CustomOpsDesc, strings.Join(item.CustomOpsSteps, "\n")}
-					dataRows = append(dataRows, dataRow)
-				}
-				dataHeader = []string{"Name", "Desc", "Steps"}
-			}
-
-			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader(dataHeader)
-			table.SetAutoWrapText(false)
-			table.SetAutoFormatHeaders(true)
-			table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-			table.SetAlignment(tablewriter.ALIGN_LEFT)
-			table.SetCenterSeparator("")
-			table.SetColumnSeparator("")
-			table.SetRowSeparator("")
-			table.SetHeaderLine(false)
-			table.SetBorder(false)
-			table.SetTablePadding("\t")
-			table.SetNoWhiteSpace(true)
-			table.AppendBulk(dataRows)
-			table.Render()
-			fmt.Println("------------")
-			fmt.Println()
-		}
-
-		if len(defKindList.Status.ErrMsgs) > 0 {
-			fmt.Println("ERRORS")
-			for _, errMsg := range defKindList.Status.ErrMsgs {
-				log.Error(errMsg)
-			}
-			fmt.Println()
-		}
 	}
 
 	return err

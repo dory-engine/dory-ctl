@@ -39,16 +39,16 @@ func NewCmdDefApply() *cobra.Command {
 	o := NewOptionsDefApply()
 
 	msgUse := fmt.Sprintf(`apply -f [filename]`)
-	msgShort := fmt.Sprintf("apply project definition")
-	msgLong := fmt.Sprintf(`apply project definition in dory-core server by file name or stdin.
-# it will update or insert project definition items
-# JSON and YAML formats are accepted, the complete definition must be provided.
+	msgShort := fmt.Sprintf("apply project definitions")
+	msgLong := fmt.Sprintf(`apply project definitions in dory-core server by file name or stdin.
+# it will update or insert project definitions items
+# JSON and YAML formats are accepted, the complete definitions must be provided.
 # YAML format support apply multiple project definitions at the same time.
 # if [filename] is a directory, it will read all *.json and *.yaml and *.yml files in this directory.`)
-	msgExample := fmt.Sprintf(`  # apply project definition from file or directory
+	msgExample := fmt.Sprintf(`  # apply project definitions from file or directory
   doryctl def apply -f def1.yaml -f def2.json
 
-  # apply project definition from stdin
+  # apply project definitions from stdin
   cat def1.yaml | doryctl def apply -f -`)
 
 	cmd := &cobra.Command{
@@ -64,9 +64,9 @@ func NewCmdDefApply() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
-	cmd.Flags().BoolVarP(&o.Recursive, "recursive", "r", false, "process the directory used in -f, --file recursively")
-	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definition in full version, use with --output option")
-	cmd.Flags().StringSliceVarP(&o.FileNames, "file", "f", []string{}, "project definition file name or directory, support *.json and *.yaml and *.yml files")
+	cmd.Flags().BoolVarP(&o.Recursive, "recursive", "r", false, "process the directory used in -f, --files recursively")
+	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
+	cmd.Flags().StringSliceVarP(&o.FileNames, "files", "f", []string{}, "project definitions file name or directory, support *.json and *.yaml and *.yml files")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	return cmd
 }
@@ -478,7 +478,7 @@ func (o *OptionsDefApply) Validate(args []string) error {
 	var err error
 
 	if len(o.FileNames) == 0 {
-		err = fmt.Errorf("--file required")
+		err = fmt.Errorf("--files required")
 		return err
 	}
 	var fileNames []string
@@ -493,7 +493,7 @@ func (o *OptionsDefApply) Validate(args []string) error {
 		}
 	}
 	if isStdin && len(fileNames) > 1 {
-		err = fmt.Errorf(`"--file -" found, can not use multiple --file options`)
+		err = fmt.Errorf(`"--files -" found, can not use multiple --files options`)
 		return err
 	}
 
@@ -503,7 +503,7 @@ func (o *OptionsDefApply) Validate(args []string) error {
 			return err
 		}
 		if len(bs) == 0 {
-			err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s def apply -f -", pkg.BaseCmdName)
+			err = fmt.Errorf("--files - required os.stdin\n example: echo 'xxx' | %s def apply -f -", pkg.BaseCmdName)
 			return err
 		}
 		defs, err := GetDefKinds("", bs)
@@ -853,33 +853,31 @@ func (o *OptionsDefApply) Run(args []string) error {
 		projects = append(projects, project)
 	}
 
-	defApplies := []pkg.DefApply{}
+	defUpdates := []pkg.DefUpdate{}
 
 	for _, project := range projects {
 		if project.ProjectDef.UpdateBuildDefs {
 			sort.SliceStable(project.ProjectDef.BuildDefs, func(i, j int) bool {
 				return project.ProjectDef.BuildDefs[i].BuildName < project.ProjectDef.BuildDefs[j].BuildName
 			})
-			defApply := pkg.DefApply{
+			defUpdate := pkg.DefUpdate{
 				Kind:        "buildDefs",
 				ProjectName: project.ProjectInfo.ProjectName,
 				Def:         project.ProjectDef.BuildDefs,
-				Param:       map[string]string{},
 			}
-			defApplies = append(defApplies, defApply)
+			defUpdates = append(defUpdates, defUpdate)
 		}
 
 		if project.ProjectDef.UpdatePackageDefs {
 			sort.SliceStable(project.ProjectDef.PackageDefs, func(i, j int) bool {
 				return project.ProjectDef.PackageDefs[i].PackageName < project.ProjectDef.PackageDefs[j].PackageName
 			})
-			defApply := pkg.DefApply{
+			defUpdate := pkg.DefUpdate{
 				Kind:        "packageDefs",
 				ProjectName: project.ProjectInfo.ProjectName,
 				Def:         project.ProjectDef.PackageDefs,
-				Param:       map[string]string{},
 			}
-			defApplies = append(defApplies, defApply)
+			defUpdates = append(defUpdates, defUpdate)
 		}
 
 		for _, pae := range project.ProjectAvailableEnvs {
@@ -887,15 +885,13 @@ func (o *OptionsDefApply) Run(args []string) error {
 				sort.SliceStable(pae.DeployContainerDefs, func(i, j int) bool {
 					return pae.DeployContainerDefs[i].DeployName < pae.DeployContainerDefs[j].DeployName
 				})
-				defApply := pkg.DefApply{
+				defUpdate := pkg.DefUpdate{
 					Kind:        "deployContainerDefs",
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         pae.DeployContainerDefs,
-					Param: map[string]string{
-						"envName": pae.EnvName,
-					},
+					EnvName:     pae.EnvName,
 				}
-				defApplies = append(defApplies, defApply)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 
 			for stepName, csd := range pae.CustomStepDefs {
@@ -903,16 +899,14 @@ func (o *OptionsDefApply) Run(args []string) error {
 					sort.SliceStable(csd.CustomStepModuleDefs, func(i, j int) bool {
 						return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
 					})
-					defApply := pkg.DefApply{
-						Kind:        "customStepDef",
-						ProjectName: project.ProjectInfo.ProjectName,
-						Def:         csd,
-						Param: map[string]string{
-							"customStepName": stepName,
-							"envName":        pae.EnvName,
-						},
+					defUpdate := pkg.DefUpdate{
+						Kind:           "customStepDef",
+						ProjectName:    project.ProjectInfo.ProjectName,
+						Def:            csd,
+						EnvName:        pae.EnvName,
+						CustomStepName: stepName,
 					}
-					defApplies = append(defApplies, defApply)
+					defUpdates = append(defUpdates, defUpdate)
 				}
 			}
 		}
@@ -922,29 +916,25 @@ func (o *OptionsDefApply) Run(args []string) error {
 				sort.SliceStable(csd.CustomStepModuleDefs, func(i, j int) bool {
 					return csd.CustomStepModuleDefs[i].ModuleName < csd.CustomStepModuleDefs[j].ModuleName
 				})
-				defApply := pkg.DefApply{
-					Kind:        "customStepDef",
-					ProjectName: project.ProjectInfo.ProjectName,
-					Def:         csd,
-					Param: map[string]string{
-						"customStepName": stepName,
-					},
+				defUpdate := pkg.DefUpdate{
+					Kind:           "customStepDef",
+					ProjectName:    project.ProjectInfo.ProjectName,
+					Def:            csd,
+					CustomStepName: stepName,
 				}
-				defApplies = append(defApplies, defApply)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
 
 		for _, pp := range project.ProjectPipelines {
 			if pp.UpdatePipelineDef {
-				defApply := pkg.DefApply{
+				defUpdate := pkg.DefUpdate{
 					Kind:        "pipelineDef",
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         pp.PipelineDef,
-					Param: map[string]string{
-						"branchName": pp.BranchName,
-					},
+					BranchName:  pp.BranchName,
 				}
-				defApplies = append(defApplies, defApply)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
 
@@ -952,34 +942,32 @@ func (o *OptionsDefApply) Run(args []string) error {
 			sort.SliceStable(project.ProjectDef.CustomOpsDefs, func(i, j int) bool {
 				return project.ProjectDef.CustomOpsDefs[i].CustomOpsName < project.ProjectDef.CustomOpsDefs[j].CustomOpsName
 			})
-			defApply := pkg.DefApply{
+			defUpdate := pkg.DefUpdate{
 				Kind:        "customOpsDefs",
 				ProjectName: project.ProjectInfo.ProjectName,
 				Def:         project.ProjectDef.CustomOpsDefs,
-				Param:       map[string]string{},
 			}
-			defApplies = append(defApplies, defApply)
+			defUpdates = append(defUpdates, defUpdate)
 		}
 
 		if project.ProjectDef.UpdateDockerIgnoreDefs {
 			sort.SliceStable(project.ProjectDef.DockerIgnoreDefs, func(i, j int) bool {
 				return project.ProjectDef.DockerIgnoreDefs[i] < project.ProjectDef.DockerIgnoreDefs[j]
 			})
-			defApply := pkg.DefApply{
+			defUpdate := pkg.DefUpdate{
 				Kind:        "dockerIgnoreDefs",
 				ProjectName: project.ProjectInfo.ProjectName,
 				Def:         project.ProjectDef.DockerIgnoreDefs,
-				Param:       map[string]string{},
 			}
-			defApplies = append(defApplies, defApply)
+			defUpdates = append(defUpdates, defUpdate)
 		}
 	}
 
 	outputs := []map[string]interface{}{}
-	for _, defApply := range defApplies {
+	for _, defUpdate := range defUpdates {
 		out := map[string]interface{}{}
 		m := map[string]interface{}{}
-		bs, _ := json.Marshal(defApply)
+		bs, _ := json.Marshal(defUpdate)
 		_ = json.Unmarshal(bs, &m)
 		if o.Full {
 			out = m
@@ -1000,16 +988,21 @@ func (o *OptionsDefApply) Run(args []string) error {
 	}
 
 	if !o.Try {
-		for _, defApply := range defApplies {
-			bs, _ = pkg.YamlIndent(defApply.Def)
+		for _, defUpdate := range defUpdates {
+			bs, _ = pkg.YamlIndent(defUpdate.Def)
 
-			param := map[string]interface{}{}
-			for k, v := range defApply.Param {
-				param[k] = v
+			param := map[string]interface{}{
+				"envName":        defUpdate.EnvName,
+				"customStepName": defUpdate.CustomStepName,
+				"branchName":     defUpdate.BranchName,
+			}
+			paramOutput := map[string]interface{}{}
+			for k, v := range param {
+				paramOutput[k] = v
 			}
 
-			urlKind := defApply.Kind
-			switch defApply.Kind {
+			urlKind := defUpdate.Kind
+			switch defUpdate.Kind {
 			case "buildDefs":
 				param["buildDefsYaml"] = string(bs)
 			case "packageDefs":
@@ -1018,14 +1011,7 @@ func (o *OptionsDefApply) Run(args []string) error {
 				param["deployContainerDefsYaml"] = string(bs)
 			case "customStepDef":
 				param["customStepDefYaml"] = string(bs)
-				var found bool
-				for k, v := range defApply.Param {
-					if k == "envName" && v != "" {
-						found = true
-						break
-					}
-				}
-				if found {
+				if defUpdate.EnvName != "" {
 					urlKind = fmt.Sprintf("%s/env", urlKind)
 				}
 			case "dockerIgnoreDefs":
@@ -1035,9 +1021,10 @@ func (o *OptionsDefApply) Run(args []string) error {
 			case "pipelineDef":
 				param["pipelineDefYaml"] = string(bs)
 			}
-			bs, _ = json.Marshal(defApply.Param)
-			logHeader := fmt.Sprintf("[%s/%s] %s", defApply.ProjectName, defApply.Kind, string(bs))
-			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defApply.ProjectName, urlKind), http.MethodPost, "", param, false)
+			paramOutput = pkg.RemoveMapEmptyItems(paramOutput)
+			bs, _ = json.Marshal(paramOutput)
+			logHeader := fmt.Sprintf("[%s/%s] %s", defUpdate.ProjectName, defUpdate.Kind, string(bs))
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defUpdate.ProjectName, urlKind), http.MethodPost, "", param, false)
 			if err != nil {
 				err = fmt.Errorf("%s: %s", logHeader, err.Error())
 				return err

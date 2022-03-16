@@ -8,12 +8,12 @@ import (
 
 func NewCmdDef() *cobra.Command {
 	msgUse := fmt.Sprintf("def")
-	msgShort := fmt.Sprintf("manage project definition")
-	msgLong := fmt.Sprintf(`manage project definition in dory-core server`)
+	msgShort := fmt.Sprintf("manage project definitions")
+	msgLong := fmt.Sprintf(`manage project definitions in dory-core server`)
 	msgExample := fmt.Sprintf(`  # get project all definitions
   doryctl def get test-project1 all
 
-  # apply project definition from file or directory
+  # apply project definitions from file or directory
   doryctl def apply -f def1.yaml -f def2.json`)
 
 	cmd := &cobra.Command{
