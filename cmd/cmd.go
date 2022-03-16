@@ -564,18 +564,34 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) er
 	return err
 }
 
-func (o *OptionsCommon) GetProjectNames() []string {
-
+func (o *OptionsCommon) GetProjectNames() ([]string, error) {
 	var err error
 	projectNames := []string{}
 	param := map[string]interface{}{}
 	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectNames"), http.MethodGet, "", param, false)
 	if err != nil {
-		return projectNames
+		return projectNames, err
 	}
 	err = json.Unmarshal([]byte(result.Get("data.projectNames").Raw), &projectNames)
 	if err != nil {
-		return projectNames
+		return projectNames, err
 	}
-	return projectNames
+	return projectNames, err
+}
+
+func (o *OptionsCommon) GetProjectDef(projectName string) (pkg.ProjectOutput, error) {
+	var err error
+	var project pkg.ProjectOutput
+
+	param := map[string]interface{}{}
+	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s", projectName), http.MethodGet, "", param, false)
+	if err != nil {
+		return project, err
+	}
+	err = json.Unmarshal([]byte(result.Get("data.project").Raw), &project)
+	if err != nil {
+		return project, err
+	}
+
+	return project, err
 }

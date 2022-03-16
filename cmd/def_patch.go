@@ -101,7 +101,7 @@ func NewCmdDefPatch() *cobra.Command {
   doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
 	_ = o.GetOptionsCommon()
-	projectNames := o.GetProjectNames()
+	projectNames, _ := o.GetProjectNames()
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -116,12 +116,12 @@ func NewCmdDefPatch() *cobra.Command {
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
-				return projectNames, cobra.ShellCompDirectiveNoFileComp
+				return projectNames, cobra.ShellCompDirectiveDefault
 			}
 			if len(args) == 1 {
-				return defCmdKinds, cobra.ShellCompDirectiveNoFileComp
+				return defCmdKinds, cobra.ShellCompDirectiveDefault
 			}
-			return nil, cobra.ShellCompDirectiveNoFileComp
+			return nil, cobra.ShellCompDirectiveDefault
 		},
 	}
 	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter moduleNames to patch")
@@ -140,15 +140,145 @@ func NewCmdDefPatch() *cobra.Command {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveDefault
 	})
 
+	_ = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveDefault
+		}
+		envNames := []string{}
+		for _, pae := range project.ProjectAvailableEnvs {
+			envNames = append(envNames, pae.EnvName)
+		}
+		return envNames, cobra.ShellCompDirectiveDefault
+	})
+
+	_ = cmd.RegisterFlagCompletionFunc("branches", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveDefault
+		}
+		branchNames := []string{}
+		for _, pp := range project.ProjectPipelines {
+			branchNames = append(branchNames, pp.BranchName)
+		}
+		return branchNames, cobra.ShellCompDirectiveDefault
+	})
+
+	_ = cmd.RegisterFlagCompletionFunc("step", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveDefault
+		}
+		stepNames := []string{}
+		for _, conf := range project.CustomStepConfs {
+			stepNames = append(stepNames, conf.CustomStepName)
+		}
+		return stepNames, cobra.ShellCompDirectiveDefault
+	})
+
+	_ = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		moduleNames := []string{}
+		projectName := args[0]
+		kind := args[1]
+		step, _ := cmd.Flags().GetString("step")
+		envs, _ := cmd.Flags().GetStringSlice("envs")
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveDefault
+		}
+		switch kind {
+		case "build":
+			for _, def := range project.ProjectDef.BuildDefs {
+				moduleNames = append(moduleNames, def.BuildName)
+			}
+		case "package":
+			for _, def := range project.ProjectDef.PackageDefs {
+				moduleNames = append(moduleNames, def.PackageName)
+			}
+		case "deploy":
+			m := map[string]string{}
+			if len(envs) == 0 {
+				for _, pae := range project.ProjectAvailableEnvs {
+					for _, def := range pae.DeployContainerDefs {
+						m[def.DeployName] = def.DeployName
+					}
+				}
+				for k, _ := range m {
+					moduleNames = append(moduleNames, k)
+				}
+			} else {
+				paes := []pkg.ProjectAvailableEnv{}
+				for _, pae := range project.ProjectAvailableEnvs {
+					for _, env := range envs {
+						if env == pae.EnvName {
+							paes = append(paes, pae)
+							break
+						}
+					}
+				}
+				for _, pae := range paes {
+					for _, def := range pae.DeployContainerDefs {
+						m[def.DeployName] = def.DeployName
+					}
+				}
+				for k, _ := range m {
+					moduleNames = append(moduleNames, k)
+				}
+			}
+		case "ops":
+			for _, def := range project.ProjectDef.CustomOpsDefs {
+				moduleNames = append(moduleNames, def.CustomOpsName)
+			}
+		case "step":
+			if step != "" {
+				if len(envs) == 0 {
+					for stepName, csd := range project.ProjectDef.CustomStepDefs {
+						if stepName == step {
+							for _, def := range csd.CustomStepModuleDefs {
+								moduleNames = append(moduleNames, def.ModuleName)
+							}
+							break
+						}
+					}
+				} else {
+					m := map[string]string{}
+					paes := []pkg.ProjectAvailableEnv{}
+					for _, pae := range project.ProjectAvailableEnvs {
+						for _, env := range envs {
+							if env == pae.EnvName {
+								paes = append(paes, pae)
+								break
+							}
+						}
+					}
+					for _, pae := range paes {
+						for stepName, csd := range pae.CustomStepDefs {
+							if stepName == step {
+								for _, def := range csd.CustomStepModuleDefs {
+									m[def.ModuleName] = def.ModuleName
+								}
+								break
+							}
+						}
+					}
+					for k, _ := range m {
+						moduleNames = append(moduleNames, k)
+					}
+				}
+			}
+		}
+		return moduleNames, cobra.ShellCompDirectiveDefault
+	})
+
 	return cmd
 }
 
 func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	var err error
 	err = o.GetOptionsCommon()
-	if err != nil {
-		return err
-	}
 	return err
 }
 
@@ -353,13 +483,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
-	param := map[string]interface{}{}
-	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s", o.Param.ProjectName), http.MethodGet, "", param, false)
-	if err != nil {
-		return err
-	}
-	project := pkg.ProjectOutput{}
-	err = json.Unmarshal([]byte(result.Get("data.project").Raw), &project)
+	project, err := o.GetProjectDef(o.Param.ProjectName)
 	if err != nil {
 		return err
 	}
