@@ -112,12 +112,12 @@ func NewCmdDefPatch() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			projectNames, err := o.GetProjectNames()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			fmt.Println(projectNames)
 			if len(args) == 0 {
-				projectNames, err := o.GetProjectNames()
-				if err != nil {
-					return nil, cobra.ShellCompDirectiveNoFileComp
-				}
-				fmt.Println(projectNames)
 				return projectNames, cobra.ShellCompDirectiveNoFileComp
 			}
 			if len(args) == 1 {
