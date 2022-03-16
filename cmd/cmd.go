@@ -565,6 +565,7 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) er
 }
 
 func (o *OptionsCommon) GetProjectNames() []string {
+
 	var err error
 	projectNames := []string{}
 	param := map[string]interface{}{}
