@@ -5,7 +5,12 @@ import (
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/sjson"
+	"gopkg.in/yaml.v3"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -17,7 +22,7 @@ type OptionsDefPatch struct {
 	BranchNames    []string `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
 	StepName       string   `yaml:"stepName" json:"stepName" bson:"stepName" validate:""`
 	Patch          string   `yaml:"patch" json:"patch" bson:"patch" validate:""`
-	FileNames      []string `yaml:"fileNames" json:"fileNames" bson:"fileNames" validate:""`
+	FileName       string   `yaml:"fileName" json:"fileName" bson:"fileName" validate:""`
 	Runs           []string `yaml:"runs" json:"runs" bson:"runs" validate:""`
 	NoRuns         []string `yaml:"noRuns" json:"noRuns" bson:"noRuns" validate:""`
 	Try            bool     `yaml:"try" json:"try" bson:"try" validate:""`
@@ -48,7 +53,7 @@ func NewCmdDefPatch() *cobra.Command {
 		"pipeline",
 	}
 
-	msgUse := fmt.Sprintf(`patch [projectName] [kind] [--output=json|yaml] [--patch=patchAction] [--files=patchFile]... [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--step=stepName1,stepName2]
+	msgUse := fmt.Sprintf(`patch [projectName] [kind] [--output=json|yaml] [--patch=patchAction] [--file=patchFile]... [--modules=moduleName1,moduleName2] [--envs=envName1,envName2] [--branches=branchName1,branchName2] [--step=stepName1,stepName2]
   # kind options: %s`, strings.Join(defCmdKinds, " / "))
 	msgShort := fmt.Sprintf("patch project definitions")
 	msgLong := fmt.Sprintf(`patch project definitions in dory-core server`)
@@ -81,20 +86,10 @@ func NewCmdDefPatch() *cobra.Command {
   - action: update
     path: builds
     value:
-      - name: dp1-gin-demo
-        run: true
       - name: dp1-go-demo
-        run: false
-      - name: dp1-gradle-demo
-        run: false
-      - name: dp1-node-demo
-        run: false
-      - name: dp1-python-demo
-        run: false
-      - name: dp1-spring-demo
-        run: false
+        run: true
       - name: dp1-vue-demo
-        run: false
+        run: true
   - action: update
     path: pipelineStep.deploy.enable
     value: false
@@ -122,9 +117,9 @@ func NewCmdDefPatch() *cobra.Command {
 	cmd.Flags().StringSliceVar(&o.BranchNames, "branches", []string{}, "filter branchNames to patch, required if kind is pipeline")
 	cmd.Flags().StringVar(&o.StepName, "step", "", "filter stepName to patch, required if kind is step")
 	cmd.Flags().StringVarP(&o.Patch, "patch", "p", "", "patch actions in JSON format")
-	cmd.Flags().StringSliceVarP(&o.FileNames, "files", "f", []string{}, "project definitions file name or directory, support *.json and *.yaml and *.yml files")
-	cmd.Flags().StringSliceVar(&o.Runs, "runs", []string{}, "set pipeline which build modules enable run, only use with kind is pipeline")
-	cmd.Flags().StringSliceVar(&o.NoRuns, "no-runs", []string{}, "set pipeline which build modules disable run, only use with kind is pipeline")
+	cmd.Flags().StringVarP(&o.FileName, "file", "f", "", "project definitions file name or directory, support *.json and *.yaml and *.yml file")
+	cmd.Flags().StringSliceVar(&o.Runs, "runs", []string{}, "set pipeline which build modules enable run, only uses with kind is pipeline")
+	cmd.Flags().StringSliceVar(&o.NoRuns, "no-runs", []string{}, "set pipeline which build modules disable run, only uses with kind is pipeline")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
@@ -229,42 +224,106 @@ func (o *OptionsDefPatch) Validate(args []string) error {
 		}
 	}
 
+	patchActions := []pkg.PatchAction{}
+	pas := []pkg.PatchAction{}
+	if o.FileName == "-" {
+		bs, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			err = fmt.Errorf("--file read stdin error: %s", err.Error())
+			return err
+		}
+		if len(bs) == 0 {
+			err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s def patch test-project1 build --modules=tp1-gin-demo -f -", pkg.BaseCmdName)
+			return err
+		}
+		err = json.Unmarshal(bs, &pas)
+		if err != nil {
+			err = yaml.Unmarshal(bs, &pas)
+			if err != nil {
+				err = fmt.Errorf("--file parse error: %s", err.Error())
+				return err
+			}
+		}
+	} else if o.FileName != "" {
+		ext := filepath.Ext(o.FileName)
+		if ext != ".json" && ext != ".yaml" && ext != ".yml" {
+			err = fmt.Errorf("--file %s read error: file extension must be json or yaml or yml", o.FileName)
+			return err
+		}
+		bs, err := os.ReadFile(o.FileName)
+		if err != nil {
+			err = fmt.Errorf("--file %s read error: %s", o.FileName, err.Error())
+			return err
+		}
+		switch ext {
+		case ".json":
+			err = json.Unmarshal(bs, &pas)
+			if err != nil {
+				err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+				return err
+			}
+		case ".yaml", ".yml":
+			err = yaml.Unmarshal(bs, &pas)
+			if err != nil {
+				err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+				return err
+			}
+		}
+	}
+	for _, pa := range pas {
+		patchActions = append(patchActions, pa)
+	}
+
 	if o.Patch != "" {
-		patchActions := []pkg.PatchAction{}
-		err = json.Unmarshal([]byte(o.Patch), &patchActions)
+		pas = []pkg.PatchAction{}
+		err = json.Unmarshal([]byte(o.Patch), &pas)
 		if err != nil {
 			err = fmt.Errorf("--patch %s parse error: %s", o.Patch, err.Error())
 			return err
 		}
-		for _, patchAction := range patchActions {
-			bs, _ := json.Marshal(patchAction)
-			if patchAction.Action != "update" && patchAction.Action != "delete" {
-				err = fmt.Errorf("--patch %s parse error: action must be update or delete", string(bs))
-				return err
-			}
-			if patchAction.Path == "" {
-				err = fmt.Errorf("--patch %s parse error: path can not be empty", string(bs))
-				return err
-			}
-			if patchAction.Action == "update" && patchAction.Value == "" {
-				err = fmt.Errorf("--patch %s parse error: action is update value can not be empty", string(bs))
-				return err
-			}
-			if patchAction.Action == "delete" && patchAction.Value != "" {
-				err = fmt.Errorf("--patch %s parse error: action is delete value must be empty", string(bs))
-				return err
-			}
-			if patchAction.Value != "" {
-				var v interface{}
-				if json.Unmarshal([]byte(patchAction.Value), &v) != nil {
-					patchAction.Object = patchAction.Value
-				} else {
-					patchAction.Object = v
-				}
+		for _, pa := range pas {
+			patchActions = append(patchActions, pa)
+		}
+	}
+
+	for _, patchAction := range patchActions {
+		b, _ := json.Marshal(patchAction.Value)
+		patchAction.Str = string(b)
+		bs, _ := json.Marshal(patchAction)
+		if patchAction.Action != "update" && patchAction.Action != "delete" {
+			err = fmt.Errorf("--patch %s parse error: action must be update or delete", string(bs))
+			return err
+		}
+		if patchAction.Path == "" {
+			err = fmt.Errorf("--patch %s parse error: path can not be empty", string(bs))
+			return err
+		}
+		o.Param.PatchActions = append(o.Param.PatchActions, patchAction)
+	}
+
+	if kind == "pipeline" && len(o.Runs) > 0 {
+		for _, name := range o.Runs {
+			patchAction := pkg.PatchAction{
+				Action: "update",
+				Path:   fmt.Sprintf(`builds.#(name=="%s").run`, name),
+				Value:  true,
+				Str:    "true",
 			}
 			o.Param.PatchActions = append(o.Param.PatchActions, patchAction)
 		}
 	}
+	if kind == "pipeline" && len(o.NoRuns) > 0 {
+		for _, name := range o.NoRuns {
+			patchAction := pkg.PatchAction{
+				Action: "update",
+				Path:   fmt.Sprintf(`builds.#(name=="%s").run`, name),
+				Value:  false,
+				Str:    "false",
+			}
+			o.Param.PatchActions = append(o.Param.PatchActions, patchAction)
+		}
+	}
+
 	return err
 }
 
@@ -328,6 +387,34 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		}
 		if !found {
 			err = fmt.Errorf("stepName %s not exists", o.StepName)
+			return err
+		}
+	}
+
+	for _, run := range o.Runs {
+		var found bool
+		for _, def := range project.ProjectDef.BuildDefs {
+			if run == def.BuildName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = fmt.Errorf("run %s not exists", run)
+			return err
+		}
+	}
+
+	for _, noRun := range o.NoRuns {
+		var found bool
+		for _, def := range project.ProjectDef.BuildDefs {
+			if noRun == def.BuildName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = fmt.Errorf("no-run %s not exists", noRun)
 			return err
 		}
 	}
@@ -662,6 +749,149 @@ func (o *OptionsDefPatch) Run(args []string) error {
 	if len(defUpdates) == 0 {
 		err = fmt.Errorf("nothing to patch")
 		return err
+	}
+
+	if len(o.Param.PatchActions) > 0 {
+		defPatches := []pkg.DefUpdate{}
+		for _, defOutput := range defOutputs {
+			bs, _ := json.Marshal(defOutput.Def)
+			switch defOutput.Kind {
+			case "buildDefs":
+				def := []pkg.BuildDef{}
+				defPatch := []pkg.BuildDef{}
+				_ = json.Unmarshal(bs, &def)
+				for _, d := range def {
+					var dp pkg.BuildDef
+					bs, _ := json.Marshal(d)
+					var s string
+					for _, patchAction := range o.Param.PatchActions {
+						switch patchAction.Action {
+						case "update":
+							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								return err
+							}
+						case "delete":
+							s, err = sjson.Delete(string(bs), patchAction.Path)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+								return err
+							}
+						}
+						err = json.Unmarshal([]byte(s), &dp)
+						if err != nil {
+							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
+							return err
+						}
+						bs = []byte(s)
+					}
+					defPatch = append(defPatch, dp)
+					defOutput.Def = defPatch
+				}
+				defPatches = append(defPatches, defOutput)
+			case "packageDefs":
+				def := []pkg.PackageDef{}
+				defPatch := []pkg.PackageDef{}
+				_ = json.Unmarshal(bs, &def)
+				for _, d := range def {
+					var dp pkg.PackageDef
+					bs, _ := json.Marshal(d)
+					var s string
+					for _, patchAction := range o.Param.PatchActions {
+						switch patchAction.Action {
+						case "update":
+							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								return err
+							}
+						case "delete":
+							s, err = sjson.Delete(string(bs), patchAction.Path)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+								return err
+							}
+						}
+						err = json.Unmarshal([]byte(s), &dp)
+						if err != nil {
+							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
+							return err
+						}
+						bs = []byte(s)
+					}
+					defPatch = append(defPatch, dp)
+					defOutput.Def = defPatch
+				}
+				defPatches = append(defPatches, defOutput)
+			case "deployContainerDefs":
+				def := []pkg.DeployContainerDef{}
+				defPatch := []pkg.DeployContainerDef{}
+				_ = json.Unmarshal(bs, &def)
+				for _, d := range def {
+					var dp pkg.DeployContainerDef
+					bs, _ := json.Marshal(d)
+					var s string
+					for _, patchAction := range o.Param.PatchActions {
+						switch patchAction.Action {
+						case "update":
+							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								return err
+							}
+						case "delete":
+							s, err = sjson.Delete(string(bs), patchAction.Path)
+							if err != nil {
+								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+								return err
+							}
+						}
+						err = json.Unmarshal([]byte(s), &dp)
+						if err != nil {
+							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
+							return err
+						}
+						bs = []byte(s)
+					}
+					defPatch = append(defPatch, dp)
+					defOutput.Def = defPatch
+				}
+				defPatches = append(defPatches, defOutput)
+			case "customStepDef":
+			case "pipelineDef":
+				def := pkg.PipelineDef{}
+				_ = json.Unmarshal(bs, &def)
+				var dp pkg.PipelineDef
+				var s string
+				for _, patchAction := range o.Param.PatchActions {
+					switch patchAction.Action {
+					case "update":
+						s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+						if err != nil {
+							err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+							return err
+						}
+					case "delete":
+						s, err = sjson.Delete(string(bs), patchAction.Path)
+						if err != nil {
+							err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+							return err
+						}
+					}
+					err = json.Unmarshal([]byte(s), &dp)
+					if err != nil {
+						err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
+						return err
+					}
+					bs = []byte(s)
+				}
+				defOutput.Def = dp
+				defPatches = append(defPatches, defOutput)
+			case "customOpsDefs":
+			}
+		}
+		defOutputs = defPatches
 	}
 
 	mapOutputs := []map[string]interface{}{}

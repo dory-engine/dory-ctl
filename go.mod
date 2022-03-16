@@ -16,6 +16,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.2.1
 	github.com/tidwall/gjson v1.12.1
+	github.com/tidwall/sjson v1.2.4
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
