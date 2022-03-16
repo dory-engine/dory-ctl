@@ -572,6 +572,7 @@ func (o *OptionsCommon) GetProjectNames() ([]string, error) {
 	if err != nil {
 		return projectNames, err
 	}
+	fmt.Println(result)
 	err = json.Unmarshal([]byte(result.Get("data.projectNames").Raw), &projectNames)
 	if err != nil {
 		return projectNames, err
