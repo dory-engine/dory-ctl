@@ -564,6 +564,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 	}
 
 	defUpdates := []pkg.DefUpdate{}
+	defUpdateFilters := []pkg.DefUpdate{}
 
 	switch o.Param.Kind {
 	case "build":
@@ -585,6 +586,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		}
 
 		defs := []pkg.BuildDef{}
+		ds := []pkg.BuildDef{}
 		for _, def := range project.ProjectDef.BuildDefs {
 			var found bool
 			for _, moduleName := range o.ModuleNames {
@@ -592,6 +594,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					found = true
 					break
 				}
+			}
+			if found == true {
+				ds = append(ds, def)
 			}
 			def.IsPatch = found
 			defs = append(defs, def)
@@ -602,6 +607,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			Def:         defs,
 		}
 		defUpdates = append(defUpdates, defUpdate)
+		defUpdateFilter := defUpdate
+		defUpdateFilter.Def = ds
+		defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 	case "package":
 		sort.SliceStable(project.ProjectDef.PackageDefs, func(i, j int) bool {
 			return project.ProjectDef.PackageDefs[i].PackageName < project.ProjectDef.PackageDefs[j].PackageName
@@ -620,6 +628,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			}
 		}
 		defs := []pkg.PackageDef{}
+		ds := []pkg.PackageDef{}
 		for _, def := range project.ProjectDef.PackageDefs {
 			var found bool
 			for _, moduleName := range o.ModuleNames {
@@ -627,6 +636,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					found = true
 					break
 				}
+			}
+			if found == true {
+				ds = append(ds, def)
 			}
 			def.IsPatch = found
 			defs = append(defs, def)
@@ -637,6 +649,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			Def:         defs,
 		}
 		defUpdates = append(defUpdates, defUpdate)
+		defUpdateFilter := defUpdate
+		defUpdateFilter.Def = ds
+		defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 	case "deploy":
 		for _, pae := range project.ProjectAvailableEnvs {
 			var found bool
@@ -664,6 +679,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					}
 				}
 				defs := []pkg.DeployContainerDef{}
+				ds := []pkg.DeployContainerDef{}
 				for _, def := range pae.DeployContainerDefs {
 					var found bool
 					for _, moduleName := range o.ModuleNames {
@@ -671,6 +687,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							found = true
 							break
 						}
+					}
+					if found == true {
+						ds = append(ds, def)
 					}
 					def.IsPatch = found
 					defs = append(defs, def)
@@ -682,6 +701,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					Def:         defs,
 				}
 				defUpdates = append(defUpdates, defUpdate)
+				defUpdateFilter := defUpdate
+				defUpdateFilter.Def = ds
+				defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 			}
 		}
 	case "step":
@@ -705,6 +727,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 						}
 					}
 					defs := []pkg.CustomStepModuleDef{}
+					ds := []pkg.CustomStepModuleDef{}
 					for _, def := range csd.CustomStepModuleDefs {
 						var found bool
 						for _, moduleName := range o.ModuleNames {
@@ -712,6 +735,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 								found = true
 								break
 							}
+						}
+						if found == true {
+							ds = append(ds, def)
 						}
 						def.IsPatch = found
 						defs = append(defs, def)
@@ -724,6 +750,10 @@ func (o *OptionsDefPatch) Run(args []string) error {
 						CustomStepName: stepName,
 					}
 					defUpdates = append(defUpdates, defUpdate)
+					defUpdateFilter := defUpdate
+					csd.CustomStepModuleDefs = ds
+					defUpdateFilter.Def = csd
+					defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 					break
 				}
 			}
@@ -755,6 +785,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							}
 						}
 						defs := []pkg.CustomStepModuleDef{}
+						ds := []pkg.CustomStepModuleDef{}
 						for _, def := range csd.CustomStepModuleDefs {
 							var found bool
 							for _, moduleName := range o.ModuleNames {
@@ -762,6 +793,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 									found = true
 									break
 								}
+							}
+							if found == true {
+								ds = append(ds, def)
 							}
 							def.IsPatch = found
 							defs = append(defs, def)
@@ -775,6 +809,10 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							CustomStepName: stepName,
 						}
 						defUpdates = append(defUpdates, defUpdate)
+						defUpdateFilter := defUpdate
+						csd.CustomStepModuleDefs = ds
+						defUpdateFilter.Def = csd
+						defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 					}
 				}
 			}
@@ -796,6 +834,8 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					BranchName:  pp.BranchName,
 				}
 				defUpdates = append(defUpdates, defUpdate)
+				defUpdateFilter := defUpdate
+				defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 			}
 		}
 	case "ops":
@@ -816,6 +856,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			}
 		}
 		defs := []pkg.CustomOpsDef{}
+		ds := []pkg.CustomOpsDef{}
 		for _, def := range project.ProjectDef.CustomOpsDefs {
 			var found bool
 			for _, moduleName := range o.ModuleNames {
@@ -823,6 +864,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					found = true
 					break
 				}
+			}
+			if found == true {
+				ds = append(ds, def)
 			}
 			def.IsPatch = found
 			defs = append(defs, def)
@@ -833,6 +877,9 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			Def:         defs,
 		}
 		defUpdates = append(defUpdates, defUpdate)
+		defUpdateFilter := defUpdate
+		defUpdateFilter.Def = ds
+		defUpdateFilters = append(defUpdateFilters, defUpdateFilter)
 	}
 
 	if len(defUpdates) == 0 {
@@ -1101,7 +1148,7 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		Kind: "list",
 	}
 	if len(defPatches) == 0 {
-		defUpdateList.Defs = defUpdates
+		defUpdateList.Defs = defUpdateFilters
 	} else {
 		defUpdateList.Defs = defPatches
 	}
