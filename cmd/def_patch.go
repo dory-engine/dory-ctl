@@ -113,7 +113,11 @@ func NewCmdDefPatch() *cobra.Command {
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
-				return []string{"demo-project1", "demo-project2"}, cobra.ShellCompDirectiveNoFileComp
+				projectNames, err := o.GetProjectNames()
+				if err != nil {
+					return nil, cobra.ShellCompDirectiveNoFileComp
+				}
+				return projectNames, cobra.ShellCompDirectiveNoFileComp
 			}
 			if len(args) == 1 {
 				return defCmdKinds, cobra.ShellCompDirectiveNoFileComp
