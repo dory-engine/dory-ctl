@@ -951,8 +951,14 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		}
 	}
 
+	defOutputs := []pkg.DefUpdate{}
+	if len(defPatches) == 0 {
+		defOutputs = defUpdates
+	} else {
+		defOutputs = defPatches
+	}
 	mapOutputs := []map[string]interface{}{}
-	for _, defOutput := range defPatches {
+	for _, defOutput := range defOutputs {
 		mapOutput := map[string]interface{}{}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defOutput)
@@ -974,11 +980,50 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		fmt.Println(string(bs))
 	}
 
-	//if !o.Try {
-	//	for i, defUpdate := range defUpdates {
-	//
-	//	}
-	//}
+	if !o.Try {
+		for _, defUpdate := range defUpdates {
+			bs, _ = pkg.YamlIndent(defUpdate.Def)
+
+			param := map[string]interface{}{
+				"envName":        defUpdate.EnvName,
+				"customStepName": defUpdate.CustomStepName,
+				"branchName":     defUpdate.BranchName,
+			}
+			paramOutput := map[string]interface{}{}
+			for k, v := range param {
+				paramOutput[k] = v
+			}
+
+			urlKind := defUpdate.Kind
+			switch defUpdate.Kind {
+			case "buildDefs":
+				param["buildDefsYaml"] = string(bs)
+			case "packageDefs":
+				param["packageDefsYaml"] = string(bs)
+			case "deployContainerDefs":
+				param["deployContainerDefsYaml"] = string(bs)
+			case "customStepDef":
+				param["customStepDefYaml"] = string(bs)
+				if defUpdate.EnvName != "" {
+					urlKind = fmt.Sprintf("%s/env", urlKind)
+				}
+			case "customOpsDefs":
+				param["customOpsDefsYaml"] = string(bs)
+			case "pipelineDef":
+				param["pipelineDefYaml"] = string(bs)
+			}
+			paramOutput = pkg.RemoveMapEmptyItems(paramOutput)
+			bs, _ = json.Marshal(paramOutput)
+			logHeader := fmt.Sprintf("[%s/%s] %s", defUpdate.ProjectName, defUpdate.Kind, string(bs))
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defUpdate.ProjectName, urlKind), http.MethodPost, "", param, false)
+			if err != nil {
+				err = fmt.Errorf("%s: %s", logHeader, err.Error())
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+		}
+	}
 
 	return err
 }
