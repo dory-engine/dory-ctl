@@ -137,53 +137,53 @@ func NewCmdDefPatch() *cobra.Command {
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 
 	_ = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"json", "yaml"}, cobra.ShellCompDirectiveDefault
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("patch", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		patchActions := []string{
 			`'[{"action":"update","path":"xxx","value":"xxx"}]'`,
 		}
-		return patchActions, cobra.ShellCompDirectiveDefault
+		return patchActions, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
-			return nil, cobra.ShellCompDirectiveDefault
+			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 		envNames := []string{}
 		for _, pae := range project.ProjectAvailableEnvs {
 			envNames = append(envNames, pae.EnvName)
 		}
-		return envNames, cobra.ShellCompDirectiveDefault
+		return envNames, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("branches", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
-			return nil, cobra.ShellCompDirectiveDefault
+			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 		branchNames := []string{}
 		for _, pp := range project.ProjectPipelines {
 			branchNames = append(branchNames, pp.BranchName)
 		}
-		return branchNames, cobra.ShellCompDirectiveDefault
+		return branchNames, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("step", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
-			return nil, cobra.ShellCompDirectiveDefault
+			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 		stepNames := []string{}
 		for _, conf := range project.CustomStepConfs {
 			stepNames = append(stepNames, conf.CustomStepName)
 		}
-		return stepNames, cobra.ShellCompDirectiveDefault
+		return stepNames, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -194,7 +194,7 @@ func NewCmdDefPatch() *cobra.Command {
 		envs, _ := cmd.Flags().GetStringSlice("envs")
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
-			return nil, cobra.ShellCompDirectiveDefault
+			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 		switch kind {
 		case "build":
@@ -277,7 +277,7 @@ func NewCmdDefPatch() *cobra.Command {
 				}
 			}
 		}
-		return moduleNames, cobra.ShellCompDirectiveDefault
+		return moduleNames, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	return cmd
