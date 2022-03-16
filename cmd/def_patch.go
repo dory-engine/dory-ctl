@@ -140,6 +140,14 @@ func NewCmdDefPatch() *cobra.Command {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveDefault
 	})
 
+	_ = cmd.RegisterFlagCompletionFunc("patch", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		patchActions := []string{
+			`'[{"action": "update", "path": "xxx", "value": "xxx"}]'`,
+			`'[{"action": "delete", "path": "xxx"}]'`,
+		}
+		return patchActions, cobra.ShellCompDirectiveDefault
+	})
+
 	_ = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
