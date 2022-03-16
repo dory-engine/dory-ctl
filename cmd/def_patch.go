@@ -58,7 +58,7 @@ func NewCmdDefPatch() *cobra.Command {
 	msgShort := fmt.Sprintf("patch project definitions")
 	msgLong := fmt.Sprintf(`patch project definitions in dory-core server`)
 	msgExample := fmt.Sprintf(`  # print current project build modules definitions for patched
-  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo
+  doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo -o yaml
 
   # patch project build modules definitions, update tp1-gin-demo,tp1-go-demo buildChecks commands
   doryctl def patch test-project1 build --modules=tp1-go-demo,tp1-gin-demo --patch='[{"action": "update", "path": "buildChecks", "value": ["ls -alh"]}]'
