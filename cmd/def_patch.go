@@ -101,9 +101,8 @@ func NewCmdDefPatch() *cobra.Command {
   doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
 	_ = o.GetOptionsCommon()
-
 	projectNames := o.GetProjectNames()
-	fmt.Println("projectNames:", projectNames)
+
 	cmd := &cobra.Command{
 		Use:                   msgUse,
 		DisableFlagsInUseLine: true,
