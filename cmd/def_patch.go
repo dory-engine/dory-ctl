@@ -111,6 +111,7 @@ func NewCmdDefPatch() *cobra.Command {
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
+		ValidArgs: []string{"demo-project1", "demo-project2"},
 	}
 	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter moduleNames to patch")
 	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter envNames to patch, required if kind is deploy")
