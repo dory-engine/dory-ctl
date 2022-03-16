@@ -111,7 +111,15 @@ func NewCmdDefPatch() *cobra.Command {
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
-		ValidArgs: []string{"demo-project1", "demo-project2"},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return []string{"demo-project1", "demo-project2"}, cobra.ShellCompDirectiveNoFileComp
+			}
+			if len(args) == 1 {
+				return defCmdKinds, cobra.ShellCompDirectiveNoFileComp
+			}
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter moduleNames to patch")
 	cmd.Flags().StringSliceVar(&o.EnvNames, "envs", []string{}, "filter envNames to patch, required if kind is deploy")
