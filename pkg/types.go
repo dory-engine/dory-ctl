@@ -334,6 +334,7 @@ type CustomStepModuleDef struct {
 	RelatedStepModules []string `yaml:"relatedStepModules" json:"relatedStepModules" bson:"relatedStepModules" validate:""`
 	ManualEnable       bool     `yaml:"manualEnable" json:"manualEnable" bson:"manualEnable" validate:""`
 	ParamInputYaml     string   `yaml:"paramInputYaml" json:"paramInputYaml" bson:"paramInputYaml" validate:""`
+	IsPatch            bool     `yaml:"isPatch" json:"isPatch" bson:"isPatch" validate:""`
 }
 
 type CustomStepDef struct {
@@ -350,6 +351,7 @@ type CustomOpsDef struct {
 	CustomOpsName  string   `yaml:"customOpsName" json:"customOpsName" bson:"customOpsName" validate:"required"`
 	CustomOpsDesc  string   `yaml:"customOpsDesc" json:"customOpsDesc" bson:"customOpsDesc" validate:"required"`
 	CustomOpsSteps []string `yaml:"customOpsSteps" json:"customOpsSteps" bson:"customOpsSteps" validate:"required"`
+	IsPatch        bool     `yaml:"isPatch" json:"isPatch" bson:"isPatch" validate:""`
 }
 
 type BuildDef struct {
@@ -359,6 +361,7 @@ type BuildDef struct {
 	BuildEnv     string   `yaml:"buildEnv" json:"buildEnv" bson:"buildEnv" validate:"required"`
 	BuildCmds    []string `yaml:"buildCmds" json:"buildCmds" bson:"buildCmds" validate:"required,dive,required"`
 	BuildChecks  []string `yaml:"buildChecks" json:"buildChecks" bson:"buildChecks" validate:"required,dive,required"`
+	IsPatch      bool     `yaml:"isPatch" json:"isPatch" bson:"isPatch" validate:""`
 }
 
 type PackageDef struct {
@@ -366,6 +369,7 @@ type PackageDef struct {
 	RelatedBuilds []string `yaml:"relatedBuilds" json:"relatedBuilds" bson:"relatedBuilds" validate:"required"`
 	PackageFrom   string   `yaml:"packageFrom" json:"packageFrom" bson:"packageFrom" validate:"required"`
 	Packages      []string `yaml:"packages" json:"packages" bson:"packages" validate:"required"`
+	IsPatch       bool     `yaml:"isPatch" json:"isPatch" bson:"isPatch" validate:""`
 }
 
 type DeployContainerDef struct {
@@ -438,6 +442,7 @@ type DeployContainerDef struct {
 		RunAsGroup int `yaml:"runAsGroup" json:"runAsGroup" bson:"runAsGroup" validate:""`
 	} `yaml:"securityContext" json:"securityContext" bson:"securityContext" validate:""`
 	DeployConfigSettings []string `yaml:"deployConfigSettings" json:"deployConfigSettings" bson:"deployConfigSettings" validate:""`
+	IsPatch              bool     `yaml:"isPatch" json:"isPatch" bson:"isPatch" validate:""`
 }
 
 type PipelineBuildDef struct {

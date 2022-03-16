@@ -420,7 +420,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 	}
 
 	defUpdates := []pkg.DefUpdate{}
-	defOutputs := []pkg.DefUpdate{}
 
 	switch o.Param.Kind {
 	case "build":
@@ -441,13 +440,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 			}
 		}
 
-		defUpdate := pkg.DefUpdate{
-			Kind:        pkg.DefCmdKinds[o.Param.Kind],
-			ProjectName: project.ProjectInfo.ProjectName,
-			Def:         project.ProjectDef.BuildDefs,
-		}
-		defUpdates = append(defUpdates, defUpdate)
-
 		defs := []pkg.BuildDef{}
 		for _, def := range project.ProjectDef.BuildDefs {
 			var found bool
@@ -457,16 +449,15 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					break
 				}
 			}
-			if found {
-				defs = append(defs, def)
-			}
+			def.IsPatch = found
+			defs = append(defs, def)
 		}
-		defOutput := pkg.DefUpdate{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defs,
 		}
-		defOutputs = append(defOutputs, defOutput)
+		defUpdates = append(defUpdates, defUpdate)
 	case "package":
 		sort.SliceStable(project.ProjectDef.PackageDefs, func(i, j int) bool {
 			return project.ProjectDef.PackageDefs[i].PackageName < project.ProjectDef.PackageDefs[j].PackageName
@@ -484,13 +475,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 				return err
 			}
 		}
-		defUpdate := pkg.DefUpdate{
-			Kind:        pkg.DefCmdKinds[o.Param.Kind],
-			ProjectName: project.ProjectInfo.ProjectName,
-			Def:         project.ProjectDef.PackageDefs,
-		}
-		defUpdates = append(defUpdates, defUpdate)
-
 		defs := []pkg.PackageDef{}
 		for _, def := range project.ProjectDef.PackageDefs {
 			var found bool
@@ -500,16 +484,15 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					break
 				}
 			}
-			if found {
-				defs = append(defs, def)
-			}
+			def.IsPatch = found
+			defs = append(defs, def)
 		}
-		defOutput := pkg.DefUpdate{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defs,
 		}
-		defOutputs = append(defOutputs, defOutput)
+		defUpdates = append(defUpdates, defUpdate)
 	case "deploy":
 		for _, pae := range project.ProjectAvailableEnvs {
 			var found bool
@@ -536,14 +519,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 						return err
 					}
 				}
-				defUpdate := pkg.DefUpdate{
-					Kind:        pkg.DefCmdKinds[o.Param.Kind],
-					ProjectName: project.ProjectInfo.ProjectName,
-					Def:         pae.DeployContainerDefs,
-					EnvName:     pae.EnvName,
-				}
-				defUpdates = append(defUpdates, defUpdate)
-
 				defs := []pkg.DeployContainerDef{}
 				for _, def := range pae.DeployContainerDefs {
 					var found bool
@@ -553,17 +528,15 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							break
 						}
 					}
-					if found {
-						defs = append(defs, def)
-					}
+					def.IsPatch = found
+					defs = append(defs, def)
 				}
-				defOutput := pkg.DefUpdate{
+				defUpdate := pkg.DefUpdate{
 					Kind:        pkg.DefCmdKinds[o.Param.Kind],
 					ProjectName: project.ProjectInfo.ProjectName,
 					Def:         defs,
-					EnvName:     pae.EnvName,
 				}
-				defOutputs = append(defOutputs, defOutput)
+				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
 	case "step":
@@ -586,14 +559,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 							return err
 						}
 					}
-					defUpdate := pkg.DefUpdate{
-						Kind:           pkg.DefCmdKinds[o.Param.Kind],
-						ProjectName:    project.ProjectInfo.ProjectName,
-						Def:            csd,
-						CustomStepName: stepName,
-					}
-					defUpdates = append(defUpdates, defUpdate)
-
 					defs := []pkg.CustomStepModuleDef{}
 					for _, def := range csd.CustomStepModuleDefs {
 						var found bool
@@ -603,19 +568,17 @@ func (o *OptionsDefPatch) Run(args []string) error {
 								break
 							}
 						}
-						if found {
-							defs = append(defs, def)
-						}
+						def.IsPatch = found
+						defs = append(defs, def)
 					}
 					csd.CustomStepModuleDefs = defs
-					defOutput := pkg.DefUpdate{
+					defUpdate := pkg.DefUpdate{
 						Kind:           pkg.DefCmdKinds[o.Param.Kind],
 						ProjectName:    project.ProjectInfo.ProjectName,
 						Def:            csd,
 						CustomStepName: stepName,
 					}
-					defOutputs = append(defOutputs, defOutput)
-
+					defUpdates = append(defUpdates, defUpdate)
 					break
 				}
 			}
@@ -646,15 +609,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 								return err
 							}
 						}
-						defUpdate := pkg.DefUpdate{
-							Kind:           pkg.DefCmdKinds[o.Param.Kind],
-							ProjectName:    project.ProjectInfo.ProjectName,
-							Def:            csd,
-							EnvName:        pae.EnvName,
-							CustomStepName: stepName,
-						}
-						defUpdates = append(defUpdates, defUpdate)
-
 						defs := []pkg.CustomStepModuleDef{}
 						for _, def := range csd.CustomStepModuleDefs {
 							var found bool
@@ -664,19 +618,18 @@ func (o *OptionsDefPatch) Run(args []string) error {
 									break
 								}
 							}
-							if found {
-								defs = append(defs, def)
-							}
+							def.IsPatch = found
+							defs = append(defs, def)
 						}
 						csd.CustomStepModuleDefs = defs
-						defOutput := pkg.DefUpdate{
+						defUpdate := pkg.DefUpdate{
 							Kind:           pkg.DefCmdKinds[o.Param.Kind],
 							ProjectName:    project.ProjectInfo.ProjectName,
 							Def:            csd,
 							EnvName:        pae.EnvName,
 							CustomStepName: stepName,
 						}
-						defOutputs = append(defOutputs, defOutput)
+						defUpdates = append(defUpdates, defUpdate)
 					}
 				}
 			}
@@ -700,7 +653,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 				defUpdates = append(defUpdates, defUpdate)
 			}
 		}
-		defOutputs = defUpdates
 	case "ops":
 		sort.SliceStable(project.ProjectDef.CustomOpsDefs, func(i, j int) bool {
 			return project.ProjectDef.CustomOpsDefs[i].CustomOpsName < project.ProjectDef.CustomOpsDefs[j].CustomOpsName
@@ -718,13 +670,6 @@ func (o *OptionsDefPatch) Run(args []string) error {
 				return err
 			}
 		}
-		defUpdate := pkg.DefUpdate{
-			Kind:        pkg.DefCmdKinds[o.Param.Kind],
-			ProjectName: project.ProjectInfo.ProjectName,
-			Def:         project.ProjectDef.CustomOpsDefs,
-		}
-		defUpdates = append(defUpdates, defUpdate)
-
 		defs := []pkg.CustomOpsDef{}
 		for _, def := range project.ProjectDef.CustomOpsDefs {
 			var found bool
@@ -734,16 +679,15 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					break
 				}
 			}
-			if found {
-				defs = append(defs, def)
-			}
+			def.IsPatch = found
+			defs = append(defs, def)
 		}
-		defOutput := pkg.DefUpdate{
+		defUpdate := pkg.DefUpdate{
 			Kind:        pkg.DefCmdKinds[o.Param.Kind],
 			ProjectName: project.ProjectInfo.ProjectName,
 			Def:         defs,
 		}
-		defOutputs = append(defOutputs, defOutput)
+		defUpdates = append(defUpdates, defUpdate)
 	}
 
 	if len(defUpdates) == 0 {
@@ -751,114 +695,184 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		return err
 	}
 
+	defPatches := []pkg.DefUpdate{}
 	if len(o.Param.PatchActions) > 0 {
-		defPatches := []pkg.DefUpdate{}
-		for _, defOutput := range defOutputs {
-			bs, _ := json.Marshal(defOutput.Def)
-			switch defOutput.Kind {
+		for idx, defUpdate := range defUpdates {
+			bs, _ := json.Marshal(defUpdate.Def)
+			switch defUpdate.Kind {
 			case "buildDefs":
-				def := []pkg.BuildDef{}
-				defPatch := []pkg.BuildDef{}
-				_ = json.Unmarshal(bs, &def)
-				for _, d := range def {
-					var dp pkg.BuildDef
-					bs, _ := json.Marshal(d)
-					var s string
-					for _, patchAction := range o.Param.PatchActions {
-						switch patchAction.Action {
-						case "update":
-							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+				defs := []pkg.BuildDef{}
+				dps := []pkg.BuildDef{}
+				_ = json.Unmarshal(bs, &defs)
+				for i, d := range defs {
+					if d.IsPatch {
+						var dp pkg.BuildDef
+						bs, _ := json.Marshal(d)
+						var s string
+						for _, patchAction := range o.Param.PatchActions {
+							switch patchAction.Action {
+							case "update":
+								s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+									return err
+								}
+							case "delete":
+								s, err = sjson.Delete(string(bs), patchAction.Path)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+									return err
+								}
+							}
+							var dd pkg.BuildDef
+							err = json.Unmarshal([]byte(s), &dd)
 							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
 								return err
 							}
-						case "delete":
-							s, err = sjson.Delete(string(bs), patchAction.Path)
-							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
-								return err
-							}
+							bs = []byte(s)
+							dp = dd
 						}
-						err = json.Unmarshal([]byte(s), &dp)
-						if err != nil {
-							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
-							return err
-						}
-						bs = []byte(s)
+						defs[i] = dp
+						dps = append(dps, dp)
 					}
-					defPatch = append(defPatch, dp)
-					defOutput.Def = defPatch
 				}
-				defPatches = append(defPatches, defOutput)
+				defUpdate.Def = defs
+				defUpdates[idx] = defUpdate
+
+				defPatch := defUpdate
+				defPatch.Def = dps
+				defPatches = append(defPatches, defPatch)
 			case "packageDefs":
-				def := []pkg.PackageDef{}
-				defPatch := []pkg.PackageDef{}
-				_ = json.Unmarshal(bs, &def)
-				for _, d := range def {
-					var dp pkg.PackageDef
-					bs, _ := json.Marshal(d)
-					var s string
-					for _, patchAction := range o.Param.PatchActions {
-						switch patchAction.Action {
-						case "update":
-							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+				defs := []pkg.PackageDef{}
+				dps := []pkg.PackageDef{}
+				_ = json.Unmarshal(bs, &defs)
+				for i, d := range defs {
+					if d.IsPatch {
+						var dp pkg.PackageDef
+						bs, _ := json.Marshal(d)
+						var s string
+						for _, patchAction := range o.Param.PatchActions {
+							switch patchAction.Action {
+							case "update":
+								s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+									return err
+								}
+							case "delete":
+								s, err = sjson.Delete(string(bs), patchAction.Path)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+									return err
+								}
+							}
+							var dd pkg.PackageDef
+							err = json.Unmarshal([]byte(s), &dd)
 							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
 								return err
 							}
-						case "delete":
-							s, err = sjson.Delete(string(bs), patchAction.Path)
-							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
-								return err
-							}
+							bs = []byte(s)
+							dp = dd
 						}
-						err = json.Unmarshal([]byte(s), &dp)
-						if err != nil {
-							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
-							return err
-						}
-						bs = []byte(s)
+						defs[i] = dp
+						dps = append(dps, dp)
 					}
-					defPatch = append(defPatch, dp)
-					defOutput.Def = defPatch
 				}
-				defPatches = append(defPatches, defOutput)
+				defUpdate.Def = defs
+				defUpdates[idx] = defUpdate
+
+				defPatch := defUpdate
+				defPatch.Def = dps
+				defPatches = append(defPatches, defPatch)
 			case "deployContainerDefs":
-				def := []pkg.DeployContainerDef{}
-				defPatch := []pkg.DeployContainerDef{}
-				_ = json.Unmarshal(bs, &def)
-				for _, d := range def {
-					var dp pkg.DeployContainerDef
-					bs, _ := json.Marshal(d)
-					var s string
-					for _, patchAction := range o.Param.PatchActions {
-						switch patchAction.Action {
-						case "update":
-							s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+				defs := []pkg.DeployContainerDef{}
+				dps := []pkg.DeployContainerDef{}
+				_ = json.Unmarshal(bs, &defs)
+				for i, d := range defs {
+					if d.IsPatch {
+						var dp pkg.DeployContainerDef
+						bs, _ := json.Marshal(d)
+						var s string
+						for _, patchAction := range o.Param.PatchActions {
+							switch patchAction.Action {
+							case "update":
+								s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+									return err
+								}
+							case "delete":
+								s, err = sjson.Delete(string(bs), patchAction.Path)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+									return err
+								}
+							}
+							var dd pkg.DeployContainerDef
+							err = json.Unmarshal([]byte(s), &dd)
 							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+								err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
 								return err
 							}
-						case "delete":
-							s, err = sjson.Delete(string(bs), patchAction.Path)
-							if err != nil {
-								err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
-								return err
-							}
+							bs = []byte(s)
+							dp = dd
 						}
-						err = json.Unmarshal([]byte(s), &dp)
-						if err != nil {
-							err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
-							return err
-						}
-						bs = []byte(s)
+						defs[i] = dp
+						dps = append(dps, dp)
 					}
-					defPatch = append(defPatch, dp)
-					defOutput.Def = defPatch
 				}
-				defPatches = append(defPatches, defOutput)
+				defUpdate.Def = defs
+				defUpdates[idx] = defUpdate
+
+				defPatch := defUpdate
+				defPatch.Def = dps
+				defPatches = append(defPatches, defPatch)
 			case "customStepDef":
+				defs := pkg.CustomStepDef{}
+				dps := []pkg.CustomStepModuleDef{}
+				_ = json.Unmarshal(bs, &defs)
+				for i, d := range defs.CustomStepModuleDefs {
+					if d.IsPatch {
+						var dp pkg.CustomStepModuleDef
+						bs, _ := json.Marshal(d)
+						var s string
+						for _, patchAction := range o.Param.PatchActions {
+							switch patchAction.Action {
+							case "update":
+								s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+									return err
+								}
+							case "delete":
+								s, err = sjson.Delete(string(bs), patchAction.Path)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+									return err
+								}
+							}
+							var dd pkg.CustomStepModuleDef
+							err = json.Unmarshal([]byte(s), &dd)
+							if err != nil {
+								err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
+								return err
+							}
+							bs = []byte(s)
+							dp = dd
+						}
+						defs.CustomStepModuleDefs[i] = dp
+						dps = append(dps, dp)
+					}
+				}
+				defUpdate.Def = defs
+				defUpdates[idx] = defUpdate
+
+				defs.CustomStepModuleDefs = dps
+				defUpdate.Def = defs
+				defPatch := defUpdate
+				defPatches = append(defPatches, defPatch)
 			case "pipelineDef":
 				def := pkg.PipelineDef{}
 				_ = json.Unmarshal(bs, &def)
@@ -869,33 +883,76 @@ func (o *OptionsDefPatch) Run(args []string) error {
 					case "update":
 						s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
 						if err != nil {
-							err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+							err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
 							return err
 						}
 					case "delete":
 						s, err = sjson.Delete(string(bs), patchAction.Path)
 						if err != nil {
-							err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defOutput.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+							err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
 							return err
 						}
 					}
-					err = json.Unmarshal([]byte(s), &dp)
+					var dd pkg.PipelineDef
+					err = json.Unmarshal([]byte(s), &dd)
 					if err != nil {
-						err = fmt.Errorf("parse %s error: %s\n%s", defOutput.Kind, err.Error(), s)
+						err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
 						return err
 					}
 					bs = []byte(s)
+					dp = dd
 				}
-				defOutput.Def = dp
-				defPatches = append(defPatches, defOutput)
+				defUpdate.Def = dp
+				defPatches = append(defPatches, defUpdate)
 			case "customOpsDefs":
+				defs := []pkg.CustomOpsDef{}
+				dps := []pkg.CustomOpsDef{}
+				_ = json.Unmarshal(bs, &defs)
+				for i, d := range defs {
+					if d.IsPatch {
+						var dp pkg.CustomOpsDef
+						bs, _ := json.Marshal(d)
+						var s string
+						for _, patchAction := range o.Param.PatchActions {
+							switch patchAction.Action {
+							case "update":
+								s, err = sjson.Set(string(bs), patchAction.Path, patchAction.Value)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s value=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, patchAction.Str, err.Error(), string(bs))
+									return err
+								}
+							case "delete":
+								s, err = sjson.Delete(string(bs), patchAction.Path)
+								if err != nil {
+									err = fmt.Errorf("patch %s action=%s path=%s error: %s\n%s", defUpdate.Kind, patchAction.Action, patchAction.Path, err.Error(), string(bs))
+									return err
+								}
+							}
+							var dd pkg.CustomOpsDef
+							err = json.Unmarshal([]byte(s), &dd)
+							if err != nil {
+								err = fmt.Errorf("parse %s error: %s\n%s", defUpdate.Kind, err.Error(), s)
+								return err
+							}
+							bs = []byte(s)
+							dp = dd
+						}
+						defs[i] = dp
+						dps = append(dps, dp)
+					}
+				}
+				defUpdate.Def = defs
+				defUpdates[idx] = defUpdate
+
+				defPatch := defUpdate
+				defPatch.Def = dps
+				defPatches = append(defPatches, defPatch)
 			}
 		}
-		defOutputs = defPatches
 	}
 
 	mapOutputs := []map[string]interface{}{}
-	for _, defOutput := range defOutputs {
+	for _, defOutput := range defPatches {
 		mapOutput := map[string]interface{}{}
 		m := map[string]interface{}{}
 		bs, _ = json.Marshal(defOutput)
@@ -916,6 +973,12 @@ func (o *OptionsDefPatch) Run(args []string) error {
 		bs, _ = pkg.YamlIndent(mapOutputs)
 		fmt.Println(string(bs))
 	}
+
+	//if !o.Try {
+	//	for i, defUpdate := range defUpdates {
+	//
+	//	}
+	//}
 
 	return err
 }
