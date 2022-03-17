@@ -55,6 +55,17 @@ func (o *OptionsRunLog) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			runNames, err := o.GetRunNames()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return runNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
 	return err
 }
 
