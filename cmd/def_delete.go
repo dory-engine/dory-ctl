@@ -242,6 +242,11 @@ func (o *OptionsDefDelete) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.MarkFlagRequired("modules")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
