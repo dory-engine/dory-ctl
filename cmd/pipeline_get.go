@@ -53,7 +53,7 @@ func NewCmdPipelineGet() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVar(&o.ProjectNames, "projectNames", "", "filters by projectNames, example: test-project1,test-project2")
+	cmd.Flags().StringVarP(&o.ProjectNames, "projects", "p", "", "filters by projectNames, example: test-project1,test-project2")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 
 	CheckError(o.Complete(cmd))
@@ -64,6 +64,35 @@ func (o *OptionsPipelineGet) Complete(cmd *cobra.Command) error {
 	var err error
 
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) >= 0 {
+			pipelineNames, err := o.GetPipelineNames()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return pipelineNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("projects", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectNames, err := o.GetProjectNames()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		return projectNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 	if err != nil {
 		return err
 	}
