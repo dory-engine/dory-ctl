@@ -643,3 +643,11 @@ type PatchAction struct {
 	Value  interface{} `yaml:"value" json:"value" bson:"value" validate:""`
 	Str    interface{} `yaml:"str" json:"str" bson:"str" validate:""`
 }
+
+type ProjectAdd struct {
+	ProjectName      string `yaml:"projectName" json:"projectName" bson:"projectName" validate:"required"`
+	ProjectDesc      string `yaml:"projectDesc" json:"projectDesc" bson:"projectDesc" validate:"required"`
+	ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:"required"`
+	ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:"required"`
+	EnvName          string `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+}

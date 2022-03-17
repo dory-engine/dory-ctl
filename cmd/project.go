@@ -28,5 +28,6 @@ func NewCmdProject() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCmdProjectGet())
+	cmd.AddCommand(NewCmdProjectAdd())
 	return cmd
 }

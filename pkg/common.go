@@ -166,6 +166,46 @@ func ValidateMinusNameID(s string) error {
 	return err
 }
 
+func ValidateMinus(s string) error {
+	var err error
+	RegExp := regexp.MustCompile(`^([^-]+)(-([^-]+))+$`)
+	match := RegExp.MatchString(s)
+	if !match {
+		err = fmt.Errorf(`format should like "hello-world-no3"`)
+		return err
+	}
+	arr := strings.Split(s, "-")
+	for _, str := range arr {
+		err = ValidateWithoutSpecialChars(str)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func ValidateLowCaseName(s string) error {
+	var err error
+	RegExp := regexp.MustCompile(`^([a-z])[a-z0-9]+$`)
+	match := RegExp.MatchString(s)
+	if !match {
+		err = fmt.Errorf(`should include lower case and number, format should like "test1"`)
+		return err
+	}
+	return err
+}
+
+func ValidateWithoutSpecialChars(s string) error {
+	var err error
+	chars := `~!@#$%^&*()_+-={}|[]\:;"'<>?,./ ` + "`"
+	match := strings.ContainsAny(s, chars)
+	if match {
+		err = fmt.Errorf(`cannot contain special chars`)
+		return err
+	}
+	return err
+}
+
 func YamlIndent(obj interface{}) ([]byte, error) {
 	var err error
 	var bs []byte

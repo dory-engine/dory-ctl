@@ -32,7 +32,7 @@ func NewCmdInstall() *cobra.Command {
   dorycli install script -o readme-install-docker -f install-config-docker.yaml
 
   ##############################
-  # please follow these steps to install dory-engine with kubernetes:
+  # please follow these steps to install dory-core with kubernetes:
   
   # 1. check prerequisite for install with kubernetes
   dorycli install check --mode kubernetes

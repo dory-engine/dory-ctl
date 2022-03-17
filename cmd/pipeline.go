@@ -10,7 +10,7 @@ func NewCmdPipeline() *cobra.Command {
 	msgUse := fmt.Sprintf("pipeline")
 	msgShort := fmt.Sprintf("manage pipeline resources")
 	msgLong := fmt.Sprintf(`manage pipeline resources in dory-core server`)
-	msgExample := fmt.Sprintf(`  # get pipeline resources
+	msgExample := fmt.Sprintf(`  # get all pipeline resources
   doryctl pipeline get
 
   # execute pipeline

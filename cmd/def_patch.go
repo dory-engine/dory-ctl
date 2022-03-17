@@ -475,28 +475,46 @@ func (o *OptionsDefPatch) Validate(args []string) error {
 			}
 		}
 	} else if o.FileName != "" {
-		ext := filepath.Ext(o.FileName)
-		if ext != ".json" && ext != ".yaml" && ext != ".yml" {
-			err = fmt.Errorf("--file %s read error: file extension must be json or yaml or yml", o.FileName)
-			return err
-		}
-		bs, err := os.ReadFile(o.FileName)
-		if err != nil {
-			err = fmt.Errorf("--file %s read error: %s", o.FileName, err.Error())
-			return err
-		}
-		switch ext {
-		case ".json":
-			err = json.Unmarshal(bs, &pas)
-			if err != nil {
-				err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+		if o.FileName != "-" {
+			ext := filepath.Ext(o.FileName)
+			if ext != ".json" && ext != ".yaml" && ext != ".yml" {
+				err = fmt.Errorf("--file %s read error: file extension must be json or yaml or yml", o.FileName)
 				return err
 			}
-		case ".yaml", ".yml":
-			err = yaml.Unmarshal(bs, &pas)
+			bs, err := os.ReadFile(o.FileName)
 			if err != nil {
-				err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+				err = fmt.Errorf("--file %s read error: %s", o.FileName, err.Error())
 				return err
+			}
+			switch ext {
+			case ".json":
+				err = json.Unmarshal(bs, &pas)
+				if err != nil {
+					err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+					return err
+				}
+			case ".yaml", ".yml":
+				err = yaml.Unmarshal(bs, &pas)
+				if err != nil {
+					err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+					return err
+				}
+			}
+		} else {
+			bs, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				return err
+			}
+			if len(bs) == 0 {
+				err = fmt.Errorf("--file - required os.stdin\n example: echo 'xxx' | %s def patch [...] -f -", pkg.BaseCmdName)
+				return err
+			}
+			if json.Unmarshal(bs, &pas) != nil {
+				err = yaml.Unmarshal(bs, &pas)
+				if err != nil {
+					err = fmt.Errorf("--file %s parse error: %s", o.FileName, err.Error())
+					return err
+				}
 			}
 		}
 	}
