@@ -628,3 +628,32 @@ func (o *OptionsCommon) GetPipelineNames() ([]string, error) {
 
 	return pipelineNames, err
 }
+
+func (o *OptionsCommon) GetRunNames() ([]string, error) {
+	var err error
+	var runNames []string
+
+	param := map[string]interface{}{
+		"page":    1,
+		"perPage": 200,
+	}
+	result, _, err := o.QueryAPI("api/cicd/runs", http.MethodPost, "", param, false)
+	if err != nil {
+		return runNames, err
+	}
+	rs := result.Get("data.runs").Array()
+	runs := []pkg.Run{}
+	for _, r := range rs {
+		run := pkg.Run{}
+		err = json.Unmarshal([]byte(r.Raw), &run)
+		if err != nil {
+			return runNames, err
+		}
+		runs = append(runs, run)
+	}
+	for _, run := range runs {
+		runNames = append(runNames, run.RunName)
+	}
+
+	return runNames, err
+}
