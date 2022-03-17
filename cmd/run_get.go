@@ -8,29 +8,24 @@ import (
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
 
 type OptionsRunGet struct {
 	*OptionsCommon `yaml:"optionsCommon" json:"optionsCommon" bson:"optionsCommon" validate:""`
-	ProjectNames   string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
-	PipelineNames  string `yaml:"pipelineNames" json:"pipelineNames" bson:"pipelineNames" validate:""`
-	StatusResults  string `yaml:"statusResults" json:"statusResults" bson:"statusResults" validate:""`
-	StartDate      string `yaml:"startDate" json:"startDate" bson:"startDate" validate:""`
-	EndDate        string `yaml:"endDate" json:"endDate" bson:"endDate" validate:""`
-	Page           int    `yaml:"page" json:"page" bson:"page" validate:""`
-	Number         int    `yaml:"number" json:"number" bson:"number" validate:""`
-	Output         string `yaml:"output" json:"output" bson:"output" validate:""`
+	ProjectNames   []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
+	PipelineNames  []string `yaml:"pipelineNames" json:"pipelineNames" bson:"pipelineNames" validate:""`
+	StatusResults  []string `yaml:"statusResults" json:"statusResults" bson:"statusResults" validate:""`
+	StartDate      string   `yaml:"startDate" json:"startDate" bson:"startDate" validate:""`
+	EndDate        string   `yaml:"endDate" json:"endDate" bson:"endDate" validate:""`
+	Page           int      `yaml:"page" json:"page" bson:"page" validate:""`
+	Number         int      `yaml:"number" json:"number" bson:"number" validate:""`
+	Output         string   `yaml:"output" json:"output" bson:"output" validate:""`
 	Param          struct {
-		ProjectNames  []string  `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
-		PipelineNames []string  `yaml:"pipelineNames" json:"pipelineNames" bson:"pipelineNames" validate:""`
-		StatusResults []string  `yaml:"statusResults" json:"statusResults" bson:"statusResults" validate:""`
-		StartDate     time.Time `yaml:"startDate" json:"startDate" bson:"startDate" validate:""`
-		EndDate       time.Time `yaml:"endDate" json:"endDate" bson:"endDate" validate:""`
-		RunName       string    `yaml:"runName" json:"runName" bson:"runName" validate:""`
-		RunNumber     int       `yaml:"runNumber" json:"runNumber" bson:"runNumber" validate:""`
+		StartDate time.Time `yaml:"startDate" json:"startDate" bson:"startDate" validate:""`
+		EndDate   time.Time `yaml:"endDate" json:"endDate" bson:"endDate" validate:""`
+		RunNames  []string  `yaml:"runNames" json:"runNames" bson:"runNames" validate:""`
 	}
 }
 
@@ -63,11 +58,11 @@ func NewCmdRunGet() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVar(&o.ProjectNames, "projectNames", "", "filters by projectNames, example: test-project1,test-project2")
-	cmd.Flags().StringVar(&o.PipelineNames, "pipelineNames", "", "filters by pipelineNames, example: test-project1-develop,test-project2-ops")
-	cmd.Flags().StringVar(&o.StatusResults, "statusResults", "", "filters by pipeline run statuses, example: SUCCESS,FAIL (options: SUCCESS / FAIL / ABORT / RUNNING / INPUT)")
-	cmd.Flags().StringVar(&o.StartDate, "startDate", "", "filters by pipeline run startTime in time range, example: 2022-01-01")
-	cmd.Flags().StringVar(&o.EndDate, "endDate", "", "filters by pipeline run startTime in time range, example: 2022-01-31")
+	cmd.Flags().StringSliceVar(&o.ProjectNames, "projects", []string{}, "filters by projectNames, example: test-project1,test-project2")
+	cmd.Flags().StringSliceVar(&o.PipelineNames, "pipelines", []string{}, "filters by pipelineNames, example: test-project1-develop,test-project2-ops")
+	cmd.Flags().StringSliceVar(&o.StatusResults, "statuses", []string{}, "filters by pipeline run statuses, example: SUCCESS,FAIL (options: SUCCESS / FAIL / ABORT / RUNNING / INPUT)")
+	cmd.Flags().StringVar(&o.StartDate, "start", "", "filters by pipeline run startTime in time range, example: 2022-01-01")
+	cmd.Flags().StringVar(&o.EndDate, "end", "", "filters by pipeline run startTime in time range, example: 2022-01-31")
 	cmd.Flags().IntVar(&o.Page, "page", 1, "pagination number")
 	cmd.Flags().IntVarP(&o.Number, "number", "n", 200, "show how many items each page")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
@@ -84,6 +79,77 @@ func (o *OptionsRunGet) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	statuses := []string{
+		"SUCCESS",
+		"FAIL",
+		"ABORT",
+		"RUNNING",
+		"INPUT",
+	}
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) >= 0 {
+			runNames, err := o.GetRunNames()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return runNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("projects", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectNames, err := o.GetProjectNames()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		return projectNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("pipelines", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		pipelineNames, err := o.GetPipelineNames()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		return pipelineNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("statuses", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return statuses, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("start", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		s := time.Now().AddDate(0, 0, -7).Format("2006-01-02")
+		return []string{s}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("end", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		s := time.Now().Format("2006-01-02")
+		return []string{s}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -95,46 +161,19 @@ func (o *OptionsRunGet) Validate(args []string) error {
 		return err
 	}
 
-	if len(args) > 1 {
-		err = fmt.Errorf("runName error: only accept one runName")
-		return err
-	}
-	if len(args) == 1 {
-		s := args[0]
-		s = strings.Trim(s, " ")
-		err = pkg.ValidateMinusNameID(s)
+	for _, name := range o.ProjectNames {
+		err = pkg.ValidateMinusNameID(name)
 		if err != nil {
-			err = fmt.Errorf("runName error: %s", err.Error())
+			err = fmt.Errorf("--projects %s error: %s", name, err.Error())
 			return err
 		}
-		o.Param.RunName = s
 	}
 
-	o.ProjectNames = strings.Trim(o.ProjectNames, " ")
-	if o.ProjectNames != "" {
-		arr := strings.Split(o.ProjectNames, ",")
-		for _, s := range arr {
-			s = strings.Trim(s, " ")
-			err = pkg.ValidateMinusNameID(s)
-			if err != nil {
-				err = fmt.Errorf("--projectNames error: %s", err.Error())
-				return err
-			}
-			o.Param.ProjectNames = append(o.Param.ProjectNames, s)
-		}
-	}
-
-	o.PipelineNames = strings.Trim(o.PipelineNames, " ")
-	if o.PipelineNames != "" {
-		arr := strings.Split(o.PipelineNames, ",")
-		for _, s := range arr {
-			s = strings.Trim(s, " ")
-			err = pkg.ValidateMinusNameID(s)
-			if err != nil {
-				err = fmt.Errorf("--pipelineNames error: %s", err.Error())
-				return err
-			}
-			o.Param.PipelineNames = append(o.Param.PipelineNames, s)
+	for _, name := range o.PipelineNames {
+		err = pkg.ValidateMinusNameID(name)
+		if err != nil {
+			err = fmt.Errorf("--pipeilnes %s error: %s", name, err.Error())
+			return err
 		}
 	}
 
@@ -145,24 +184,41 @@ func (o *OptionsRunGet) Validate(args []string) error {
 		"RUNNING",
 		"INPUT",
 	}
-	o.StatusResults = strings.Trim(o.StatusResults, " ")
-	if o.StatusResults != "" {
-		arr := strings.Split(o.StatusResults, ",")
-		for _, s := range arr {
-			s = strings.Trim(s, " ")
-			var found bool
-			for _, status := range statuses {
-				if status == s {
-					found = true
-				}
+
+	for _, name := range o.StatusResults {
+		var found bool
+		for _, s := range statuses {
+			if name == s {
+				found = true
+				break
 			}
-			if !found {
-				err = fmt.Errorf("--statusResults error: must be SUCCESS / FAIL / ABORT / RUNNING / INPUT")
-				return err
-			}
-			o.Param.StatusResults = append(o.Param.StatusResults, s)
+		}
+		if !found {
+			err = fmt.Errorf("--statuses %s error: must be %s", name, strings.Join(statuses, " / "))
+			return err
 		}
 	}
+
+	runNames := args
+	m := map[string]string{}
+	for _, runName := range runNames {
+		err = pkg.ValidateMinusNameID(runName)
+		if err != nil {
+			err = fmt.Errorf("runName %s error: %s", runName, err.Error())
+			return err
+		}
+		arr := strings.Split(runName, "-")
+		pipelineName := strings.Join(arr[:len(arr)-1], "-")
+		m[pipelineName] = ""
+	}
+	if len(m) > 0 {
+		pipelineNames := []string{}
+		for k, _ := range m {
+			pipelineNames = append(pipelineNames, k)
+		}
+		o.PipelineNames = pipelineNames
+	}
+	o.Param.RunNames = runNames
 
 	if o.EndDate == "" {
 		o.EndDate = time.Now().Format("2006-01-02")
@@ -184,26 +240,6 @@ func (o *OptionsRunGet) Validate(args []string) error {
 	if o.Param.StartDate.After(o.Param.EndDate) {
 		err = fmt.Errorf("--startDate must after --endDate")
 		return err
-	}
-
-	if o.Param.RunName != "" {
-		arr := strings.Split(o.Param.RunName, "-")
-		if len(arr) < 3 {
-			o.Param.RunName = ""
-		} else {
-			s := arr[len(arr)-1]
-			o.Param.RunNumber, err = strconv.Atoi(s)
-			if err != nil {
-				err = fmt.Errorf("runName format error: %s", err.Error())
-				return err
-			}
-			o.Param.PipelineNames = []string{
-				strings.Join(arr[:len(arr)-1], "-"),
-			}
-			o.Param.ProjectNames = []string{
-				strings.Join(arr[:len(arr)-2], "-"),
-			}
-		}
 	}
 
 	if o.Page < 1 {
@@ -232,16 +268,16 @@ func (o *OptionsRunGet) Run(args []string) error {
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
 	param := map[string]interface{}{
-		"projectNames":  o.Param.ProjectNames,
-		"pipelineNames": o.Param.PipelineNames,
-		"statusResults": o.Param.StatusResults,
+		"projectNames":  o.ProjectNames,
+		"pipelineNames": o.PipelineNames,
+		"runNames":      o.Param.RunNames,
+		"statusResults": o.StatusResults,
 		"startTimeRage": map[string]string{
 			"startDate": o.StartDate,
 			"endDate":   o.EndDate,
 		},
-		"runNumber": o.Param.RunNumber,
-		"page":      o.Page,
-		"perPage":   o.Number,
+		"page":    o.Page,
+		"perPage": o.Number,
 	}
 	result, _, err := o.QueryAPI("api/cicd/runs", http.MethodPost, "", param, false)
 	if err != nil {
@@ -260,11 +296,7 @@ func (o *OptionsRunGet) Run(args []string) error {
 
 	if len(runs) > 0 {
 		dataOutput := map[string]interface{}{}
-		if o.Param.RunNumber != 0 {
-			dataOutput["run"] = runs[0]
-		} else {
-			dataOutput["runs"] = runs
-		}
+		dataOutput["runs"] = runs
 		switch o.Output {
 		case "json":
 			bs, _ = json.MarshalIndent(dataOutput, "", "  ")
