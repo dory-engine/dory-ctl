@@ -471,12 +471,21 @@ func GetDefKinds(fileName string, bs []byte) ([]pkg.DefKind, error) {
 
 func (o *OptionsDefApply) Complete(cmd *cobra.Command) error {
 	var err error
-	err = o.GetOptionsCommon()
+
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsDefApply) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
 
 	if len(o.FileNames) == 0 {
 		err = fmt.Errorf("--files required")
