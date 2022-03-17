@@ -171,7 +171,7 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 				isAllKind = true
 			}
 		}
-		step, _ := cmd.Flags().GetString("step")
+		steps, _ := cmd.Flags().GetStringSlice("steps")
 		envs, _ := cmd.Flags().GetStringSlice("envs")
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
@@ -220,14 +220,16 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 				}
 			}
 			if kind == "step" || isAllKind {
-				if step != "" {
+				if len(steps) > 0 {
 					if len(envs) == 0 {
 						for stepName, csd := range project.ProjectDef.CustomStepDefs {
-							if stepName == step {
-								for _, def := range csd.CustomStepModuleDefs {
-									m[def.ModuleName] = ""
+							for _, step := range steps {
+								if stepName == step {
+									for _, def := range csd.CustomStepModuleDefs {
+										m[def.ModuleName] = ""
+									}
+									break
 								}
-								break
 							}
 						}
 					} else {
@@ -242,11 +244,13 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 						}
 						for _, pae := range paes {
 							for stepName, csd := range pae.CustomStepDefs {
-								if stepName == step {
-									for _, def := range csd.CustomStepModuleDefs {
-										m[def.ModuleName] = ""
+								for _, step := range steps {
+									if stepName == step {
+										for _, def := range csd.CustomStepModuleDefs {
+											m[def.ModuleName] = ""
+										}
+										break
 									}
-									break
 								}
 							}
 						}
