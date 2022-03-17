@@ -484,6 +484,11 @@ func (o *OptionsDefApply) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.MarkFlagRequired("files")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
