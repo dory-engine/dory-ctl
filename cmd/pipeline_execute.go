@@ -61,16 +61,8 @@ func (o *OptionsPipelineExecute) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
-	projectNames, err := o.GetProjectNames()
-	if err != nil {
-		return err
-	}
-
 	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
-			return projectNames, cobra.ShellCompDirectiveNoFileComp
-		}
-		if len(args) == 1 {
 			pipelineNames, err := o.GetPipelineNames()
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
