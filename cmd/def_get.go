@@ -89,6 +89,12 @@ func NewCmdDefGet() *cobra.Command {
 
 func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 

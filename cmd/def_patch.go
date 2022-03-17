@@ -100,6 +100,8 @@ func NewCmdDefPatch() *cobra.Command {
   # patch project pipeline definitions from file, support JSON and YAML
   doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
+	CheckError(o.GetOptionsCommon())
+
 	cmd := &cobra.Command{
 		Use:                   msgUse,
 		DisableFlagsInUseLine: true,
@@ -129,6 +131,7 @@ func NewCmdDefPatch() *cobra.Command {
 
 func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	var err error
+
 	defCmdKinds := []string{
 		"build",
 		"package",
@@ -349,11 +352,6 @@ func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsDefPatch) Validate(args []string) error {
 	var err error
-
-	err = o.GetOptionsCommon()
-	if err != nil {
-		return err
-	}
 
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")

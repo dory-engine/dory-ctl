@@ -73,6 +73,12 @@ func NewCmdDefClone() *cobra.Command {
 
 func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
