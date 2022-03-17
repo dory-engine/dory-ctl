@@ -100,9 +100,6 @@ func NewCmdDefPatch() *cobra.Command {
   # patch project pipeline definitions from file, support JSON and YAML
   doryctl def patch test-project1 pipeline --branches=develop,release -f patch.yaml`)
 
-	_ = o.GetOptionsCommon()
-	projectNames, _ := o.GetProjectNames()
-
 	cmd := &cobra.Command{
 		Use:                   msgUse,
 		DisableFlagsInUseLine: true,
@@ -110,18 +107,8 @@ func NewCmdDefPatch() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return projectNames, cobra.ShellCompDirectiveDefault
-			}
-			if len(args) == 1 {
-				return defCmdKinds, cobra.ShellCompDirectiveDefault
-			}
-			return nil, cobra.ShellCompDirectiveDefault
 		},
 	}
 	cmd.Flags().StringSliceVar(&o.ModuleNames, "modules", []string{}, "filter moduleNames to patch")
@@ -136,18 +123,49 @@ func NewCmdDefPatch() *cobra.Command {
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 
-	_ = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
-	})
+	CheckError(o.Complete(cmd))
+	return cmd
+}
 
-	_ = cmd.RegisterFlagCompletionFunc("patch", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
+	var err error
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
+	defCmdKinds := []string{
+		"build",
+		"package",
+		"deploy",
+		"ops",
+		"step",
+		"pipeline",
+	}
+
+	projectNames, err := o.GetProjectNames()
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return projectNames, cobra.ShellCompDirectiveDefault
+		}
+		if len(args) == 1 {
+			return defCmdKinds, cobra.ShellCompDirectiveDefault
+		}
+		return nil, cobra.ShellCompDirectiveDefault
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("patch", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		patchActions := []string{
 			`'[{"action":"update","path":"xxx","value":"xxx"}]'`,
 		}
 		return patchActions, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		return err
+	}
 
-	_ = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
@@ -159,8 +177,11 @@ func NewCmdDefPatch() *cobra.Command {
 		}
 		return envNames, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		return err
+	}
 
-	_ = cmd.RegisterFlagCompletionFunc("branches", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err = cmd.RegisterFlagCompletionFunc("branches", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
@@ -172,8 +193,11 @@ func NewCmdDefPatch() *cobra.Command {
 		}
 		return branchNames, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		return err
+	}
 
-	_ = cmd.RegisterFlagCompletionFunc("step", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err = cmd.RegisterFlagCompletionFunc("step", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		projectName := args[0]
 		project, err := o.GetProjectDef(projectName)
 		if err != nil {
@@ -185,8 +209,11 @@ func NewCmdDefPatch() *cobra.Command {
 		}
 		return stepNames, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		return err
+	}
 
-	_ = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		moduleNames := []string{}
 		projectName := args[0]
 		kind := args[1]
@@ -279,13 +306,17 @@ func NewCmdDefPatch() *cobra.Command {
 		}
 		return moduleNames, cobra.ShellCompDirectiveNoFileComp
 	})
+	if err != nil {
+		return err
+	}
 
-	return cmd
-}
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
 
-func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
-	var err error
-	err = o.GetOptionsCommon()
 	return err
 }
 
