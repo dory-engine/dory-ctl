@@ -57,5 +57,9 @@ func (o *OptionsVersionRun) Run(args []string) error {
 	fmt.Println(fmt.Sprintf("doryctl version: %s", pkg.VersionDoryCtl))
 	fmt.Println(fmt.Sprintf("install dory-core version: %s", pkg.VersionDoryCore))
 	fmt.Println(fmt.Sprintf("install dory-dashboard version: %s", pkg.VersionDoryDashboard))
+	if o.ServerURL != "" {
+		fmt.Println(fmt.Sprintf("serverURL: %s", o.ServerURL))
+	}
+
 	return err
 }
