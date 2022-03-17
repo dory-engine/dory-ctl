@@ -55,7 +55,6 @@ func NewCmdDefClone() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
@@ -67,17 +66,21 @@ func NewCmdDefClone() *cobra.Command {
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 	var err error
-	err = o.GetOptionsCommon()
 	return err
 }
 
 func (o *OptionsDefClone) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")
 		return err

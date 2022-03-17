@@ -486,6 +486,9 @@ func (o *OptionsDefApply) Validate(args []string) error {
 	var err error
 
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
 
 	if len(o.FileNames) == 0 {
 		err = fmt.Errorf("--files required")

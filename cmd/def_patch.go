@@ -349,6 +349,7 @@ func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsDefPatch) Validate(args []string) error {
 	var err error
+
 	err = o.GetOptionsCommon()
 	if err != nil {
 		return err

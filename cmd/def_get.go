@@ -72,7 +72,6 @@ func NewCmdDefGet() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
@@ -83,17 +82,24 @@ func NewCmdDefGet() *cobra.Command {
 	cmd.Flags().StringSliceVar(&o.StepNames, "steps", []string{}, "filter project definitions by stepNames")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 	var err error
-	err = o.GetOptionsCommon()
 	return err
 }
 
 func (o *OptionsDefGet) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")
 		return err
