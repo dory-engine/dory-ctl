@@ -63,6 +63,16 @@ func (o *OptionsInstallScript) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.MarkFlagRequired("file")
+	if err != nil {
+		return err
+	}
+
+	err = cmd.MarkFlagRequired("output")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
