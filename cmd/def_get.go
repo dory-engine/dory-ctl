@@ -160,14 +160,119 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		moduleNames := []string{}
+		projectName := args[0]
+		kindStr := args[1]
+		var isAllKind bool
+		kinds := strings.Split(kindStr, ",")
+		for _, kind := range kinds {
+			if kind == "all" {
+				isAllKind = true
+			}
+		}
+		step, _ := cmd.Flags().GetString("step")
+		envs, _ := cmd.Flags().GetStringSlice("envs")
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		m := map[string]string{}
+		for _, kind := range kinds {
+			if kind == "build" || isAllKind {
+				for _, def := range project.ProjectDef.BuildDefs {
+					m[def.BuildName] = ""
+				}
+			}
+			if kind == "package" || isAllKind {
+				for _, def := range project.ProjectDef.PackageDefs {
+					m[def.PackageName] = ""
+				}
+			}
+			if kind == "deploy" || isAllKind {
+				if len(envs) == 0 {
+					for _, pae := range project.ProjectAvailableEnvs {
+						for _, def := range pae.DeployContainerDefs {
+							m[def.DeployName] = ""
+						}
+					}
+				} else {
+					paes := []pkg.ProjectAvailableEnv{}
+					for _, pae := range project.ProjectAvailableEnvs {
+						for _, env := range envs {
+							if env == pae.EnvName {
+								paes = append(paes, pae)
+								break
+							}
+						}
+					}
+					for _, pae := range paes {
+						for _, def := range pae.DeployContainerDefs {
+							m[def.DeployName] = ""
+						}
+					}
+				}
+			}
+			if kind == "ops" || isAllKind {
+				for _, def := range project.ProjectDef.CustomOpsDefs {
+					m[def.CustomOpsName] = ""
+				}
+			}
+			if kind == "step" || isAllKind {
+				if step != "" {
+					if len(envs) == 0 {
+						for stepName, csd := range project.ProjectDef.CustomStepDefs {
+							if stepName == step {
+								for _, def := range csd.CustomStepModuleDefs {
+									m[def.ModuleName] = ""
+								}
+								break
+							}
+						}
+					} else {
+						paes := []pkg.ProjectAvailableEnv{}
+						for _, pae := range project.ProjectAvailableEnvs {
+							for _, env := range envs {
+								if env == pae.EnvName {
+									paes = append(paes, pae)
+									break
+								}
+							}
+						}
+						for _, pae := range paes {
+							for stepName, csd := range pae.CustomStepDefs {
+								if stepName == step {
+									for _, def := range csd.CustomStepModuleDefs {
+										m[def.ModuleName] = ""
+									}
+									break
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if isAllKind {
+				break
+			}
+		}
+		for k, _ := range m {
+			moduleNames = append(moduleNames, k)
+		}
+		return moduleNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 	})
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("o.Param.IsAllKind:", o.Param.IsAllKind)
 
 	return err
 }
