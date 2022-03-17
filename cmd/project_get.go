@@ -52,7 +52,7 @@ func NewCmdProjectGet() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().StringVar(&o.ProjectTeam, "projectTeam", "", "filters by project team")
+	cmd.Flags().StringVar(&o.ProjectTeam, "team", "", "filters by projectTeam")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
 
 	CheckError(o.Complete(cmd))
@@ -63,6 +63,25 @@ func (o *OptionsProjectGet) Complete(cmd *cobra.Command) error {
 	var err error
 
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
+	projectNames, err := o.GetProjectNames()
+	if err != nil {
+		return err
+	}
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) >= 0 {
+			return projectNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
 	if err != nil {
 		return err
 	}
