@@ -167,6 +167,8 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	fmt.Println("o.Param.IsAllKind:", o.Param.IsAllKind)
+
 	return err
 }
 
