@@ -596,19 +596,35 @@ func (o *OptionsCommon) GetProjectDef(projectName string) (pkg.ProjectOutput, er
 	return project, err
 }
 
-func (o *OptionsCommon) GetProject(projectName string) (pkg.Project, error) {
+func (o *OptionsCommon) GetPipelineNames() ([]string, error) {
 	var err error
-	var project pkg.Project
+	var pipelineNames []string
 
-	param := map[string]interface{}{}
-	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/project/%s", projectName), http.MethodGet, "", param, false)
-	if err != nil {
-		return project, err
+	param := map[string]interface{}{
+		"projectNames": []string{},
+		"projectTeam":  "",
+		"page":         1,
+		"perPage":      1000,
 	}
-	err = json.Unmarshal([]byte(result.Get("data.project").Raw), &project)
+	result, _, err := o.QueryAPI("api/cicd/projects", http.MethodPost, "", param, false)
 	if err != nil {
-		return project, err
+		return pipelineNames, err
+	}
+	rs := result.Get("data.projects").Array()
+	projects := []pkg.Project{}
+	for _, r := range rs {
+		project := pkg.Project{}
+		err = json.Unmarshal([]byte(r.Raw), &project)
+		if err != nil {
+			return pipelineNames, err
+		}
+		projects = append(projects, project)
+	}
+	for _, project := range projects {
+		for _, pipeline := range project.Pipelines {
+			pipelineNames = append(pipelineNames, pipeline.PipelineName)
+		}
 	}
 
-	return project, err
+	return pipelineNames, err
 }

@@ -71,14 +71,9 @@ func (o *OptionsPipelineExecute) Complete(cmd *cobra.Command) error {
 			return projectNames, cobra.ShellCompDirectiveNoFileComp
 		}
 		if len(args) == 1 {
-			projectName := args[0]
-			project, err := o.GetProject(projectName)
+			pipelineNames, err := o.GetPipelineNames()
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-			pipelineNames := []string{}
-			for _, pipeline := range project.Pipelines {
-				pipelineNames = append(pipelineNames, pipeline.PipelineName)
 			}
 			return pipelineNames, cobra.ShellCompDirectiveNoFileComp
 		}
