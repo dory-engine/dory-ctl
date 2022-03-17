@@ -238,6 +238,13 @@ func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
