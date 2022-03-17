@@ -79,6 +79,165 @@ func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	defCmdKinds := []string{
+		"deploy",
+		"step",
+	}
+
+	projectNames, err := o.GetProjectNames()
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return projectNames, cobra.ShellCompDirectiveDefault
+		}
+		if len(args) == 1 {
+			return defCmdKinds, cobra.ShellCompDirectiveDefault
+		}
+		return nil, cobra.ShellCompDirectiveDefault
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("from-env", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		envNames := []string{}
+		for _, pae := range project.ProjectAvailableEnvs {
+			envNames = append(envNames, pae.EnvName)
+		}
+		return envNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("to-envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		envNames := []string{}
+		for _, pae := range project.ProjectAvailableEnvs {
+			envNames = append(envNames, pae.EnvName)
+		}
+		return envNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("step", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		stepNames := []string{}
+		for _, conf := range project.CustomStepConfs {
+			if conf.IsEnvDiff {
+				stepNames = append(stepNames, conf.CustomStepName)
+			}
+		}
+		return stepNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("modules", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		moduleNames := []string{}
+		projectName := args[0]
+		kind := args[1]
+		step, _ := cmd.Flags().GetString("step")
+		envName, _ := cmd.Flags().GetString("from-env")
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		switch kind {
+		case "deploy":
+			m := map[string]string{}
+			if envName == "" {
+				for _, pae := range project.ProjectAvailableEnvs {
+					for _, def := range pae.DeployContainerDefs {
+						m[def.DeployName] = def.DeployName
+					}
+				}
+				for k, _ := range m {
+					moduleNames = append(moduleNames, k)
+				}
+			} else {
+				pae := pkg.ProjectAvailableEnv{}
+				for _, p := range project.ProjectAvailableEnvs {
+					if envName == p.EnvName {
+						pae = p
+						break
+					}
+				}
+				for _, def := range pae.DeployContainerDefs {
+					m[def.DeployName] = def.DeployName
+				}
+				for k, _ := range m {
+					moduleNames = append(moduleNames, k)
+				}
+			}
+		case "step":
+			if step != "" {
+				if envName == "" {
+					for stepName, csd := range project.ProjectDef.CustomStepDefs {
+						if stepName == step {
+							for _, def := range csd.CustomStepModuleDefs {
+								moduleNames = append(moduleNames, def.ModuleName)
+							}
+							break
+						}
+					}
+				} else {
+					m := map[string]string{}
+					pae := pkg.ProjectAvailableEnv{}
+					for _, p := range project.ProjectAvailableEnvs {
+						if envName == p.EnvName {
+							pae = p
+							break
+						}
+					}
+					for stepName, csd := range pae.CustomStepDefs {
+						if stepName == step {
+							for _, def := range csd.CustomStepModuleDefs {
+								m[def.ModuleName] = def.ModuleName
+							}
+							break
+						}
+					}
+					for k, _ := range m {
+						moduleNames = append(moduleNames, k)
+					}
+				}
+			}
+		}
+		return moduleNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.MarkFlagRequired("from-env")
+	if err != nil {
+		return err
+	}
+
+	err = cmd.MarkFlagRequired("to-envs")
+	if err != nil {
+		return err
+	}
+
+	err = cmd.MarkFlagRequired("modules")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
