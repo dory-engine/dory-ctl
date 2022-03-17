@@ -310,6 +310,38 @@ func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.RegisterFlagCompletionFunc("runs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		moduleNames := []string{}
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		for _, def := range project.ProjectDef.BuildDefs {
+			moduleNames = append(moduleNames, def.BuildName)
+		}
+		return moduleNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("no-runs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		moduleNames := []string{}
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		for _, def := range project.ProjectDef.BuildDefs {
+			moduleNames = append(moduleNames, def.BuildName)
+		}
+		return moduleNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
 	})
