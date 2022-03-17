@@ -43,7 +43,7 @@ func NewCmdRunAbort() *cobra.Command {
 			CheckError(o.Run(args))
 		},
 	}
-	cmd.Flags().BoolVar(&o.Log, "log", false, "show run logs")
+	cmd.Flags().BoolVarP(&o.Log, "logs", "l", false, "show run logs")
 
 	CheckError(o.Complete(cmd))
 	return cmd
