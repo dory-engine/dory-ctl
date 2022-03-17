@@ -48,7 +48,6 @@ func NewCmdLogin() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
@@ -56,17 +55,30 @@ func NewCmdLogin() *cobra.Command {
 	cmd.Flags().StringVarP(&o.Username, "username", "U", "", "dory-core server username")
 	cmd.Flags().StringVarP(&o.Password, "password", "P", "", "dory-core server password")
 	cmd.Flags().IntVar(&o.ExpireDays, "expireDays", 90, "dory-core server token expires days")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsLogin) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsLogin) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if len(args) > 0 {
 		err = fmt.Errorf("command args must be empty")
 		return err
