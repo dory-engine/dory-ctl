@@ -48,24 +48,36 @@ func NewCmdProjectGet() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
 	}
 	cmd.Flags().StringVar(&o.ProjectTeam, "projectTeam", "", "filters by project team")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsProjectGet) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsProjectGet) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	projectNames := args
 	for _, s := range projectNames {
 		s = strings.Trim(s, " ")

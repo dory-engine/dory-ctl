@@ -595,3 +595,20 @@ func (o *OptionsCommon) GetProjectDef(projectName string) (pkg.ProjectOutput, er
 
 	return project, err
 }
+
+func (o *OptionsCommon) GetProject(projectName string) (pkg.Project, error) {
+	var err error
+	var project pkg.Project
+
+	param := map[string]interface{}{}
+	result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/project/%s", projectName), http.MethodGet, "", param, false)
+	if err != nil {
+		return project, err
+	}
+	err = json.Unmarshal([]byte(result.Get("data.project").Raw), &project)
+	if err != nil {
+		return project, err
+	}
+
+	return project, err
+}

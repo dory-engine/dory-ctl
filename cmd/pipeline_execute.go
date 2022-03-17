@@ -43,23 +43,59 @@ func NewCmdPipelineExecute() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
 	}
 	cmd.Flags().StringVarP(&o.Batch, "batch", "b", "", "send input in run automatically, input values split with ::, example: develop::inputCheckDeploy::tp1-gin-demo,tp1-go-demo")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsPipelineExecute) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
+	projectNames, err := o.GetProjectNames()
+	if err != nil {
+		return err
+	}
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return projectNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		if len(args) == 1 {
+			projectName := args[0]
+			project, err := o.GetProject(projectName)
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			pipelineNames := []string{}
+			for _, pipeline := range project.Pipelines {
+				pipelineNames = append(pipelineNames, pipeline.PipelineName)
+			}
+			return pipelineNames, cobra.ShellCompDirectiveNoFileComp
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
 	return err
 }
 
 func (o *OptionsPipelineExecute) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if len(args) != 1 {
 		err = fmt.Errorf("pipelineName error: only accept one pipelineName")
 		return err

@@ -59,7 +59,6 @@ func NewCmdRunGet() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
@@ -72,17 +71,30 @@ func NewCmdRunGet() *cobra.Command {
 	cmd.Flags().IntVar(&o.Page, "page", 1, "pagination number")
 	cmd.Flags().IntVarP(&o.Number, "number", "n", 200, "show how many items each page")
 	cmd.Flags().StringVarP(&o.Output, "output", "o", "", "output format (options: yaml / json)")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsRunGet) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsRunGet) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if len(args) > 1 {
 		err = fmt.Errorf("runName error: only accept one runName")
 		return err

@@ -145,15 +145,18 @@ func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	}
 
 	projectNames, err := o.GetProjectNames()
+	if err != nil {
+		return err
+	}
 
 	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
-			return projectNames, cobra.ShellCompDirectiveDefault
+			return projectNames, cobra.ShellCompDirectiveNoFileComp
 		}
 		if len(args) == 1 {
-			return defCmdKinds, cobra.ShellCompDirectiveDefault
+			return defCmdKinds, cobra.ShellCompDirectiveNoFileComp
 		}
-		return nil, cobra.ShellCompDirectiveDefault
+		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
 	err = cmd.RegisterFlagCompletionFunc("patch", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
