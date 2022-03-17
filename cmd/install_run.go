@@ -40,24 +40,36 @@ func NewCmdInstallRun() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
 	}
 	cmd.Flags().StringVarP(&o.FileName, "file", "f", "", "install settings YAML file")
 	cmd.Flags().StringVarP(&o.OutputDir, "output", "o", "", "output README files directory")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsInstallRun) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsInstallRun) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if o.FileName == "" {
 		err = fmt.Errorf("--file required")
 		return err

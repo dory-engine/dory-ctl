@@ -223,6 +223,13 @@ func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	err = cmd.MarkFlagRequired("from-env")
 	if err != nil {
 		return err
@@ -238,13 +245,6 @@ func (o *OptionsDefClone) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
-	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
-	})
-	if err != nil {
-		return err
-	}
-
 	return err
 }
 
@@ -252,6 +252,9 @@ func (o *OptionsDefClone) Validate(args []string) error {
 	var err error
 
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
 
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")

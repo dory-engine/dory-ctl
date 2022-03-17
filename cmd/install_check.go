@@ -37,23 +37,47 @@ func NewCmdInstallCheck() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
 	}
 	cmd.Flags().StringVar(&o.Mode, "mode", "", "install mode, options: docker, kubernetes")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsInstallCheck) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("mode", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"kubernetes", "docker"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.MarkFlagRequired("mode")
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsInstallCheck) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if o.Mode != "docker" && o.Mode != "kubernetes" {
 		err = fmt.Errorf("--mode must be docker or kubernetes")
 		return err

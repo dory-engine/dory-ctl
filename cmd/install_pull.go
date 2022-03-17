@@ -36,22 +36,34 @@ func NewCmdInstallPull() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
 	}
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 
 func (o *OptionsInstallPull) Complete(cmd *cobra.Command) error {
 	var err error
+
 	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
 func (o *OptionsInstallPull) Validate(args []string) error {
 	var err error
+
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
