@@ -58,7 +58,6 @@ func NewCmdDefApply() *cobra.Command {
 		Long:                  msgLong,
 		Example:               msgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckError(o.Complete(cmd))
 			CheckError(o.Validate(args))
 			CheckError(o.Run(args))
 		},
@@ -68,6 +67,8 @@ func NewCmdDefApply() *cobra.Command {
 	cmd.Flags().BoolVar(&o.Full, "full", false, "output project definitions in full version, use with --output option")
 	cmd.Flags().StringSliceVarP(&o.FileNames, "files", "f", []string{}, "project definitions file name or directory, support *.json and *.yaml and *.yml files")
 	cmd.Flags().BoolVar(&o.Try, "try", false, "try to check input project definitions only, not apply to dory-core server, use with --output option")
+
+	CheckError(o.Complete(cmd))
 	return cmd
 }
 

@@ -129,11 +129,6 @@ func NewCmdDefPatch() *cobra.Command {
 
 func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 	var err error
-	err = o.GetOptionsCommon()
-	if err != nil {
-		return err
-	}
-
 	defCmdKinds := []string{
 		"build",
 		"package",
@@ -354,6 +349,11 @@ func (o *OptionsDefPatch) Complete(cmd *cobra.Command) error {
 
 func (o *OptionsDefPatch) Validate(args []string) error {
 	var err error
+	err = o.GetOptionsCommon()
+	if err != nil {
+		return err
+	}
+
 	if len(args) == 0 {
 		err = fmt.Errorf("projectName required")
 		return err
