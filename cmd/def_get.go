@@ -95,6 +95,78 @@ func (o *OptionsDefGet) Complete(cmd *cobra.Command) error {
 		return err
 	}
 
+	defCmdKinds := []string{}
+	for k, _ := range pkg.DefCmdKinds {
+		defCmdKinds = append(defCmdKinds, k)
+	}
+
+	projectNames, err := o.GetProjectNames()
+
+	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return projectNames, cobra.ShellCompDirectiveDefault
+		}
+		if len(args) == 1 {
+			return defCmdKinds, cobra.ShellCompDirectiveDefault
+		}
+		return nil, cobra.ShellCompDirectiveDefault
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("envs", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		envNames := []string{}
+		for _, pae := range project.ProjectAvailableEnvs {
+			envNames = append(envNames, pae.EnvName)
+		}
+		return envNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("branches", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		branchNames := []string{}
+		for _, pp := range project.ProjectPipelines {
+			branchNames = append(branchNames, pp.BranchName)
+		}
+		return branchNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("steps", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		projectName := args[0]
+		project, err := o.GetProjectDef(projectName)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		stepNames := []string{}
+		for _, conf := range project.CustomStepConfs {
+			stepNames = append(stepNames, conf.CustomStepName)
+		}
+		return stepNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("output", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"json", "yaml"}, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
