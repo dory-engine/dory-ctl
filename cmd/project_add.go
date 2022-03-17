@@ -46,19 +46,19 @@ func NewCmdProjectAdd() *cobra.Command {
   # action options: %s`, strings.Join(defCmdActions, " / "))
 	msgShort := fmt.Sprintf("create a new project, admin permission required")
 	msgLong := fmt.Sprintf(`create a new project in dory-core server, admin permission required`)
-	msgExample := fmt.Sprintf(`  # print create new project options
+	msgExample := fmt.Sprintf(`  # print create new project options, admin permission required
   doryctl project add option
 
-  # print create multiple projects template
+  # print create multiple projects template, admin permission required
   doryctl project add print
 
-  # create multiple new projects from file template with YAML format, support *.yaml and *.yml file
+  # create multiple new projects from file template with YAML format, support *.yaml and *.yml file, admin permission required
   doryctl project add apply -f project.yaml
 
-  # create multiple new projects from stdin with YAML format
+  # create multiple new projects from stdin with YAML format, admin permission required
   cat project.yaml | doryctl project add apply -f -
 
-  # create a new project with flags
+  # create a new project with flags, admin permission required
   doryctl project add apply --name=test-project1 --desc=TEST-PROJECT1 --short=tp1 --team=TP --env=test`)
 
 	cmd := &cobra.Command{

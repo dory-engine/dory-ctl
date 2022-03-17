@@ -11,7 +11,10 @@ func NewCmdProject() *cobra.Command {
 	msgShort := fmt.Sprintf("manage project resources")
 	msgLong := fmt.Sprintf(`manage project resources in dory-core server`)
 	msgExample := fmt.Sprintf(`  # get project resources
-  doryctl project get`)
+  doryctl project get
+
+  # create a new project with flags, admin permission required
+  doryctl project add apply --name=test-project1 --desc=TEST-PROJECT1 --short=tp1 --team=TP --env=test`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
