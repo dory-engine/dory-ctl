@@ -726,8 +726,11 @@ func (o *OptionsCommon) GetComponentTemplateNames() ([]string, error) {
 	var err error
 	var componentTemplateNames []string
 
-	param := map[string]interface{}{}
-	result, _, err := o.QueryAPI("api/admin/componentTemplates", http.MethodGet, "", param, false)
+	param := map[string]interface{}{
+		"page":    1,
+		"perPage": 1000,
+	}
+	result, _, err := o.QueryAPI("api/admin/componentTemplates", http.MethodPost, "", param, false)
 	if err != nil {
 		return componentTemplateNames, err
 	}
