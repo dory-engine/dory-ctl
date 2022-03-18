@@ -669,9 +669,9 @@ func (o *OptionsCommon) GetUserNames() ([]string, error) {
 		return userNames, err
 	}
 	rs := result.Get("data.users").Array()
-	users := []pkg.UserOutput{}
+	users := []pkg.UserDetail{}
 	for _, r := range rs {
-		user := pkg.UserOutput{}
+		user := pkg.UserDetail{}
 		err = json.Unmarshal([]byte(r.Raw), &user)
 		if err != nil {
 			return userNames, err

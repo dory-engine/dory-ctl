@@ -584,72 +584,13 @@ type ProjectOutput struct {
 	CustomStepConfs      []CustomStepConfOutput `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
 }
 
-type Metadata struct {
-	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	Labels      map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
-	Annotations map[string]string `yaml:"annotations" json:"annotations" bson:"annotations" validate:""`
-}
-
-type DefKind struct {
-	Kind     string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	Metadata Metadata      `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
-	Items    []interface{} `yaml:"items" json:"items" bson:"items" validate:""`
-	Status   struct {
-		ErrMsg string `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
-	} `yaml:"status" json:"status" bson:"status" validate:""`
-}
-
-type ProjectSummary struct {
-	BuildEnvs       []string               `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
-	BuildNames      []string               `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
-	CustomStepConfs []CustomStepConfOutput `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
-	PackageNames    []string               `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
-	BranchNames     []string               `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
-	EnvNames        []string               `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
-	NodePorts       []int                  `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
-}
-
-type DefKindList struct {
-	Kind   string    `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	Defs   []DefKind `yaml:"defs" json:"defs" bson:"defs" validate:""`
-	Status struct {
-		ErrMsgs []string `yaml:"errMsgs" json:"errMsgs" bson:"errMsgs" validate:""`
-	} `yaml:"status" json:"status" bson:"status" validate:""`
-}
-
-type DefUpdate struct {
-	Kind           string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	ProjectName    string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	EnvName        string      `yaml:"envName" json:"envName" bson:"envName" validate:""`
-	CustomStepName string      `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
-	BranchName     string      `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
-	Def            interface{} `yaml:"def" json:"def" bson:"def" validate:""`
-}
-
-type DefUpdateList struct {
-	Kind string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	Defs []DefUpdate `yaml:"defs" json:"defs" bson:"defs" validate:""`
-}
-
-type DefClone struct {
-	Kind        string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
-	ProjectName string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
-	Def         interface{} `yaml:"def" json:"def" bson:"def" validate:""`
-}
-
-type PatchAction struct {
-	Action string      `yaml:"action" json:"action" bson:"action" validate:"required"`
-	Path   string      `yaml:"path" json:"path" bson:"path" validate:"required"`
-	Value  interface{} `yaml:"value" json:"value" bson:"value" validate:""`
-	Str    interface{} `yaml:"str" json:"str" bson:"str" validate:""`
-}
-
-type ProjectAdd struct {
-	ProjectName      string `yaml:"projectName" json:"projectName" bson:"projectName" validate:"required"`
-	ProjectDesc      string `yaml:"projectDesc" json:"projectDesc" bson:"projectDesc" validate:"required"`
-	ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:"required"`
-	ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:"required"`
-	EnvName          string `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+type User struct {
+	Username string `yaml:"username" json:"username" bson:"username" validate:""`
+	Name     string `yaml:"name" json:"name" bson:"name" validate:""`
+	Mail     string `yaml:"mail" json:"mail" bson:"mail" validate:""`
+	Mobile   string `yaml:"mobile" json:"mobile" bson:"mobile" validate:""`
+	IsAdmin  bool   `yaml:"isAdmin" json:"isAdmin" bson:"isAdmin" validate:""`
+	IsActive bool   `yaml:"isActive" json:"isActive" bson:"isActive" validate:""`
 }
 
 type UserProject struct {
@@ -658,17 +599,7 @@ type UserProject struct {
 	UpdateTime  string `yaml:"updateTime" json:"updateTime" bson:"updateTime" validate:""`
 }
 
-type User struct {
-	Username     string        `yaml:"username" json:"username" bson:"username" validate:""`
-	IsAdmin      bool          `yaml:"isAdmin" json:"isAdmin" bson:"isAdmin" validate:""`
-	IsActive     bool          `yaml:"isActive" json:"isActive" bson:"isActive" validate:""`
-	AvatarUrl    string        `yaml:"avatarUrl" json:"avatarUrl" bson:"avatarUrl" validate:""`
-	UserProjects []UserProject `yaml:"userProjects" json:"userProjects" bson:"userProjects" validate:""`
-	CreateTime   string        `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
-	LastLogin    string        `yaml:"lastLogin" json:"lastLogin" bson:"lastLogin" validate:""`
-}
-
-type UserOutput struct {
+type UserDetail struct {
 	Username     string        `yaml:"username" json:"username" bson:"username" validate:""`
 	Name         string        `yaml:"name" json:"name" bson:"name" validate:""`
 	Mail         string        `yaml:"mail" json:"mail" bson:"mail" validate:""`
@@ -676,9 +607,14 @@ type UserOutput struct {
 	IsAdmin      bool          `yaml:"isAdmin" json:"isAdmin" bson:"isAdmin" validate:""`
 	IsActive     bool          `yaml:"isActive" json:"isActive" bson:"isActive" validate:""`
 	AvatarUrl    string        `yaml:"avatarUrl" json:"avatarUrl" bson:"avatarUrl" validate:""`
-	UserProjects []UserProject `yaml:"userProjects" json:"userProjects" bson:"userProjects" validate:""`
+	UserProjects []UserProject `yaml:"projects" json:"projects" bson:"projects" validate:""`
 	CreateTime   string        `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
 	LastLogin    string        `yaml:"lastLogin" json:"lastLogin" bson:"lastLogin" validate:""`
+}
+
+type CustomStepConfDetail struct {
+	CustomStepConf
+	ProjectNames []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
 }
 
 type CustomStepConf struct {
@@ -696,10 +632,9 @@ type CustomStepConf struct {
 		ParamInputFormat  string   `yaml:"paramInputFormat" json:"paramInputFormat" bson:"paramInputFormat" validate:"required"`
 		ParamOutputFormat string   `yaml:"paramOutputFormat" json:"paramOutputFormat" bson:"paramOutputFormat" validate:"required"`
 	} `yaml:"customStepDockerConf" json:"customStepDockerConf" bson:"customStepDockerConf" validate:"required"`
-	ParamInputYamlDef  string   `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
-	ParamOutputYamlDef string   `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
-	IsEnvDiff          bool     `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
-	ProjectNames       []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
+	ParamInputYamlDef  string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
+	ParamOutputYamlDef string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
+	IsEnvDiff          bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
 }
 
 type LimitConfig struct {
@@ -723,14 +658,18 @@ type ResourceVersion struct {
 	HpaVersion     string `yaml:"hpaVersion" json:"hpaVersion" bson:"hpaVersion" validate:""`
 }
 
-type EnvK8s struct {
-	EnvName         string          `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
-	EnvDesc         string          `yaml:"envDesc" json:"envDesc" bson:"envDesc" validate:"required"`
-	Host            string          `yaml:"host" json:"host" bson:"host" validate:"required"`
-	Port            int             `yaml:"port" json:"port" bson:"port" validate:"required"`
-	Token           string          `yaml:"token" json:"token" bson:"token" validate:"required"`
+type EnvK8sDetail struct {
+	EnvK8s
 	ResourceVersion ResourceVersion `yaml:"resourceVersion" json:"resourceVersion" bson:"resourceVersion" validate:""`
-	ProjectDataPod  struct {
+}
+
+type EnvK8s struct {
+	EnvName        string `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+	EnvDesc        string `yaml:"envDesc" json:"envDesc" bson:"envDesc" validate:"required"`
+	Host           string `yaml:"host" json:"host" bson:"host" validate:"required"`
+	Port           int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+	Token          string `yaml:"token" json:"token" bson:"token" validate:"required"`
+	ProjectDataPod struct {
 		Namespace string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
 		Pod       string `yaml:"pod" json:"pod" bson:"pod" validate:"required"`
 		Path      string `yaml:"path" json:"path" bson:"path" validate:"required"`
@@ -834,5 +773,88 @@ type ComponentTemplate struct {
 	ComponentTemplateName string           `yaml:"componentTemplateName" json:"componentTemplateName" bson:"componentTemplateName" validate:"required"`
 	ComponentTemplateDesc string           `yaml:"componentTemplateDesc" json:"componentTemplateDesc" bson:"componentTemplateDesc" validate:"required"`
 	DeploySpecStatic      DeploySpecStatic `yaml:"deploySpecStatic" json:"deploySpecStatic" bson:"deploySpecStatic" validate:"required"`
-	CreateTime            string           `yaml:"createTime" json:"createTime" bson:"createTime" validate:"required"`
+}
+
+type ProjectSummary struct {
+	BuildEnvs       []string               `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
+	BuildNames      []string               `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
+	CustomStepConfs []CustomStepConfOutput `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+	PackageNames    []string               `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
+	BranchNames     []string               `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
+	EnvNames        []string               `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
+	NodePorts       []int                  `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
+}
+
+type DefMetadata struct {
+	ProjectName string            `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	Labels      map[string]string `yaml:"labels" json:"labels" bson:"labels" validate:""`
+	Annotations map[string]string `yaml:"annotations" json:"annotations" bson:"annotations" validate:""`
+}
+
+type DefKind struct {
+	Kind     string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Metadata DefMetadata   `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
+	Items    []interface{} `yaml:"items" json:"items" bson:"items" validate:""`
+	Status   struct {
+		ErrMsg string `yaml:"errMsg" json:"errMsg" bson:"errMsg" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+}
+
+type DefKindList struct {
+	Kind   string    `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Defs   []DefKind `yaml:"defs" json:"defs" bson:"defs" validate:""`
+	Status struct {
+		ErrMsgs []string `yaml:"errMsgs" json:"errMsgs" bson:"errMsgs" validate:""`
+	} `yaml:"status" json:"status" bson:"status" validate:""`
+}
+
+type DefUpdate struct {
+	Kind           string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	ProjectName    string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	EnvName        string      `yaml:"envName" json:"envName" bson:"envName" validate:""`
+	CustomStepName string      `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
+	BranchName     string      `yaml:"branchName" json:"branchName" bson:"branchName" validate:""`
+	Def            interface{} `yaml:"def" json:"def" bson:"def" validate:""`
+}
+
+type DefUpdateList struct {
+	Kind string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Defs []DefUpdate `yaml:"defs" json:"defs" bson:"defs" validate:""`
+}
+
+type DefClone struct {
+	Kind        string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	ProjectName string      `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	Def         interface{} `yaml:"def" json:"def" bson:"def" validate:""`
+}
+
+type PatchAction struct {
+	Action string      `yaml:"action" json:"action" bson:"action" validate:"required"`
+	Path   string      `yaml:"path" json:"path" bson:"path" validate:"required"`
+	Value  interface{} `yaml:"value" json:"value" bson:"value" validate:""`
+	Str    interface{} `yaml:"str" json:"str" bson:"str" validate:""`
+}
+
+type ProjectAdd struct {
+	ProjectName      string `yaml:"projectName" json:"projectName" bson:"projectName" validate:"required"`
+	ProjectDesc      string `yaml:"projectDesc" json:"projectDesc" bson:"projectDesc" validate:"required"`
+	ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:"required"`
+	ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:"required"`
+	EnvName          string `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+}
+
+type AdminMetadata struct {
+	Name        string            `yaml:"name" json:"name" bson:"name" validate:""`
+	Annotations map[string]string `yaml:"annotations" json:"annotations" bson:"annotations" validate:""`
+}
+
+type AdminKind struct {
+	Kind     string        `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Metadata AdminMetadata `yaml:"metadata" json:"metadata" bson:"metadata" validate:"required"`
+	Spec     interface{}   `yaml:"spec" json:"spec" bson:"spec" validate:""`
+}
+
+type AdminKindList struct {
+	Kind  string      `yaml:"kind" json:"kind" bson:"kind" validate:"required"`
+	Items []AdminKind `yaml:"items" json:"items" bson:"items" validate:""`
 }

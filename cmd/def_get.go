@@ -381,7 +381,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 	if len(o.Param.Kinds) == 0 {
 		defKind := pkg.DefKind{
 			Kind: "projectSummary",
-			Metadata: pkg.Metadata{
+			Metadata: pkg.DefMetadata{
 				ProjectName: project.ProjectInfo.ProjectName,
 				Labels:      map[string]string{},
 			},
@@ -409,7 +409,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 	} else {
 		defKindProject := pkg.DefKind{
 			Kind: "",
-			Metadata: pkg.Metadata{
+			Metadata: pkg.DefMetadata{
 				ProjectName: project.ProjectInfo.ProjectName,
 				Labels:      map[string]string{},
 			},

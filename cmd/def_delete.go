@@ -350,7 +350,7 @@ func (o *OptionsDefDelete) Run(args []string) error {
 	defUpdates := []pkg.DefUpdate{}
 	defKindProject := pkg.DefKind{
 		Kind: "",
-		Metadata: pkg.Metadata{
+		Metadata: pkg.DefMetadata{
 			ProjectName: project.ProjectInfo.ProjectName,
 			Labels:      map[string]string{},
 		},
