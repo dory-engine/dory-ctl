@@ -562,24 +562,26 @@ type ProjectPipeline struct {
 	Modules           map[string][]ModuleRun `yaml:"modules" json:"modules" bson:"modules" validate:""`
 }
 
+type CustomStepConfOutput struct {
+	CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
+	CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:""`
+	CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:""`
+	CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:""`
+	IsEnvDiff            bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
+	ParamInputYamlDef    string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
+	ParamOutputYamlDef   string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
+}
+
 type ProjectOutput struct {
-	ProjectInfo          ProjectInfo           `yaml:"projectInfo" json:"projectInfo" bson:"projectInfo" validate:""`
-	ProjectPipelines     []ProjectPipeline     `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
-	ProjectAvailableEnvs []ProjectAvailableEnv `yaml:"projectAvailableEnvs" json:"projectAvailableEnvs" bson:"projectAvailableEnvs" validate:""`
-	ProjectDef           ProjectDef            `yaml:"projectDef" json:"projectDef" bson:"projectDef" validate:""`
-	BuildEnvs            []string              `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
-	BuildNames           []string              `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
-	PackageNames         []string              `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
-	NodePorts            []int                 `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
-	CustomStepConfs      []struct {
-		CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
-		CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:""`
-		CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:""`
-		CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:""`
-		IsEnvDiff            bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
-		ParamInputYamlDef    string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
-		ParamOutputYamlDef   string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
-	} `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+	ProjectInfo          ProjectInfo            `yaml:"projectInfo" json:"projectInfo" bson:"projectInfo" validate:""`
+	ProjectPipelines     []ProjectPipeline      `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
+	ProjectAvailableEnvs []ProjectAvailableEnv  `yaml:"projectAvailableEnvs" json:"projectAvailableEnvs" bson:"projectAvailableEnvs" validate:""`
+	ProjectDef           ProjectDef             `yaml:"projectDef" json:"projectDef" bson:"projectDef" validate:""`
+	BuildEnvs            []string               `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
+	BuildNames           []string               `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
+	PackageNames         []string               `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
+	NodePorts            []int                  `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
+	CustomStepConfs      []CustomStepConfOutput `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
 }
 
 type Metadata struct {
@@ -598,13 +600,13 @@ type DefKind struct {
 }
 
 type ProjectSummary struct {
-	BuildEnvs       []string         `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
-	BuildNames      []string         `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
-	CustomStepConfs []CustomStepConf `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
-	PackageNames    []string         `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
-	BranchNames     []string         `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
-	EnvNames        []string         `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
-	NodePorts       []int            `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
+	BuildEnvs       []string               `yaml:"buildEnvs" json:"buildEnvs" bson:"buildEnvs" validate:""`
+	BuildNames      []string               `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
+	CustomStepConfs []CustomStepConfOutput `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+	PackageNames    []string               `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
+	BranchNames     []string               `yaml:"branchNames" json:"branchNames" bson:"branchNames" validate:""`
+	EnvNames        []string               `yaml:"envNames" json:"envNames" bson:"envNames" validate:""`
+	NodePorts       []int                  `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
 }
 
 type DefKindList struct {
