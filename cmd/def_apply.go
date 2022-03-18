@@ -43,7 +43,7 @@ func NewCmdDefApply() *cobra.Command {
 	msgLong := fmt.Sprintf(`apply project definitions in dory-core server by file name or stdin.
 # it will update or insert project definitions items
 # JSON and YAML formats are accepted, the complete definitions must be provided.
-# YAML format support apply multiple project definitions at the same time.
+# support apply multiple project definitions at the same time.
 # if [filename] is a directory, it will read all *.json and *.yaml and *.yml files in this directory.`)
 	msgExample := fmt.Sprintf(`  # apply project definitions from file or directory
   doryctl def apply -f def1.yaml -f def2.json

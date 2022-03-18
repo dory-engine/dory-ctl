@@ -3,3 +3,4 @@ node_modules
 *.so
 doryctl
 tmp/
+tmp2/
