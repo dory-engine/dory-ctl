@@ -562,16 +562,6 @@ type ProjectPipeline struct {
 	Modules           map[string][]ModuleRun `yaml:"modules" json:"modules" bson:"modules" validate:""`
 }
 
-type CustomStepConf struct {
-	CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
-	CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:""`
-	CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:""`
-	CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:""`
-	IsEnvDiff            bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
-	ParamInputYamlDef    string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
-	ParamOutputYamlDef   string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
-}
-
 type ProjectOutput struct {
 	ProjectInfo          ProjectInfo           `yaml:"projectInfo" json:"projectInfo" bson:"projectInfo" validate:""`
 	ProjectPipelines     []ProjectPipeline     `yaml:"pipelines" json:"pipelines" bson:"pipelines" validate:""`
@@ -581,7 +571,15 @@ type ProjectOutput struct {
 	BuildNames           []string              `yaml:"buildNames" json:"buildNames" bson:"buildNames" validate:""`
 	PackageNames         []string              `yaml:"packageNames" json:"packageNames" bson:"packageNames" validate:""`
 	NodePorts            []int                 `yaml:"nodePorts" json:"nodePorts" bson:"nodePorts" validate:""`
-	CustomStepConfs      []CustomStepConf      `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
+	CustomStepConfs      []struct {
+		CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:""`
+		CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:""`
+		CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:""`
+		CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:""`
+		IsEnvDiff            bool   `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
+		ParamInputYamlDef    string `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
+		ParamOutputYamlDef   string `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
+	} `yaml:"customStepConfs" json:"customStepConfs" bson:"customStepConfs" validate:""`
 }
 
 type Metadata struct {
@@ -650,4 +648,189 @@ type ProjectAdd struct {
 	ProjectShortName string `yaml:"projectShortName" json:"projectShortName" bson:"projectShortName" validate:"required"`
 	ProjectTeam      string `yaml:"projectTeam" json:"projectTeam" bson:"projectTeam" validate:"required"`
 	EnvName          string `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+}
+
+type UserProject struct {
+	ProjectName string `yaml:"projectName" json:"projectName" bson:"projectName" validate:""`
+	AccessLevel string `yaml:"accessLevel" json:"accessLevel" bson:"accessLevel" validate:""`
+	UpdateTime  string `yaml:"updateTime" json:"updateTime" bson:"updateTime" validate:""`
+}
+
+type User struct {
+	Username     string        `yaml:"username" json:"username" bson:"username" validate:""`
+	IsAdmin      bool          `yaml:"isAdmin" json:"isAdmin" bson:"isAdmin" validate:""`
+	IsActive     bool          `yaml:"isActive" json:"isActive" bson:"isActive" validate:""`
+	AvatarUrl    string        `yaml:"avatarUrl" json:"avatarUrl" bson:"avatarUrl" validate:""`
+	UserProjects []UserProject `yaml:"userProjects" json:"userProjects" bson:"userProjects" validate:""`
+	CreateTime   string        `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
+	LastLogin    string        `yaml:"lastLogin" json:"lastLogin" bson:"lastLogin" validate:""`
+}
+
+type UserOutput struct {
+	Username     string        `yaml:"username" json:"username" bson:"username" validate:""`
+	Name         string        `yaml:"name" json:"name" bson:"name" validate:""`
+	Mail         string        `yaml:"mail" json:"mail" bson:"mail" validate:""`
+	Mobile       string        `yaml:"mobile" json:"mobile" bson:"mobile" validate:""`
+	IsAdmin      bool          `yaml:"isAdmin" json:"isAdmin" bson:"isAdmin" validate:""`
+	IsActive     bool          `yaml:"isActive" json:"isActive" bson:"isActive" validate:""`
+	AvatarUrl    string        `yaml:"avatarUrl" json:"avatarUrl" bson:"avatarUrl" validate:""`
+	UserProjects []UserProject `yaml:"userProjects" json:"userProjects" bson:"userProjects" validate:""`
+	CreateTime   string        `yaml:"createTime" json:"createTime" bson:"createTime" validate:""`
+	LastLogin    string        `yaml:"lastLogin" json:"lastLogin" bson:"lastLogin" validate:""`
+}
+
+type CustomStepConf struct {
+	CustomStepName       string `yaml:"customStepName" json:"customStepName" bson:"customStepName" validate:"required"`
+	CustomStepActionDesc string `yaml:"customStepActionDesc" json:"customStepActionDesc" bson:"customStepActionDesc" validate:"required"`
+	CustomStepDesc       string `yaml:"customStepDesc" json:"customStepDesc" bson:"customStepDesc" validate:"required"`
+	CustomStepUsage      string `yaml:"customStepUsage" json:"customStepUsage" bson:"customStepUsage" validate:"required"`
+	CustomStepDockerConf struct {
+		DockerImage       string   `yaml:"dockerImage" json:"dockerImage" bson:"dockerImage" validate:"required"`
+		DockerCommands    []string `yaml:"dockerCommands" json:"dockerCommands" bson:"dockerCommands" validate:"required"`
+		DockerRunAsRoot   bool     `yaml:"dockerRunAsRoot" json:"dockerRunAsRoot" bson:"dockerRunAsRoot" validate:""`
+		DockerVolumes     []string `yaml:"dockerVolumes" json:"dockerVolumes" bson:"dockerVolumes" validate:""`
+		DockerEnvs        []string `yaml:"dockerEnvs" json:"dockerEnvs" bson:"dockerEnvs" validate:""`
+		DockerWorkDir     string   `yaml:"dockerWorkDir" json:"dockerWorkDir" bson:"dockerWorkDir" validate:""`
+		ParamInputFormat  string   `yaml:"paramInputFormat" json:"paramInputFormat" bson:"paramInputFormat" validate:"required"`
+		ParamOutputFormat string   `yaml:"paramOutputFormat" json:"paramOutputFormat" bson:"paramOutputFormat" validate:"required"`
+	} `yaml:"customStepDockerConf" json:"customStepDockerConf" bson:"customStepDockerConf" validate:"required"`
+	ParamInputYamlDef  string   `yaml:"paramInputYamlDef" json:"paramInputYamlDef" bson:"paramInputYamlDef" validate:""`
+	ParamOutputYamlDef string   `yaml:"paramOutputYamlDef" json:"paramOutputYamlDef" bson:"paramOutputYamlDef" validate:""`
+	IsEnvDiff          bool     `yaml:"isEnvDiff" json:"isEnvDiff" bson:"isEnvDiff" validate:""`
+	ProjectNames       []string `yaml:"projectNames" json:"projectNames" bson:"projectNames" validate:""`
+}
+
+type LimitConfig struct {
+	ContainerLimit struct {
+		MemoryRequest string `yaml:"memoryRequest" json:"memoryRequest" bson:"memoryRequest" validate:"required"`
+		CpuRequest    string `yaml:"cpuRequest" json:"cpuRequest" bson:"cpuRequest" validate:"required"`
+		MemoryLimit   string `yaml:"memoryLimit" json:"memoryLimit" bson:"memoryLimit" validate:"required"`
+		CpuLimit      string `yaml:"cpuLimit" json:"cpuLimit" bson:"cpuLimit" validate:"required"`
+	} `yaml:"containerLimit" json:"containerLimit" bson:"containerLimit" validate:"required"`
+	NamespaceLimit struct {
+		MemoryRequest string `yaml:"memoryRequest" json:"memoryRequest" bson:"memoryRequest" validate:"required"`
+		CpuRequest    string `yaml:"cpuRequest" json:"cpuRequest" bson:"cpuRequest" validate:"required"`
+		MemoryLimit   string `yaml:"memoryLimit" json:"memoryLimit" bson:"memoryLimit" validate:"required"`
+		CpuLimit      string `yaml:"cpuLimit" json:"cpuLimit" bson:"cpuLimit" validate:"required"`
+		PodsLimit     int    `yaml:"podsLimit" json:"podsLimit" bson:"podsLimit" validate:"required"`
+	} `yaml:"namespaceLimit" json:"namespaceLimit" bson:"namespaceLimit" validate:"required"`
+}
+
+type ResourceVersion struct {
+	IngressVersion string `yaml:"ingressVersion" json:"ingressVersion" bson:"ingressVersion" validate:""`
+	HpaVersion     string `yaml:"hpaVersion" json:"hpaVersion" bson:"hpaVersion" validate:""`
+}
+
+type EnvK8s struct {
+	EnvName         string          `yaml:"envName" json:"envName" bson:"envName" validate:"required"`
+	EnvDesc         string          `yaml:"envDesc" json:"envDesc" bson:"envDesc" validate:"required"`
+	Host            string          `yaml:"host" json:"host" bson:"host" validate:"required"`
+	Port            int             `yaml:"port" json:"port" bson:"port" validate:"required"`
+	Token           string          `yaml:"token" json:"token" bson:"token" validate:"required"`
+	ResourceVersion ResourceVersion `yaml:"resourceVersion" json:"resourceVersion" bson:"resourceVersion" validate:""`
+	ProjectDataPod  struct {
+		Namespace string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
+		Pod       string `yaml:"pod" json:"pod" bson:"pod" validate:"required"`
+		Path      string `yaml:"path" json:"path" bson:"path" validate:"required"`
+	} `yaml:"projectDataPod" json:"projectDataPod" bson:"projectDataPod" validate:""`
+	HarborConfig struct {
+		Hostname string `yaml:"hostname" json:"hostname" bson:"hostname" validate:"required"`
+		Ip       string `yaml:"ip" json:"ip" bson:"ip" validate:"required"`
+		Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		Username string `yaml:"username" json:"username" bson:"username" validate:"required"`
+		Password string `yaml:"password" json:"password" bson:"password" validate:"required"`
+		Email    string `yaml:"email" json:"email" bson:"email" validate:"required"`
+	} `yaml:"harborConfig" json:"harborConfig" bson:"harborConfig" validate:"required"`
+	NexusConfig struct {
+		Hostname   string `yaml:"hostname" json:"hostname" bson:"hostname" validate:"required"`
+		Ip         string `yaml:"ip" json:"ip" bson:"ip" validate:"required"`
+		Port       int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		PortDocker int    `yaml:"portDocker" json:"portDocker" bson:"portDocker" validate:"required"`
+		PortGcr    int    `yaml:"portGcr" json:"portGcr" bson:"portGcr" validate:"required"`
+		PortQuay   int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required"`
+		Username   string `yaml:"username" json:"username" bson:"username" validate:"required"`
+		Password   string `yaml:"password" json:"password" bson:"password" validate:"required"`
+		Email      string `yaml:"email" json:"email" bson:"email" validate:"required"`
+	} `yaml:"nexusConfig" json:"nexusConfig" bson:"nexusConfig" validate:"required"`
+	PvConfigLocal struct {
+		LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
+	} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
+	PvConfigCephfs struct {
+		CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:""`
+		CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:""`
+		CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
+		CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
+	} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
+	PvConfigNfs struct {
+		NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:""`
+		NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:""`
+	} `yaml:"pvConfigNfs" json:"pvConfigNfs" bson:"pvConfigNfs" validate:""`
+	ProjectNodeSelector map[string]string `yaml:"projectNodeSelector" json:"projectNodeSelector" bson:"projectNodeSelector" validate:"required"`
+	LimitConfig         LimitConfig       `yaml:"limitConfig" json:"limitConfig" bson:"limitConfig" validate:"required"`
+}
+
+type DeploySpecStatic struct {
+	DeployName                          string `yaml:"deployName" json:"deployName" bson:"deployName" validate:""`
+	DeployImage                         string `yaml:"deployImage" json:"deployImage" bson:"deployImage" validate:"required"`
+	DeploySessionAffinityTimeoutSeconds int    `yaml:"deploySessionAffinityTimeoutSeconds" json:"deploySessionAffinityTimeoutSeconds" bson:"deploySessionAffinityTimeoutSeconds" validate:""`
+	DeployNodePorts                     []struct {
+		Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		NodePort int    `yaml:"nodePort" json:"nodePort" bson:"nodePort" validate:"required"`
+		Protocol string `yaml:"protocol" json:"protocol" bson:"protocol" validate:"omitempty,oneof=tcp http"`
+	} `yaml:"deployNodePorts" json:"deployNodePorts" bson:"deployNodePorts" validate:"dive"`
+	DeployLocalPorts []struct {
+		Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+		Protocol string `yaml:"protocol" json:"protocol" bson:"protocol" validate:"omitempty,oneof=tcp http"`
+	} `yaml:"deployLocalPorts" json:"deployLocalPorts" bson:"deployLocalPorts" validate:"dive"`
+	DeployReplicas  int      `yaml:"deployReplicas" json:"deployReplicas" bson:"deployReplicas" validate:"required"`
+	DeployEnvs      []string `yaml:"deployEnvs" json:"deployEnvs" bson:"deployEnvs" validate:""`
+	DeployCommand   string   `yaml:"deployCommand" json:"deployCommand" bson:"deployCommand" validate:""`
+	DeployCmd       []string `yaml:"deployCmd" json:"deployCmd" bson:"deployCmd" validate:""`
+	DeployArgs      []string `yaml:"deployArgs" json:"deployArgs" bson:"deployArgs" validate:""`
+	DeployResources struct {
+		MemoryRequest string `yaml:"memoryRequest" json:"memoryRequest" bson:"memoryRequest" validate:""`
+		MemoryLimit   string `yaml:"memoryLimit" json:"memoryLimit" bson:"memoryLimit" validate:""`
+		CpuRequest    string `yaml:"cpuRequest" json:"cpuRequest" bson:"cpuRequest" validate:""`
+		CpuLimit      string `yaml:"cpuLimit" json:"cpuLimit" bson:"cpuLimit" validate:""`
+	} `yaml:"deployResources" json:"deployResources" bson:"deployResources" validate:""`
+	DeployVolumes []struct {
+		PathInPod string `yaml:"pathInPod" json:"pathInPod" bson:"pathInPod" validate:"required"`
+		PathInPv  string `yaml:"pathInPv" json:"pathInPv" bson:"pathInPv" validate:"required"`
+		Pvc       string `yaml:"pvc" json:"pvc" bson:"pvc" validate:""`
+	} `yaml:"deployVolumes" json:"deployVolumes" bson:"deployVolumes" validate:"dive"`
+	DeployHealthCheck struct {
+		CheckPort int `yaml:"checkPort" json:"checkPort" bson:"checkPort" validate:""`
+		HttpGet   struct {
+			Path        string `yaml:"path" json:"path" bson:"path" validate:""`
+			Port        int    `yaml:"port" json:"port" bson:"port" validate:""`
+			HttpHeaders []struct {
+				Name  string `yaml:"name" json:"name" bson:"name" validate:""`
+				Value string `yaml:"value" json:"value" bson:"value" validate:""`
+			} `yaml:"httpHeaders" json:"httpHeaders" bson:"httpHeaders" validate:""`
+		} `yaml:"httpGet" json:"httpGet" bson:"httpGet" validate:""`
+		ReadinessDelaySeconds  int `yaml:"readinessDelaySeconds" json:"readinessDelaySeconds" bson:"readinessDelaySeconds" validate:""`
+		ReadinessPeriodSeconds int `yaml:"readinessPeriodSeconds" json:"readinessPeriodSeconds" bson:"readinessPeriodSeconds" validate:""`
+		LivenessDelaySeconds   int `yaml:"livenessDelaySeconds" json:"livenessDelaySeconds" bson:"livenessDelaySeconds" validate:""`
+		LivenessPeriodSeconds  int `yaml:"livenessPeriodSeconds" json:"livenessPeriodSeconds" bson:"livenessPeriodSeconds" validate:""`
+	} `yaml:"deployHealthCheck" json:"deployHealthCheck" bson:"deployHealthCheck" validate:""`
+	DependServices []struct {
+		DependName string `yaml:"dependName" json:"dependName" bson:"dependName" validate:"required"`
+		DependPort int    `yaml:"dependPort" json:"dependPort" bson:"dependPort" validate:"required"`
+		DependType string `yaml:"dependType" json:"dependType" bson:"dependType" validate:"oneof=TCP UDP"`
+	} `yaml:"dependServices" json:"dependServices" bson:"dependServices" validate:"dive"`
+	HostAliases []struct {
+		Ip        string   `yaml:"ip" json:"ip" bson:"ip" validate:"required,ip"`
+		Hostnames []string `yaml:"hostnames" json:"hostnames" bson:"hostnames" validate:"required"`
+	} `yaml:"hostAliases" json:"hostAliases" bson:"hostAliases" validate:"dive"`
+	SecurityContext struct {
+		RunAsUser  int `yaml:"runAsUser" json:"runAsUser" bson:"runAsUser" validate:""`
+		RunAsGroup int `yaml:"runAsGroup" json:"runAsGroup" bson:"runAsGroup" validate:""`
+	} `yaml:"securityContext" json:"securityContext" bson:"securityContext" validate:""`
+}
+
+type ComponentTemplate struct {
+	ComponentTemplateName string           `yaml:"componentTemplateName" json:"componentTemplateName" bson:"componentTemplateName" validate:"required"`
+	ComponentTemplateDesc string           `yaml:"componentTemplateDesc" json:"componentTemplateDesc" bson:"componentTemplateDesc" validate:"required"`
+	DeploySpecStatic      DeploySpecStatic `yaml:"deploySpecStatic" json:"deploySpecStatic" bson:"deploySpecStatic" validate:"required"`
+	CreateTime            string           `yaml:"createTime" json:"createTime" bson:"createTime" validate:"required"`
 }

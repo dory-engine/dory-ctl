@@ -180,6 +180,7 @@ func NewCmdRoot() *cobra.Command {
 	cmd.AddCommand(NewCmdPipeline())
 	cmd.AddCommand(NewCmdRun())
 	cmd.AddCommand(NewCmdDef())
+	cmd.AddCommand(NewCmdAdmin())
 	cmd.AddCommand(NewCmdInstall())
 	cmd.AddCommand(NewCmdVersion())
 	return cmd
@@ -656,4 +657,93 @@ func (o *OptionsCommon) GetRunNames() ([]string, error) {
 	}
 
 	return runNames, err
+}
+
+func (o *OptionsCommon) GetUserNames() ([]string, error) {
+	var err error
+	var userNames []string
+
+	param := map[string]interface{}{}
+	result, _, err := o.QueryAPI("api/admin/userNames", http.MethodGet, "", param, false)
+	if err != nil {
+		return userNames, err
+	}
+	rs := result.Get("data.users").Array()
+	users := []pkg.UserOutput{}
+	for _, r := range rs {
+		user := pkg.UserOutput{}
+		err = json.Unmarshal([]byte(r.Raw), &user)
+		if err != nil {
+			return userNames, err
+		}
+		users = append(users, user)
+	}
+	for _, user := range users {
+		userNames = append(userNames, user.Username)
+	}
+
+	return userNames, err
+}
+
+func (o *OptionsCommon) GetStepNames() ([]string, error) {
+	var err error
+	var stepNames []string
+
+	param := map[string]interface{}{
+		"page":    1,
+		"perPage": 1,
+	}
+	result, _, err := o.QueryAPI("api/admin/customStepConfs", http.MethodPost, "", param, false)
+	if err != nil {
+		return stepNames, err
+	}
+	rs := result.Get("data.customStepNames").Array()
+	for _, r := range rs {
+		stepNames = append(stepNames, r.String())
+	}
+
+	return stepNames, err
+}
+
+func (o *OptionsCommon) GetEnvNames() ([]string, error) {
+	var err error
+	var envNames []string
+
+	param := map[string]interface{}{}
+	result, _, err := o.QueryAPI("api/admin/envNames", http.MethodGet, "", param, false)
+	if err != nil {
+		return envNames, err
+	}
+	rs := result.Get("data.envNames").Array()
+	for _, r := range rs {
+		envNames = append(envNames, r.String())
+	}
+
+	return envNames, err
+}
+
+func (o *OptionsCommon) GetComponentTemplateNames() ([]string, error) {
+	var err error
+	var componentTemplateNames []string
+
+	param := map[string]interface{}{}
+	result, _, err := o.QueryAPI("api/admin/componentTemplates", http.MethodGet, "", param, false)
+	if err != nil {
+		return componentTemplateNames, err
+	}
+	rs := result.Get("data.componentTemplates").Array()
+	componentTemplates := []pkg.ComponentTemplate{}
+	for _, r := range rs {
+		componentTemplate := pkg.ComponentTemplate{}
+		err = json.Unmarshal([]byte(r.Raw), &componentTemplate)
+		if err != nil {
+			return componentTemplateNames, err
+		}
+		componentTemplates = append(componentTemplates, componentTemplate)
+	}
+	for _, componentTemplate := range componentTemplates {
+		componentTemplateNames = append(componentTemplateNames, componentTemplate.ComponentTemplateName)
+	}
+
+	return componentTemplateNames, err
 }

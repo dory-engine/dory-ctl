@@ -48,4 +48,12 @@ var (
 		"ops":      "customOpsDefs",
 		"ignore":   "dockerIgnoreDefs",
 	}
+
+	AdminCmdKinds = map[string]string{
+		"all":    "",
+		"user":   "user",
+		"step":   "customStepConf",
+		"env":    "envK8s",
+		"comtpl": "componentTemplate",
+	}
 )
