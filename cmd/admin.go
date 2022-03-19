@@ -35,6 +35,6 @@ func NewCmdAdmin() *cobra.Command {
 
 	cmd.AddCommand(NewCmdAdminGet())
 	cmd.AddCommand(NewCmdAdminApply())
-	//cmd.AddCommand(NewCmdAdminDelete())
+	cmd.AddCommand(NewCmdAdminDelete())
 	return cmd
 }
