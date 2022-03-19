@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -98,6 +99,10 @@ func CheckAdminKind(item pkg.AdminKind) error {
 			err = fmt.Errorf("kind is user, but spec parse error: mobile is empty\n%s", string(bs))
 			return err
 		}
+		if spec.Username != item.Metadata.Name {
+			err = fmt.Errorf("kind is user, but spec parse error: username %s must equal metadata.name %s\n%s", spec.Username, item.Metadata.Name, string(bs))
+			return err
+		}
 	case "customStepConf":
 		var spec pkg.CustomStepConf
 		bs, _ := pkg.YamlIndent(item.Spec)
@@ -136,6 +141,10 @@ func CheckAdminKind(item pkg.AdminKind) error {
 		}
 		if spec.CustomStepDockerConf.DockerWorkDir == "" {
 			err = fmt.Errorf("kind is customStepConf, but spec parse error: customStepDockerConf.dockerWorkDir is empty\n%s", string(bs))
+			return err
+		}
+		if spec.CustomStepName != item.Metadata.Name {
+			err = fmt.Errorf("kind is customStepConf, but spec parse error: customStepName %s must equal metadata.name %s\n%s", spec.CustomStepName, item.Metadata.Name, string(bs))
 			return err
 		}
 	case "envK8s":
@@ -262,6 +271,10 @@ func CheckAdminKind(item pkg.AdminKind) error {
 			err = fmt.Errorf("kind is envK8s, but spec parse error: limitConfig.namespaceLimit.podsLimit is empty\n%s", string(bs))
 			return err
 		}
+		if spec.EnvName != item.Metadata.Name {
+			err = fmt.Errorf("kind is envK8s, but spec parse error: envName %s must equal metadata.name %s\n%s", spec.EnvName, item.Metadata.Name, string(bs))
+			return err
+		}
 	case "componentTemplate":
 		var spec pkg.ComponentTemplate
 		bs, _ := pkg.YamlIndent(item.Spec)
@@ -284,6 +297,10 @@ func CheckAdminKind(item pkg.AdminKind) error {
 		}
 		if spec.DeploySpecStatic.DeployReplicas == 0 {
 			err = fmt.Errorf("kind is componentTemplate, but spec parse error: deploySpecStatic.DeployReplicas is empty\n%s", string(bs))
+			return err
+		}
+		if spec.ComponentTemplateName != item.Metadata.Name {
+			err = fmt.Errorf("kind is componentTemplate, but spec parse error: componentTemplateName%s must equal metadata.name %s\n%s", spec.ComponentTemplateName, item.Metadata.Name, string(bs))
 			return err
 		}
 	}
@@ -402,7 +419,7 @@ func GetAdminKinds(fileName string, bs []byte) ([]pkg.AdminKind, error) {
 		return items, err
 	}
 
-	for _, item := range items {
+	for i, item := range items {
 		if item.Kind == "" {
 			err = fmt.Errorf("parse file %s error: kind is empty", fileName)
 			return items, err
@@ -430,10 +447,49 @@ func GetAdminKinds(fileName string, bs []byte) ([]pkg.AdminKind, error) {
 			err = fmt.Errorf("parse file %s error: kind %s not correct", fileName, item.Kind)
 			return items, err
 		}
+		switch item.Kind {
+		case "user":
+			var spec pkg.User
+			bs, _ := pkg.YamlIndent(item.Spec)
+			err = yaml.Unmarshal(bs, &spec)
+			if err != nil {
+				err = fmt.Errorf("kind is user, but spec parse error: %s\n%s", err.Error(), string(bs))
+				return items, err
+			}
+			item.Spec = spec
+		case "customStepConf":
+			var spec pkg.CustomStepConf
+			bs, _ := pkg.YamlIndent(item.Spec)
+			err = yaml.Unmarshal(bs, &spec)
+			if err != nil {
+				err = fmt.Errorf("kind is customStepConf, but spec parse error: %s\n%s", err.Error(), string(bs))
+				return items, err
+			}
+			item.Spec = spec
+		case "envK8s":
+			var spec pkg.EnvK8s
+			bs, _ := pkg.YamlIndent(item.Spec)
+			err = yaml.Unmarshal(bs, &spec)
+			if err != nil {
+				err = fmt.Errorf("kind is envK8s, but spec parse error: %s\n%s", err.Error(), string(bs))
+				return items, err
+			}
+			item.Spec = spec
+		case "componentTemplate":
+			var spec pkg.ComponentTemplate
+			bs, _ := pkg.YamlIndent(item.Spec)
+			err = yaml.Unmarshal(bs, &spec)
+			if err != nil {
+				err = fmt.Errorf("kind is componentTemplate, but spec parse error: %s\n%s", err.Error(), string(bs))
+				return items, err
+			}
+			item.Spec = spec
+		}
 		err = CheckAdminKind(item)
 		if err != nil {
 			return items, err
 		}
+		items[i] = item
 	}
 	return items, err
 }
@@ -587,80 +643,95 @@ func (o *OptionsAdminApply) Run(args []string) error {
 	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
-	//for _, item := range o.Param.Items {
-	//
-	//}
-	//
-	//outputs := []map[string]interface{}{}
-	//for _, defUpdate := range defUpdates {
-	//	out := map[string]interface{}{}
-	//	m := map[string]interface{}{}
-	//	bs, _ := json.Marshal(defUpdate)
-	//	_ = json.Unmarshal(bs, &m)
-	//	if o.Full {
-	//		out = m
-	//	} else {
-	//		out = pkg.RemoveMapEmptyItems(m)
-	//	}
-	//	outputs = append(outputs, out)
-	//}
-	//
-	//bs = []byte{}
-	//if o.Output == "json" {
-	//	bs, _ = json.MarshalIndent(outputs, "", "  ")
-	//} else if o.Output == "yaml" {
-	//	bs, _ = pkg.YamlIndent(outputs)
-	//}
-	//if len(bs) > 0 {
-	//	fmt.Println(string(bs))
-	//}
-	//
-	//if !o.Try {
-	//	for _, defUpdate := range defUpdates {
-	//		bs, _ = pkg.YamlIndent(defUpdate.Def)
-	//
-	//		param := map[string]interface{}{
-	//			"envName":        defUpdate.EnvName,
-	//			"customStepName": defUpdate.CustomStepName,
-	//			"branchName":     defUpdate.BranchName,
-	//		}
-	//		paramOutput := map[string]interface{}{}
-	//		for k, v := range param {
-	//			paramOutput[k] = v
-	//		}
-	//
-	//		urlKind := defUpdate.Kind
-	//		switch defUpdate.Kind {
-	//		case "buildDefs":
-	//			param["buildDefsYaml"] = string(bs)
-	//		case "packageDefs":
-	//			param["packageDefsYaml"] = string(bs)
-	//		case "deployContainerDefs":
-	//			param["deployContainerDefsYaml"] = string(bs)
-	//		case "customStepDef":
-	//			param["customStepDefYaml"] = string(bs)
-	//			if defUpdate.EnvName != "" {
-	//				urlKind = fmt.Sprintf("%s/env", urlKind)
-	//			}
-	//		case "dockerIgnoreDefs":
-	//			param["dockerIgnoreDefsYaml"] = string(bs)
-	//		case "customOpsDefs":
-	//			param["customOpsDefsYaml"] = string(bs)
-	//		case "pipelineDef":
-	//			param["pipelineDefYaml"] = string(bs)
-	//		}
-	//		paramOutput = pkg.RemoveMapEmptyItems(paramOutput)
-	//		bs, _ = json.Marshal(paramOutput)
-	//		logHeader := fmt.Sprintf("[%s/%s] %s", defUpdate.ProjectName, defUpdate.Kind, string(bs))
-	//		result, _, err := o.QueryAPI(fmt.Sprintf("api/cicd/projectDef/%s/%s", defUpdate.ProjectName, urlKind), http.MethodPost, "", param, false)
-	//		if err != nil {
-	//			err = fmt.Errorf("%s: %s", logHeader, err.Error())
-	//			return err
-	//		}
-	//		msg := result.Get("msg").String()
-	//		log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
-	//	}
-	//}
+	adminKindList := pkg.AdminKindList{
+		Kind:  "list",
+		Items: o.Param.Items,
+	}
+	output := map[string]interface{}{}
+	m := map[string]interface{}{}
+	bs, _ = json.Marshal(adminKindList)
+	_ = json.Unmarshal(bs, &m)
+	if o.Full {
+		output = m
+	} else {
+		output = pkg.RemoveMapEmptyItems(m)
+	}
+
+	bs = []byte{}
+	if o.Output == "json" {
+		bs, _ = json.MarshalIndent(output, "", "  ")
+	} else if o.Output == "yaml" {
+		bs, _ = pkg.YamlIndent(output)
+	}
+	if len(bs) > 0 {
+		fmt.Println(string(bs))
+	}
+
+	if !o.Try {
+		for _, item := range o.Param.Items {
+			logHeader := fmt.Sprintf("%s/%s", item.Kind, item.Metadata.Name)
+
+			switch item.Kind {
+			case "user":
+			case "customStepConf":
+				param := map[string]interface{}{
+					"customStepNames": []string{item.Metadata.Name},
+					"page":            1,
+					"perPage":         1000,
+				}
+				result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/customStepConfs"), http.MethodPost, "", param, false)
+				if err != nil {
+					return err
+				}
+				customStepNames := []string{}
+				err = json.Unmarshal([]byte(result.Get("data.customStepNames").Raw), &customStepNames)
+				if err != nil {
+					return err
+				}
+				var found bool
+				for _, name := range customStepNames {
+					if name == item.Metadata.Name {
+						found = true
+						break
+					}
+				}
+
+				m := map[string]interface{}{}
+				bs, _ := json.Marshal(item.Spec)
+				_ = json.Unmarshal(bs, &m)
+				pm := pkg.RemoveMapEmptyItems(m)
+				bs, _ = pkg.YamlIndent(pm)
+				customStepConfYaml := string(bs)
+
+				if found {
+					// update
+					param := map[string]interface{}{
+						"customStepConfYaml": customStepConfYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/customStepConf/%s", item.Metadata.Name), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+				} else {
+					// add
+					param := map[string]interface{}{
+						"customStepConfYaml": customStepConfYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/customStepConf"), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+				}
+
+			case "envK8s":
+			case "componentTemplate":
+			}
+		}
+	}
 
 	return err
 }
