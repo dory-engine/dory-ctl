@@ -331,6 +331,10 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
+	if o.ServerURL == "" {
+		err = fmt.Errorf("--serverURL required")
+		return result, xUserToken, err
+	}
 	url = fmt.Sprintf("%s/%s", o.ServerURL, url)
 
 	var strReqBody string
@@ -431,6 +435,14 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) er
 		return err
 	}
 
+	if o.ServerURL == "" {
+		err = fmt.Errorf("--serverURL required")
+		return err
+	}
+	if o.AccessToken == "" {
+		err = fmt.Errorf("please login first")
+		return err
+	}
 	url = fmt.Sprintf("%s/%s", serverURL, url)
 
 	header := http.Header{}
