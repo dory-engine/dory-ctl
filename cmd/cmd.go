@@ -331,6 +331,10 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
+	if !strings.HasPrefix(url, "api/public/") && (o.AccessToken == "" || o.ServerURL == "") {
+		err = fmt.Errorf("please login first")
+		return result, xUserToken, err
+	}
 	if o.ServerURL == "" {
 		err = fmt.Errorf("--serverURL required")
 		return result, xUserToken, err
@@ -435,11 +439,7 @@ func (o *OptionsCommon) QueryWebsocket(url, runName string, batches []string) er
 		return err
 	}
 
-	if o.ServerURL == "" {
-		err = fmt.Errorf("--serverURL required")
-		return err
-	}
-	if o.AccessToken == "" {
+	if o.AccessToken == "" || o.ServerURL == "" {
 		err = fmt.Errorf("please login first")
 		return err
 	}
