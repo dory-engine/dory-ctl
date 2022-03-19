@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
+	"net/http"
 	"strings"
 )
 
@@ -143,11 +144,68 @@ func (o *OptionsAdminDelete) Validate(args []string) error {
 	}
 	o.Param.Kind = kind
 
+	if len(args) < 2 {
+		err = fmt.Errorf("itemName to delete required")
+		return err
+	}
+
+	o.Param.ItemNames = args[1:]
+
 	return err
 }
 
 func (o *OptionsAdminDelete) Run(args []string) error {
 	var err error
+	for _, itemName := range o.Param.ItemNames {
+		logHeader := fmt.Sprintf("delete %s/%s", pkg.AdminCmdKinds[o.Param.Kind], itemName)
+		switch o.Param.Kind {
+		case "user":
+			param := map[string]interface{}{}
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/user/%s", itemName), http.MethodDelete, "", param, false)
+			if err != nil {
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+		case "step":
+			param := map[string]interface{}{}
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/customStepConf/%s", itemName), http.MethodDelete, "", param, false)
+			if err != nil {
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+		case "env":
+			param := map[string]interface{}{}
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/env/%s", itemName), http.MethodDelete, "", param, false)
+			if err != nil {
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
 
+			auditID := result.Get("data.auditID").String()
+			if auditID == "" {
+				err = fmt.Errorf("can not get auditID")
+				return err
+			}
+			url := fmt.Sprintf("api/ws/log/audit/admin/%s", auditID)
+			err = o.QueryWebsocket(url, "", []string{})
+			if err != nil {
+				return err
+			}
+			log.Info(fmt.Sprintf("##############################"))
+			log.Success(fmt.Sprintf("# %s finish", logHeader))
+		case "comtpl":
+			param := map[string]interface{}{}
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/componentTemplate/%s", itemName), http.MethodDelete, "", param, false)
+			if err != nil {
+				return err
+			}
+			msg := result.Get("msg").String()
+			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+		}
+
+	}
 	return err
 }
