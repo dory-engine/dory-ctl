@@ -40,7 +40,7 @@ func NewCmdAdminApply() *cobra.Command {
 
 	msgUse := fmt.Sprintf(`apply -f [filename]`)
 	msgShort := fmt.Sprintf("apply configurations, admin permission required")
-	msgLong := fmt.Sprintf(`apply configurations in dory-core server by file name or stdin, admin permission required
+	msgLong := fmt.Sprintf(`apply configurations in dory-core server by file or stdin, admin permission required
 # it will update or insert configurations items
 # JSON and YAML formats are accepted.
 # support apply multiple configurations at the same time.
