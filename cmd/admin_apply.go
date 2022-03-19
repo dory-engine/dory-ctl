@@ -673,6 +673,20 @@ func (o *OptionsAdminApply) Run(args []string) error {
 
 			switch item.Kind {
 			case "user":
+				var user pkg.User
+				switch v := item.Spec.(type) {
+				case pkg.User:
+					user = v
+				}
+				param := map[string]interface{}{}
+				bs, _ := json.Marshal(user)
+				_ = json.Unmarshal(bs, &param)
+				result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/user"), http.MethodPut, "", param, false)
+				if err != nil {
+					return err
+				}
+				msg := result.Get("msg").String()
+				log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
 			case "customStepConf":
 				param := map[string]interface{}{
 					"customStepNames": []string{item.Metadata.Name},
