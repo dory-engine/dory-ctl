@@ -32,7 +32,7 @@ func NewCmdAdminDelete() *cobra.Command {
 		}
 	}
 
-	msgUse := fmt.Sprintf(`delete [kind] [itemName1] [itemName2]... [--output=json|yaml]
+	msgUse := fmt.Sprintf(`delete [kind] [itemName1] [itemName2]...
 # kind options: %s`, strings.Join(adminCmdKinds, " / "))
 	msgShort := fmt.Sprintf("delete configurations, admin permission required")
 	msgLong := fmt.Sprintf(`delete configurations in dory-core server, admin permission required`)
