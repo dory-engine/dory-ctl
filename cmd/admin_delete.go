@@ -25,8 +25,10 @@ func NewCmdAdminDelete() *cobra.Command {
 	o := NewOptionsAdminDelete()
 
 	adminCmdKinds := []string{}
-	for k, _ := range pkg.AdminCmdKinds {
-		adminCmdKinds = append(adminCmdKinds, k)
+	for k, v := range pkg.AdminCmdKinds {
+		if v != "" {
+			adminCmdKinds = append(adminCmdKinds, k)
+		}
 	}
 
 	msgUse := fmt.Sprintf(`delete [kind] [itemName1] [itemName2]... [--output=json|yaml]
@@ -70,8 +72,10 @@ func (o *OptionsAdminDelete) Complete(cmd *cobra.Command) error {
 	}
 
 	adminCmdKinds := []string{}
-	for k, _ := range pkg.AdminCmdKinds {
-		adminCmdKinds = append(adminCmdKinds, k)
+	for k, v := range pkg.AdminCmdKinds {
+		if v != "" {
+			adminCmdKinds = append(adminCmdKinds, k)
+		}
 	}
 
 	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -120,8 +124,10 @@ func (o *OptionsAdminDelete) Validate(args []string) error {
 	kind = args[0]
 
 	adminCmdKinds := []string{}
-	for k, _ := range pkg.AdminCmdKinds {
-		adminCmdKinds = append(adminCmdKinds, k)
+	for k, v := range pkg.AdminCmdKinds {
+		if v != "" {
+			adminCmdKinds = append(adminCmdKinds, k)
+		}
 	}
 
 	var found bool
