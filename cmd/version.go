@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dory-engine/dory-ctl/pkg"
 	"github.com/spf13/cobra"
+	"net/http"
 )
 
 type OptionsVersionRun struct {
@@ -59,6 +60,16 @@ func (o *OptionsVersionRun) Run(args []string) error {
 	fmt.Println(fmt.Sprintf("install dory-dashboard version: %s", pkg.VersionDoryDashboard))
 	if o.ServerURL != "" {
 		fmt.Println(fmt.Sprintf("serverURL: %s", o.ServerURL))
+		if o.AccessToken != "" {
+			param := map[string]interface{}{}
+			result, _, err := o.QueryAPI(fmt.Sprintf("api/public/about"), http.MethodGet, "", param, false)
+			if err != nil {
+				return err
+			}
+			appInfo := result.Get("data.app").String()
+			versionInfo := result.Get("data.version").String()
+			fmt.Println(fmt.Sprintf("versionInfo: %s/%s", appInfo, versionInfo))
+		}
 	}
 
 	return err
