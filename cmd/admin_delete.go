@@ -183,19 +183,6 @@ func (o *OptionsAdminDelete) Run(args []string) error {
 			}
 			msg := result.Get("msg").String()
 			log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
-
-			auditID := result.Get("data.auditID").String()
-			if auditID == "" {
-				err = fmt.Errorf("can not get auditID")
-				return err
-			}
-			url := fmt.Sprintf("api/ws/log/audit/admin/%s", auditID)
-			err = o.QueryWebsocket(url, "", []string{})
-			if err != nil {
-				return err
-			}
-			log.Info(fmt.Sprintf("##############################"))
-			log.Success(fmt.Sprintf("# %s finish", logHeader))
 		case "comtpl":
 			param := map[string]interface{}{}
 			result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/componentTemplate/%s", itemName), http.MethodDelete, "", param, false)
