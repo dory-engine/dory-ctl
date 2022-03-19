@@ -703,8 +703,10 @@ func (o *OptionsAdminApply) Run(args []string) error {
 				bs, _ = pkg.YamlIndent(pm)
 				customStepConfYaml := string(bs)
 
+				var op string
 				if found {
 					// update
+					op = "update"
 					param := map[string]interface{}{
 						"customStepConfYaml": customStepConfYaml,
 					}
@@ -713,9 +715,10 @@ func (o *OptionsAdminApply) Run(args []string) error {
 						return err
 					}
 					msg := result.Get("msg").String()
-					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+					log.Info(fmt.Sprintf("%s %s: %s", logHeader, op, msg))
 				} else {
 					// add
+					op = "add"
 					param := map[string]interface{}{
 						"customStepConfYaml": customStepConfYaml,
 					}
@@ -724,11 +727,143 @@ func (o *OptionsAdminApply) Run(args []string) error {
 						return err
 					}
 					msg := result.Get("msg").String()
-					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+					log.Info(fmt.Sprintf("%s %s: %s", logHeader, op, msg))
+				}
+			case "envK8s":
+				param := map[string]interface{}{}
+				result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/envNames"), http.MethodGet, "", param, false)
+				if err != nil {
+					return err
+				}
+				envNames := []string{}
+				err = json.Unmarshal([]byte(result.Get("data.envNames").Raw), &envNames)
+				if err != nil {
+					return err
+				}
+				var found bool
+				for _, name := range envNames {
+					if name == item.Metadata.Name {
+						found = true
+						break
+					}
 				}
 
-			case "envK8s":
+				m := map[string]interface{}{}
+				bs, _ := json.Marshal(item.Spec)
+				_ = json.Unmarshal(bs, &m)
+				pm := pkg.RemoveMapEmptyItems(m)
+				bs, _ = pkg.YamlIndent(pm)
+				envK8sYaml := string(bs)
+
+				var auditID string
+				var op string
+				if found {
+					// update
+					op = "update"
+					param := map[string]interface{}{
+						"envK8sYaml": envK8sYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/env/%s", item.Metadata.Name), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+					auditID = result.Get("data.auditID").String()
+				} else {
+					// add
+					op = "add"
+					param := map[string]interface{}{
+						"envK8sYaml": envK8sYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/env"), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s: %s", logHeader, msg))
+					auditID = result.Get("data.auditID").String()
+				}
+
+				if auditID == "" {
+					err = fmt.Errorf("can not get auditID")
+					return err
+				}
+
+				url := fmt.Sprintf("api/ws/log/audit/admin/%s", auditID)
+				err = o.QueryWebsocket(url, "", []string{})
+				if err != nil {
+					return err
+				}
+				log.Info(fmt.Sprintf("##############################"))
+				log.Success(fmt.Sprintf("# %s %s finish", logHeader, op))
 			case "componentTemplate":
+				param := map[string]interface{}{
+					"page":    1,
+					"perPage": 1000,
+				}
+				result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/componentTemplates"), http.MethodPost, "", param, false)
+				if err != nil {
+					return err
+				}
+				componentTemplates := []pkg.ComponentTemplate{}
+				err = json.Unmarshal([]byte(result.Get("data.componentTemplates").Raw), &componentTemplates)
+				if err != nil {
+					return err
+				}
+				var found bool
+				for _, tpl := range componentTemplates {
+					if tpl.ComponentTemplateName == item.Metadata.Name {
+						found = true
+						break
+					}
+				}
+
+				var componentTemplateDesc string
+				var deploySpecStatic pkg.DeploySpecStatic
+				switch tpl := item.Spec.(type) {
+				case pkg.ComponentTemplate:
+					componentTemplateDesc = tpl.ComponentTemplateDesc
+					deploySpecStatic = tpl.DeploySpecStatic
+				}
+
+				m := map[string]interface{}{}
+				bs, _ := json.Marshal(deploySpecStatic)
+				_ = json.Unmarshal(bs, &m)
+				pm := pkg.RemoveMapEmptyItems(m)
+				bs, _ = pkg.YamlIndent(pm)
+				componentTemplateYaml := string(bs)
+
+				var op string
+				if found {
+					// update
+					op = "update"
+					param := map[string]interface{}{
+						"componentTemplateName": item.Metadata.Name,
+						"componentTemplateDesc": componentTemplateDesc,
+						"componentTemplateYaml": componentTemplateYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/componentTemplate/%s", item.Metadata.Name), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s %s: %s", logHeader, op, msg))
+				} else {
+					// add
+					op = "add"
+					param := map[string]interface{}{
+						"componentTemplateName": item.Metadata.Name,
+						"componentTemplateDesc": componentTemplateDesc,
+						"componentTemplateYaml": componentTemplateYaml,
+					}
+					result, _, err := o.QueryAPI(fmt.Sprintf("api/admin/componentTemplate"), http.MethodPost, "", param, false)
+					if err != nil {
+						return err
+					}
+					msg := result.Get("msg").String()
+					log.Info(fmt.Sprintf("%s %s: %s", logHeader, op, msg))
+				}
 			}
 		}
 	}
