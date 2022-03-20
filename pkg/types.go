@@ -225,42 +225,7 @@ type Pipeline struct {
 	ErrMsgPipelineDef string `yaml:"errMsgPipelineDef" json:"errMsgPipelineDef" bson:"errMsgPipelineDef" validate:""`
 	PipelineDef       struct {
 		Builds       []PipelineBuild `yaml:"builds" json:"builds" bson:"builds" validate:""`
-		PipelineStep struct {
-			GitPull struct {
-				Timeout int `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
-			} `yaml:"gitPull" json:"gitPull" bson:"gitPull" validate:""`
-			Build struct {
-				Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
-				Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"build" json:"build" bson:"build" validate:""`
-			PackageImage struct {
-				Enable  bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Timeout int  `yaml:"timeout" json:"timeout" bson:"timeout" validate:""`
-				Retry   int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"packageImage" json:"packageImage" bson:"packageImage" validate:""`
-			SyncImage struct {
-				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"syncImage" json:"syncImage" bson:"syncImage" validate:""`
-			Deploy struct {
-				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"deploy" json:"deploy" bson:"deploy" validate:""`
-			ApplyIngress struct {
-				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"applyIngress" json:"applyIngress" bson:"applyIngress" validate:""`
-			CheckDeploy struct {
-				Enable      bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Retry       int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-				IgnoreError bool `yaml:"ignoreError" json:"ignoreError" bson:"ignoreError" validate:""`
-			} `yaml:"checkDeploy" json:"checkDeploy" bson:"checkDeploy" validate:""`
-			CheckQuota struct {
-				Enable bool `yaml:"enable" json:"enable" bson:"enable" validate:""`
-				Retry  int  `yaml:"retry" json:"retry" bson:"retry" validate:""`
-			} `yaml:"checkQuota" json:"checkQuota" bson:"checkQuota" validate:""`
-		} `yaml:"pipelineStep" json:"pipelineStep" bson:"pipelineStep" validate:""`
+		PipelineStep PipelineStepDef `yaml:"pipelineStep" json:"pipelineStep" bson:"pipelineStep" validate:""`
 	} `yaml:"pipelineDef" json:"pipelineDef" bson:"pipelineDef" validate:""`
 }
 

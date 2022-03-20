@@ -40,7 +40,7 @@ func NewCmdAdminDelete() *cobra.Command {
   doryctl admin delete user test-user01 test-user02
 
   # delete custom step configurations, admin permission required
-  doryctl admin delete step scanCode testApi
+  doryctl admin delete step customStepName1 customStepName2
 
   # delete kubernetes environment configurations, admin permission required
   doryctl admin delete env test uat

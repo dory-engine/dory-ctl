@@ -78,8 +78,8 @@ func NewCmdDefPatch() *cobra.Command {
   # patch project pipeline definitions, update builds dp1-gin-demo,dp1-go-demo run setting to false 
   doryctl def patch test-project1 pipeline --branches=develop,release --no-runs=dp1-gin-demo,dp1-go-demo
 
-  # patch project custom step modules definitions, update testApi step in test environment tp1-gin-demo paramInputYaml
-  doryctl def patch test-project1 step --envs=test --step=testApi --modules=tp1-gin-demo --patch='[{"action": "update", "path": "paramInputYaml", "value": "path: Tests"}]'
+  # patch project custom step modules definitions, update customStepName2 step in test environment tp1-gin-demo paramInputYaml
+  doryctl def patch test-project1 step --envs=test --step=customStepName2 --modules=tp1-gin-demo --patch='[{"action": "update", "path": "paramInputYaml", "value": "path: Tests"}]'
 
   # patch project pipeline definitions from stdin, support JSON and YAML
   cat << EOF | doryctl def patch test-project1 pipeline --branches=develop,release -f -

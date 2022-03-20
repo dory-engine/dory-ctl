@@ -331,7 +331,7 @@ func (o *OptionsCommon) QueryAPI(url, method, userToken string, param map[string
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	if !strings.HasPrefix(url, "api/public/") && (o.AccessToken == "" || o.ServerURL == "") {
+	if !strings.HasPrefix(url, "api/public/") && url != "api/account/accessToken" && (o.AccessToken == "" || o.ServerURL == "") {
 		err = fmt.Errorf("please login first")
 		return result, xUserToken, err
 	}

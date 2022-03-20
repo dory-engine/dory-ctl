@@ -98,10 +98,21 @@ func (o *OptionsProjectAdd) Complete(cmd *cobra.Command) error {
 	}
 
 	cmd.ValidArgsFunction = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) >= 0 {
+		if len(args) == 0 {
 			return defCmdActions, cobra.ShellCompDirectiveNoFileComp
 		}
 		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	err = cmd.RegisterFlagCompletionFunc("env", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		envNames, err := o.GetEnvNames()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		return envNames, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		return err
 	}
 
 	return err
@@ -293,26 +304,20 @@ func (o *OptionsProjectAdd) Run(args []string) error {
 	bs, _ := pkg.YamlIndent(o)
 	log.Debug(fmt.Sprintf("command options:\n%s", string(bs)))
 
-	param := map[string]interface{}{}
-	result, _, err := o.QueryAPI("api/admin/envNames", http.MethodGet, "", param, false)
+	envNames, err := o.GetEnvNames()
 	if err != nil {
 		return err
-	}
-	rs := result.Get("data.envNames").Array()
-	envNames := []string{}
-	for _, r := range rs {
-		envNames = append(envNames, r.String())
 	}
 
 	switch o.Param.Action {
 	case "option":
 		rows := [][]string{}
-		for _, envName := range envNames {
-			row := []string{envName}
-			rows = append(rows, row)
-		}
+		row := []string{strings.Join(envNames, "\n")}
+		header := []string{"Envs"}
+
+		rows = append(rows, row)
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"EnvName"})
+		table.SetHeader(header)
 		table.SetAutoWrapText(false)
 		table.SetAutoFormatHeaders(true)
 		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)

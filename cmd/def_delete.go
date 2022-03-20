@@ -51,10 +51,10 @@ func NewCmdDefDelete() *cobra.Command {
   doryctl def delete test-project1 deploy --modules=tp1-gin-demo,tp1-node-demo --envs=test
 
   # delete modules from project step definitions in stepNames
-  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --steps=scanCode
+  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --steps=customStepName1
 
   # delete modules from project step definitions in envNames and stepNames
-  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --envs=test --steps=scanCode`)
+  doryctl def delete test-project1 step --modules=tp1-gin-demo,tp1-node-demo --envs=test --steps=customStepName1`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

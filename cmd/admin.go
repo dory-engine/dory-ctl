@@ -17,7 +17,7 @@ func NewCmdAdmin() *cobra.Command {
   doryctl admin apply -f users.yaml -f custom-steps.json
 
   # delete configuration items, admin permission required
-  doryctl admin delete step scanCode`)
+  doryctl admin delete step customStepName1`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

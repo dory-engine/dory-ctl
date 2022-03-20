@@ -46,7 +46,7 @@ func NewCmdDefClone() *cobra.Command {
   doryctl def clone test-project1 deploy --from-env=test --modules=tp1-gin-demo,tp1-node-demo --to-envs=uat,prod
 
   # clone project definitions step modules to another environments
-  doryctl def clone test-project1 deploy --from-env=test --step=testApi --modules=tp1-gin-demo,tp1-node-demo --to-envs=uat,prod`)
+  doryctl def clone test-project1 deploy --from-env=test --step=customStepName2 --modules=tp1-gin-demo,tp1-node-demo --to-envs=uat,prod`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

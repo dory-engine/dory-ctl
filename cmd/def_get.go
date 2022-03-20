@@ -63,7 +63,7 @@ func NewCmdDefGet() *cobra.Command {
   doryctl def get test-project1 pipeline --branches=develop,release
 
   # get project custom step modules definitions, and filter by envNames and stepNames
-  doryctl def get test-project1 step --envs=test --steps=testApi`)
+  doryctl def get test-project1 step --envs=test --steps=customStepName2`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,
@@ -813,7 +813,7 @@ func (o *OptionsDefGet) Run(args []string) error {
 					dataRow := []string{fmt.Sprintf("%s/%s", defKind.Kind, item.DeployName), defKind.Metadata.Labels["envName"], item.RelatedPackage, fmt.Sprintf("%d", item.DeployReplicas), strings.Join(ports, ","), strings.Join(dependServices, "\n")}
 					dataRows = append(dataRows, dataRow)
 				}
-				dataHeader = []string{"Name", "env", "Package", "Replicas", "Ports", "Depends"}
+				dataHeader = []string{"Name", "Env", "Package", "Replicas", "Ports", "Depends"}
 			case "customStepDef":
 				items := []pkg.CustomStepModuleDef{}
 				_ = json.Unmarshal(bs, &items)
