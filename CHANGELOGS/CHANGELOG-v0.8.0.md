@@ -1,4 +1,4 @@
-# doryctl changelog v0.7.7
+# doryctl changelog v0.8.0
 
 **new features:**
 
@@ -17,7 +17,7 @@
     - fixed bugs: customStepDef relatedModules verify
     - fixed bugs: buildDef buildEnv verify
 
-- doryctl upgrade to v0.7.7
+- doryctl upgrade to v0.8.0
     - update kubernetes install readme
     - print yaml indent
     - now doryctl support manage project definition resource with def command
