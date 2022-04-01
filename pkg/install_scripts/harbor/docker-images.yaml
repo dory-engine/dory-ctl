@@ -1,35 +1,29 @@
 dockerImages:
   - source: busybox:latest
     target: public/busybox:latest
-  - source: alpine:3.14.3
-    target: public/alpine:3.14.3-dory
+  - source: alpine:3.14.5
+    target: public/alpine:3.14.5-dory
     dockerFile: Dockerfile-alpine
-  - source: alpine:3.15.0
-    target: public/alpine:3.15.0-dory
+  - source: alpine:3.15.3
+    target: public/alpine:3.15.3-dory
     dockerFile: Dockerfile-alpine
   - source: golang:1.14.15-alpine3.13
     target: public/golang:1.14.15-alpine3.13-dory
     dockerFile: Dockerfile-golang
-  - source: golang:1.17.3-alpine3.15
-    target: public/golang:1.17.3-alpine3.15-dory
+  - source: golang:1.17.8-alpine3.15
+    target: public/golang:1.17.8-alpine3.15-dory
     dockerFile: Dockerfile-golang
-  - source: gradle:6.7.0-jdk14
-    target: public/gradle:6.7.0-jdk14-dory
+  - source: gradle:7.4.1-jdk8
+    target: public/gradle:7.4.1-jdk8-dory
     dockerFile: Dockerfile-gradle
-  - source: gradle:7.3.0-jdk11
-    target: public/gradle:7.3.0-jdk11-dory
+  - source: gradle:7.4.1-jdk11
+    target: public/gradle:7.4.1-jdk11-dory
     dockerFile: Dockerfile-gradle
-  - source: gradle:7.3.0-jdk17
-    target: public/gradle:7.3.0-jdk17-dory
+  - source: gradle:7.4.1-jdk17
+    target: public/gradle:7.4.1-jdk17-dory
     dockerFile: Dockerfile-gradle
-  - source: gradle:7.3.0-jdk8
-    target: public/gradle:7.3.0-jdk8-dory
-    dockerFile: Dockerfile-gradle
-  - source: maven:3.6.3-jdk-14
-    target: public/maven:3.6.3-jdk-14-dory
-    dockerFile: Dockerfile-maven
-  - source: maven:3.8.3-openjdk-17
-    target: public/maven:3.8.3-openjdk-17-dory
+  - source: maven:3.8.4-openjdk-17
+    target: public/maven:3.8.4-openjdk-17-dory
     dockerFile: Dockerfile-maven
   - source: maven:3.8.4-jdk-11
     target: public/maven:3.8.4-jdk-11-dory
@@ -37,20 +31,18 @@ dockerImages:
   - source: maven:3.8.4-jdk-8
     target: public/maven:3.8.4-jdk-8-dory
     dockerFile: Dockerfile-maven
-  - source: python:3.10.0-alpine3.15
-    target: public/python:3.10.0-alpine3.15-dory
+  - source: python:3.10.4-alpine3.15
+    target: public/python:3.10.4-alpine3.15-dory
     dockerFile: Dockerfile-python
-  - source: python:3.9.9-alpine3.15
-    target: public/python:3.9.9-alpine3.15-dory
+  - source: python:3.9.12-alpine3.15
+    target: public/python:3.9.12-alpine3.15-dory
     dockerFile: Dockerfile-python
-  - source: node:13.14-alpine3.11
-    target: hub/node:13.14-alpine3.11
   - source: node:15.14.0-alpine3.13
     target: hub/node:15.14.0-alpine3.13
-  - source: node:17.0.1-alpine3.14
-    target: hub/node:17.0.1-alpine3.14
-  - source: openjdk:14-jdk-alpine3.10
-    target: hub/openjdk:14-jdk-alpine3.10
+  - source: node:17.8.0-alpine3.15
+    target: hub/node:17.8.0-alpine3.15
+  - source: openjdk:11.0.14.1-jdk
+    target: hub/openjdk:11.0.14.1-jdk
   - source: doryengine/sshd-centos:7.9-2009
     target: public/sshd-centos:7.9-2009
   - source: doryengine/vnc-centos:7.9-2009

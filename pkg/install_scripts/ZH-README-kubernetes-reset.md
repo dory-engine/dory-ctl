@@ -2,20 +2,22 @@
 
 ## 当安装出现异常的情况下，清除所有dory服务
 
+{{- if $.imageRepo.internal.domainName }}
 ### 停止并清除 {{ $.imageRepo.type }} 服务
 
 ```shell script
-helm -n {{ $.imageRepo.namespace }} uninstall {{ $.imageRepo.namespace }}
+helm -n {{ $.imageRepo.internal.namespace }} uninstall {{ $.imageRepo.internal.namespace }}
 ```
+{{- end }}
 
 ### 停止并清除所有 dory 服务
 
 ```shell script
 # cd to readme directory
 kubectl delete namespace {{ $.dory.namespace }}
-kubectl delete namespace {{ $.imageRepo.namespace }}
+kubectl delete namespace {{ $.imageRepo.internal.namespace }}
 kubectl delete pv {{ $.dory.namespace }}-pv
-kubectl delete pv {{ $.imageRepo.namespace }}-pv
+kubectl delete pv {{ $.imageRepo.internal.namespace }}-pv
 kubectl delete pv project-data-pv
 ```
 

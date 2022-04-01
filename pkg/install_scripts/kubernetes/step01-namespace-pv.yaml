@@ -7,11 +7,11 @@ metadata:
     ns: {{ $.currentNamespace }}
 
 ---
-{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.password | nospace | b64enc | quote) " } } }" }}
+{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.internal.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.internal.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.internal.password | nospace | b64enc | quote) " } } }" }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $.imageRepo.domainName }}
+  name: {{ $.imageRepo.internal.domainName }}
   namespace: {{ $.currentNamespace }}
 type: kubernetes.io/dockerconfigjson
 data:

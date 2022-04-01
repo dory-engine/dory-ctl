@@ -20,7 +20,7 @@ projectDataPod:
 # harbor配置，用于kubernetes集群拉取harbor镜像
 harborConfig:
   # harbor域名
-  hostname: {{ $.imageRepo.domainName | quote }}
+  hostname: {{ $.imageRepo.internal.domainName | quote }}
   # ip地址
   ip: {{ $.hostIP | quote }}
   # 端口
@@ -28,7 +28,7 @@ harborConfig:
   # 管理员用户名
   username: admin
   # 管理员密码
-  password: {{ $.imageRepo.password | quote }}
+  password: {{ $.imageRepo.internal.password | quote }}
   # 管理员邮箱
   email: admin@example.com
 
@@ -40,13 +40,13 @@ nexusConfig:
   # ip地址
   ip: {{ $.hostIP | quote }}
   # 端口
-  port: {{ $.dory.artifactRepo.port }}
+  port: {{ $.dory.artifactRepo.internal.port }}
   # docker.io镜像仓库代理端口
-  portDocker: {{ $.dory.artifactRepo.portHub }}
+  portDocker: {{ $.dory.artifactRepo.internal.portHub }}
   # gcr.io镜像仓库代理端口
-  portGcr: {{ $.dory.artifactRepo.portGcr }}
+  portGcr: {{ $.dory.artifactRepo.internal.portGcr }}
   # quay.io镜像仓库代理端口
-  portQuay: {{ $.dory.artifactRepo.portQuay }}
+  portQuay: {{ $.dory.artifactRepo.internal.portQuay }}
   # 共用账号用户名
   username: public-user
   # 共用账号密码

@@ -26,31 +26,31 @@ func NewCmdInstall() *cobra.Command {
   vi install-config-docker.yaml
   
   # 5. (option 1) install dory with docker automatically
-  dorycli install run -o readme-install-docker -f install-config-docker.yaml
+  doryctl install run -o readme-install-docker -f install-config-docker.yaml
   
   # 5. (option 2) install dory with docker by manual, it will output readme files, deploy files and config files, follow the readme files to customize install dory
-  dorycli install script -o readme-install-docker -f install-config-docker.yaml
+  doryctl install script -o readme-install-docker -f install-config-docker.yaml
 
   ##############################
   # please follow these steps to install dory-core with kubernetes:
   
   # 1. check prerequisite for install with kubernetes
-  dorycli install check --mode kubernetes
+  doryctl install check --mode kubernetes
   
   # 2. pull and build relative docker images from docker hub
-  dorycli install pull
+  doryctl install pull
   
   # 3. print kubernetes install mode config settings
-  dorycli install print --mode kubernetes > install-config-kubernetes.yaml
+  doryctl install print --mode kubernetes > install-config-kubernetes.yaml
   
   # 4. update install config file by manual
   vi install-config-kubernetes.yaml
   
   # 5. (option 1) install dory with kubernetes automatically
-  dorycli install run -o readme-install-kubernetes -f install-config-kubernetes.yaml
+  doryctl install run -o readme-install-kubernetes -f install-config-kubernetes.yaml
   
   # 5. (option 2) install dory with kubernetes by manual, it will output readme files, deploy files and config files, follow the readme files to customize install dory
-  dorycli install script -o readme-install-kubernetes -f install-config-kubernetes.yaml`)
+  doryctl install script -o readme-install-kubernetes -f install-config-kubernetes.yaml`)
 
 	cmd := &cobra.Command{
 		Use:                   msgUse,

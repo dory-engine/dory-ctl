@@ -85,7 +85,7 @@ spec:
           claimName: {{ $.dory.namespace }}-pvc
 
       imagePullSecrets:
-        - name: {{ $.imageRepo.domainName }}
+        - name: {{ $.imageRepo.internal.domainName }}
       {{- if $deploy.nodeSelector }}
       nodeSelector:
         {{- range $key, $val := $deploy.nodeSelector }}
@@ -106,7 +106,7 @@ spec:
       initContainers:
       {{- range $_, $depend := $deploy.dependServices }}
       - name: init-{{ $depend.dependName }}
-        image: busybox:1.32.0
+        image: busybox:latest
         imagePullPolicy: IfNotPresent
         command: ['sh', '-c', 'until nc -z -w 5 -v {{- if eq $depend.dependType "UDP" }} -u {{- end }} {{ $depend.dependName }} {{ $depend.dependPort }}; do echo waiting for {{ $depend.dependName }} ready; done;']
       {{- end }}

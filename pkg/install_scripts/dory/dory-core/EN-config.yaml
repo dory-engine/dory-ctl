@@ -174,8 +174,9 @@ gitRepoConfigs:
   - kind: {{ $.dory.gitRepo.type }}
     # git repository id name, format like: xxx-xxx
     repoName: {{ $.dory.gitRepo.type }}-dory
+    {{- if $.dory.gitRepo.internal.image }}
     # git repository browser access url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.internal.port }}
     # git repository internal access url by dory
     {{- if eq $.dory.gitRepo.type "gitea" }}
     url: http://gitea:3000
@@ -192,6 +193,22 @@ gitRepoConfigs:
     password: "PLEASE_INPUT_BY_MANUAL"
     # git repository admin user token
     token: "PLEASE_INPUT_BY_MANUAL"
+    {{- else }}
+    # git repository browser access url
+    viewUrl: {{ $.dory.gitRepo.external.viewUrl }}
+    # git repository internal access url by dory
+    url: {{ $.dory.gitRepo.external.url }}
+    # git repository admin user name
+    username: {{ $.dory.gitRepo.external.username | quote }}
+    # git repository admin user display name
+    name: {{ $.dory.gitRepo.external.name | quote }}
+    # git repository admin user mail
+    mail: {{ $.dory.gitRepo.external.mail | quote }}
+    # git repository admin user password
+    password: {{ $.dory.gitRepo.external.password | quote }}
+    # git repository admin user token
+    token: {{ $.dory.gitRepo.external.token | quote }}
+    {{- end }}
     # default tag name
     tagDefault: "v0.1.0"
 # image repository settings, support harbor
@@ -200,26 +217,40 @@ imageRepoConfigs:
   - kind: {{ $.imageRepo.type }}
     # image repository id name, format like: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
+    {{- if $.imageRepo.internal.domainName }}
     # image repository browser access url
-    viewUrl: https://{{ $.imageRepo.domainName }}
+    viewUrl: https://{{ $.imageRepo.internal.domainName }}
     # image repository domain name
-    url: {{ $.imageRepo.domainName | quote }}
+    url: {{ $.imageRepo.internal.domainName | quote }}
     # image repository admin user name
     username: admin
     # image repository admin user password
-    password: {{ $.imageRepo.password | quote }}
+    password: {{ $.imageRepo.internal.password | quote }}
     # image repository api access url by dory
-    apiUrl: https://{{ $.imageRepo.domainName }}
+    apiUrl: https://{{ $.imageRepo.internal.domainName }}
+    {{- else }}
+    # image repository browser access url
+    viewUrl: {{ $.imageRepo.external.viewUrl }}
+    # image repository domain name
+    url: {{ $.imageRepo.external.url }}
+    # image repository admin user name
+    username: {{ $.imageRepo.external.username }}
+    # image repository admin user password
+    password: {{ $.imageRepo.external.password | quote }}
+    # image repository api access url by dory
+    apiUrl: {{ $.imageRepo.external.apiUrl }}
+    {{- end }}
 # artifact and dependency repository settings, support nexus
 artifactRepoConfigs:
     # artifact and dependency repository type, options: nexus
   - kind: {{ $.dory.artifactRepo.type }}
     # artifact and dependency repository id name, format like: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
+    {{- if $.dory.artifactRepo.internal.image }}
     # artifact and dependency repository browser access url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
     # artifact and dependency repository access url by docker executors
-    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
+    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
     # artifact and dependency repository access ip address, docker executors can connect this repository
     host: {{ $.hostIP | quote }}
     # artifact and dependency repository admin user name
@@ -228,14 +259,32 @@ artifactRepoConfigs:
     password: "Nexus_Pwd_321"
     # artifact and dependency repository public user role name
     publicRole: public-role
-    # artifact and dependency repository docker.io docker image proxy url
-    dockerHubUrl: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
     # artifact and dependency repository proxy url with public user authorization
-    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
+    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
     # public user name which can fetch public dependencies
     publicUser: public-user
     # public user password which can fetch public dependencies
     publicPassword: public-user
+    {{- else }}
+    # artifact and dependency repository browser access url
+    viewUrl: {{ $.dory.artifactRepo.external.viewUrl }}
+    # artifact and dependency repository access url by docker executors
+    url: {{ $.dory.artifactRepo.external.url }}
+    # artifact and dependency repository access ip address, docker executors can connect this repository
+    host: {{ $.dory.artifactRepo.external.host | quote }}
+    # artifact and dependency repository admin user name
+    username: {{ $.dory.artifactRepo.external.username | quote }}
+    # artifact and dependency repository admin user password
+    password: {{ $.dory.artifactRepo.external.password | quote }}
+    # artifact and dependency repository public user role name
+    publicRole: public-role
+    # artifact and dependency repository proxy url with public user authorization
+    publicAccountUrl: {{ $.dory.artifactRepo.external.publicAccountUrl }}
+    # public user name which can fetch public dependencies
+    publicUser: {{ $.dory.artifactRepo.external.publicUser | quote }}
+    # public user password which can fetch public dependencies
+    publicPassword: {{ $.dory.artifactRepo.external.publicPassword | quote }}
+    {{- end }}
     # maven repository proxy path
     maven: repository/maven-group-public/
     # npm repository proxy path
@@ -266,11 +315,11 @@ defaultPipeline:
 
 # demo project package source image settings
 demoProjectImageSettings:
-  springDemoImage: "hub/openjdk:14-jdk-alpine3.10"
-  nodeDemoImage: "hub/node:13.14-alpine3.11"
-  pythonDemoImage: "public/python:3.9.9-alpine3.15-dory"
-  goDemoImage: "public/alpine:3.15.0-dory"
-  ginDemoImage: "public/alpine:3.15.0-dory"
+  springDemoImage: "hub/openjdk:11.0.14.1-jdk"
+  nodeDemoImage: "hub/node:15.14.0-alpine3.13"
+  pythonDemoImage: "public/python:3.9.12-alpine3.15-dory"
+  goDemoImage: "public/alpine:3.15.3-dory"
+  ginDemoImage: "public/alpine:3.15.3-dory"
 
 # build step languages and docker image settings
 buildDockerEnvs:
@@ -329,15 +378,13 @@ buildDockerEnvs:
           # build environment name
         - buildEnvName: maven-jdk17
           # build environment docker image, relative path in image repository
-          image: "public/maven:3.8.3-openjdk-17-dory"
-        - buildEnvName: maven-jdk14
-          image: "public/maven:3.6.3-jdk-14-dory"
+          image: "public/maven:3.8.4-openjdk-17-dory"
         - buildEnvName: maven-jdk11
           image: "public/maven:3.8.4-jdk-11-dory"
         - buildEnvName: maven-jdk8
           image: "public/maven:3.8.4-jdk-8-dory"
         - buildEnvName: maven
-          image: "public/maven:3.8.3-openjdk-17-dory"
+          image: "public/maven:3.8.4-openjdk-17-dory"
     - name: npm
       mountHomeDir: false
       enableProxy: false
@@ -346,13 +393,11 @@ buildDockerEnvs:
       commandsAfterCheck: ["rm -rf node_modules"]
       buildEnvs:
         - buildEnvName: npm-node17
-          image: "hub/node:17.0.1-alpine3.14"
+          image: "hub/node:17.8.0-alpine3.15"
         - buildEnvName: npm-node15
           image: "hub/node:15.14.0-alpine3.13"
-        - buildEnvName: npm-node13
-          image: "hub/node:13.14-alpine3.11"
         - buildEnvName: npm
-          image: "hub/node:17.0.1-alpine3.14"
+          image: "hub/node:17.8.0-alpine3.15"
     - name: go
       mountHomeDir: false
       enableProxy: false
@@ -361,11 +406,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: go-1.17
-          image: "public/golang:1.17.3-alpine3.15-dory"
+          image: "public/golang:1.17.8-alpine3.15-dory"
         - buildEnvName: go-1.14
           image: "public/golang:1.14.15-alpine3.13-dory"
         - buildEnvName: go
-          image: "public/golang:1.17.3-alpine3.15-dory"
+          image: "public/golang:1.17.8-alpine3.15-dory"
     - name: python
       mountHomeDir: false
       enableProxy: false
@@ -374,11 +419,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: python-3.10
-          image: "public/python:3.10.0-alpine3.15-dory"
+          image: "public/python:3.10.4-alpine3.15-dory"
         - buildEnvName: python-3.9
-          image: "public/python:3.9.9-alpine3.15-dory"
+          image: "public/python:3.9.12-alpine3.15-dory"
         - buildEnvName: python
-          image: "public/python:3.10.0-alpine3.15-dory"
+          image: "public/python:3.10.4-alpine3.15-dory"
     - name: gradle
       mountHomeDir: true
       enableProxy: false
@@ -387,15 +432,13 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: gradle-jdk17
-          image: "public/gradle:7.3.0-jdk17-dory"
-        - buildEnvName: gradle-jdk14
-          image: "public/gradle:6.7.0-jdk14-dory"
+          image: "public/gradle:7.4.1-jdk17-dory"
         - buildEnvName: gradle-jdk11
-          image: "public/gradle:7.3.0-jdk11-dory"
+          image: "public/gradle:7.4.1-jdk11-dory"
         - buildEnvName: gradle-jdk8
-          image: "public/gradle:7.3.0-jdk8-dory"
+          image: "public/gradle:7.4.1-jdk8-dory"
         - buildEnvName: gradle
-          image: "public/gradle:7.3.0-jdk17-dory"
+          image: "public/gradle:7.4.1-jdk17-dory"
     - name: alpine
       mountHomeDir: false
       enableProxy: false
@@ -404,11 +447,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: alpine-3.15
-          image: "public/alpine:3.15.0-dory"
+          image: "public/alpine:3.15.3-dory"
         - buildEnvName: alpine-3.14
-          image: "public/alpine:3.14.3-dory"
+          image: "public/alpine:3.14.5-dory"
         - buildEnvName: alpine
-          image: "public/alpine:3.15.0-dory"
+          image: "public/alpine:3.15.3-dory"
 
 # debug component docker images settings
 componentDebugEnvs:

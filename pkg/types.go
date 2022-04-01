@@ -29,18 +29,41 @@ type InstallConfig struct {
 		Namespace    string            `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
 		NodeSelector map[string]string `yaml:"nodeSelector" json:"nodeSelector" bson:"nodeSelector" validate:""`
 		GitRepo      struct {
-			Type    string `yaml:"type" json:"type" bson:"type" validate:"required"`
-			Image   string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:""`
-			Port    int    `yaml:"port" json:"port" bson:"port" validate:"required"`
+			Type     string `yaml:"type" json:"type" bson:"type" validate:"required"`
+			Internal struct {
+				Image   string `yaml:"image" json:"image" bson:"image" validate:"required_with=Image Port"`
+				ImageDB string `yaml:"imageDB" json:"imageDB" bson:"imageDB" validate:""`
+				Port    int    `yaml:"port" json:"port" bson:"port" validate:"required_with=Image Port"`
+			} `yaml:"internal" json:"internal" bson:"internal" validate:""`
+			External struct {
+				ViewUrl  string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Url      string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Username string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Name     string `yaml:"name" json:"name" bson:"name" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Mail     string `yaml:"mail" json:"mail" bson:"mail" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Password string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				Token    string `yaml:"token" json:"token" bson:"token" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+			} `yaml:"external" json:"external" bson:"external" validate:""`
 		} `yaml:"gitRepo" json:"gitRepo" bson:"gitRepo" validate:"required"`
 		ArtifactRepo struct {
 			Type     string `yaml:"type" json:"type" bson:"type" validate:"required"`
-			Image    string `yaml:"image" json:"image" bson:"image" validate:"required"`
-			Port     int    `yaml:"port" json:"port" bson:"port" validate:"required"`
-			PortHub  int    `yaml:"portHub" json:"portHub" bson:"portHub" validate:"required"`
-			PortGcr  int    `yaml:"portGcr" json:"portGcr" bson:"portGcr" validate:"required"`
-			PortQuay int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required"`
+			Internal struct {
+				Image    string `yaml:"image" json:"image" bson:"image" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
+				Port     int    `yaml:"port" json:"port" bson:"port" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
+				PortHub  int    `yaml:"portHub" json:"portHub" bson:"portHub" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
+				PortGcr  int    `yaml:"portGcr" json:"portGcr" bson:"portGcr" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
+				PortQuay int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
+			} `yaml:"internal" json:"internal" bson:"internal" validate:""`
+			External struct {
+				ViewUrl          string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				Url              string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				Host             string `yaml:"host" json:"host" bson:"host" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				Username         string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				Password         string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				PublicAccountUrl string `yaml:"publicAccountUrl" json:"publicAccountUrl" bson:"publicAccountUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				PublicUser       string `yaml:"publicUser" json:"publicUser" bson:"publicUser" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				PublicPassword   string `yaml:"publicPassword" json:"publicPassword" bson:"publicPassword" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+			} `yaml:"external" json:"external" bson:"external" validate:""`
 		} `yaml:"artifactRepo" json:"artifactRepo" bson:"artifactRepo" validate:"required"`
 		Openldap struct {
 			Image      string `yaml:"image" json:"image" bson:"image" validate:"required"`
@@ -68,16 +91,26 @@ type InstallConfig struct {
 		} `yaml:"dorycore" json:"dorycore" bson:"dorycore" validate:"required"`
 	} `yaml:"dory" json:"dory" bson:"dory" validate:"required"`
 	ImageRepo struct {
-		Namespace        string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required"`
-		Type             string `yaml:"type" json:"type" bson:"type" validate:"required"`
-		DomainName       string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required"`
-		Version          string `yaml:"version" json:"version" bson:"version" validate:"required"`
-		Password         string `yaml:"password" json:"password" bson:"password" validate:""`
-		CertsDir         string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:""`
-		DataDir          string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:""`
-		RegistryPassword string `yaml:"registryPassword" json:"registryPassword" bson:"registryPassword" validate:""`
-		RegistryHtpasswd string `yaml:"registryHtpasswd" json:"registryHtpasswd" bson:"registryHtpasswd" validate:""`
-		VersionBig       string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
+		Type     string `yaml:"type" json:"type" bson:"type" validate:"required"`
+		Internal struct {
+			DomainName       string `yaml:"domainName" json:"domainName" bson:"domainName" validate:"required_with=DomainName Namespace Version"`
+			Namespace        string `yaml:"namespace" json:"namespace" bson:"namespace" validate:"required_with=DomainName Namespace Version"`
+			Version          string `yaml:"version" json:"version" bson:"version" validate:"required_with=DomainName Namespace Version"`
+			Password         string `yaml:"password" json:"password" bson:"password" validate:""`
+			CertsDir         string `yaml:"certsDir" json:"certsDir" bson:"certsDir" validate:"required_with=CertsDir DataDir"`
+			DataDir          string `yaml:"dataDir" json:"dataDir" bson:"dataDir" validate:"required_with=CertsDir DataDir"`
+			RegistryPassword string `yaml:"registryPassword" json:"registryPassword" bson:"registryPassword" validate:""`
+			RegistryHtpasswd string `yaml:"registryHtpasswd" json:"registryHtpasswd" bson:"registryHtpasswd" validate:""`
+			VersionBig       string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
+		} `yaml:"internal" json:"internal" bson:"internal" validate:""`
+		External struct {
+			Ip       string `yaml:"ip" json:"ip" bson:"ip" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			ViewUrl  string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			Url      string `yaml:"url" json:"url" bson:"url" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			Username string `yaml:"username" json:"username" bson:"username" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			Password string `yaml:"password" json:"password" bson:"password" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			ApiUrl   string `yaml:"apiUrl" json:"apiUrl" bson:"apiUrl" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+		} `yaml:"external" json:"external" bson:"external" validate:""`
 	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {
 		AdminUser struct {
@@ -103,14 +136,14 @@ type InstallConfig struct {
 			LocalPath string `yaml:"localPath" json:"localPath" bson:"localPath" validate:""`
 		} `yaml:"pvConfigLocal" json:"pvConfigLocal" bson:"pvConfigLocal" validate:""`
 		PvConfigNfs struct {
-			NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:""`
-			NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:""`
+			NfsPath   string `yaml:"nfsPath" json:"nfsPath" bson:"nfsPath" validate:"required_with=NfsPath NfsServer"`
+			NfsServer string `yaml:"nfsServer" json:"nfsServer" bson:"nfsServer" validate:"required_with=NfsPath NfsServer"`
 		} `yaml:"pvConfigNfs" json:"pvConfigNfs" bson:"pvConfigNfs" validate:""`
 		PvConfigCephfs struct {
-			CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:""`
-			CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:""`
-			CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:""`
-			CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:""`
+			CephPath     string   `yaml:"cephPath" json:"cephPath" bson:"cephPath" validate:"required_with=CephPath CephUser CephSecret CephMonitors"`
+			CephUser     string   `yaml:"cephUser" json:"cephUser" bson:"cephUser" validate:"required_with=CephPath CephUser CephSecret CephMonitors"`
+			CephSecret   string   `yaml:"cephSecret" json:"cephSecret" bson:"cephSecret" validate:"required_with=CephPath CephUser CephSecret CephMonitors"`
+			CephMonitors []string `yaml:"cephMonitors" json:"cephMonitors" bson:"cephMonitors" validate:"required_with=CephPath CephUser CephSecret CephMonitors"`
 		} `yaml:"pvConfigCephfs" json:"pvConfigCephfs" bson:"pvConfigCephfs" validate:""`
 	} `yaml:"kubernetes" json:"kubernetes" bson:"kubernetes" validate:"required"`
 }

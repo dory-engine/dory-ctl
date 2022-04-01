@@ -14,23 +14,31 @@ mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
 
-## 使用docker-compose部署 {{ $.imageRepo.type }}
+{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborUserName := "admin" }}
+{{- $harborPassword := $.imageRepo.internal.password }}
+{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
+{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
+{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+
+## {{ $.imageRepo.type }} 安装配置
 
 ```shell script
+{{- if $.imageRepo.internal.domainName }}
 # 创建 {{ $.imageRepo.type }} 自签名证书
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
+cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 sh harbor_certs.sh
 ls -alh
 
 # 安装 {{ $.imageRepo.type }}
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
+cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 chmod a+x common.sh install.sh prepare
 sh install.sh
 ls -alh
 
 # 停止并更新 {{ $.imageRepo.type }} 的 docker-compose.yml 文件
 sleep 5 && docker-compose stop && docker-compose rm -f
-export HARBOR_CONFIG_ROOT_PATH=$(echo "{{ $.rootDir }}/{{ $.imageRepo.namespace }}" | sed 's#\/#\\\/#g')
+export HARBOR_CONFIG_ROOT_PATH=$(echo "{{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}" | sed 's#\/#\\\/#g')
 sed -i "s/${HARBOR_CONFIG_ROOT_PATH}/./g" docker-compose.yml
 cat docker-compose.yml
 
@@ -40,27 +48,35 @@ sleep 10
 
 # 检查 {{ $.imageRepo.type }} 状态
 docker-compose ps
+{{- else }}
+# 把harbor服务器({{ $.imageRepo.external.ip }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepo.external.url }} 目录
+# 证书文件包括: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+{{- end }}
 
 # 在当前主机以及所有kubernetes节点主机上，把 {{ $.imageRepo.type }} 的域名记录添加到 /etc/hosts
 vi /etc/hosts
-{{ $.hostIP }}  {{ $.imageRepo.domainName }}
+{{- if $.imageRepo.internal.domainName }}
+{{ $.hostIP }}  {{ $harborDomainName }}
+{{- else }}
+{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
+{{- end }}
 
 # 设置docker客户端登录到 {{ $.imageRepo.type }}
-docker login --username admin --password {{ $.imageRepo.password }} {{ $.imageRepo.domainName }}
+docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
 
 # 在 {{ $.imageRepo.type }} 中创建 public, hub, gcr, quay 四个项目
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
 
 # 把之前拉取的docker镜像推送到 {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
-docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $.imageRepo.domainName }}/{{ $image.target }}
+docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $harborDomainName }}/{{ $image.target }}
 {{- end }}
 
 {{- range $_, $image := $.dockerImages }}
-docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
+docker push {{ $harborDomainName }}/{{ $image.target }}
 {{- end }}
 ```
 
@@ -72,14 +88,16 @@ cd {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 sh docker_certs.sh
 ls -alh
 
+{{- if $.dory.artifactRepo.internal.image }}
 # 从docker镜像中复制nexus初始化数据
 cd {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init || true
-docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.0 cat
+docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.3 cat
 docker cp nexus-data-init:/nexus-data/nexus .
 docker rm -f nexus-data-init
 chown -R 200:200 nexus
 ls -alh nexus
+{{- end }}
 
 # 创建 dory 组件目录并设置权限
 cd {{ $.rootDir }}/{{ $.dory.namespace }}

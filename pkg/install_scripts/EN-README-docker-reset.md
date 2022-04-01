@@ -2,12 +2,14 @@
 
 ## remove all dory service when install failure
 
+{{- if $.imageRepo.internal.domainName }}
 ### stop and remove {{ $.imageRepo.type }} services
 
 ```shell script
 cd {{ $.rootDir }}/{{ $.imageRepo.type }}
 docker-compose stop && docker-compose rm -f
 ```
+{{- end }}
 
 ### stop and remove dory services
 

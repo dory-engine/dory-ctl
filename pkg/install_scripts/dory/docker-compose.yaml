@@ -1,9 +1,10 @@
 version: '3'
 services:
+  {{- if $.dory.gitRepo.internal.image }}
   {{- if eq $.dory.gitRepo.type "gitea" }}
   {{ $giteaDbPwd := randAlphaNum 16 }}
   {{ $.dory.gitRepo.type }}:
-    image: {{ $.dory.gitRepo.image }}
+    image: {{ $.dory.gitRepo.internal.image }}
     container_name: {{ $.dory.gitRepo.type }}
     volumes:
       - ./{{ $.dory.gitRepo.type }}:/data
@@ -16,13 +17,13 @@ services:
       GITEA__database__USER: {{ $.dory.gitRepo.type | quote }}
       GITEA__database__PASSWD: {{ $giteaDbPwd | quote }}
     ports:
-      - {{ $.dory.gitRepo.port }}:3000
+      - {{ $.dory.gitRepo.internal.port }}:3000
     restart: always
     depends_on:
       - {{ $.dory.gitRepo.type }}-mysql
 
   {{ $.dory.gitRepo.type }}-mysql:
-    image: {{ $.dory.gitRepo.imageDB }}
+    image: {{ $.dory.gitRepo.internal.imageDB }}
     container_name: {{ $.dory.gitRepo.type }}-mysql
     volumes:
       - ./{{ $.dory.gitRepo.type }}-mysql:/var/lib/mysql
@@ -35,7 +36,7 @@ services:
     restart: always
   {{- else if eq $.dory.gitRepo.type "gitlab" }}
   {{ $.dory.gitRepo.type }}:
-    image: {{ $.dory.gitRepo.image }}
+    image: {{ $.dory.gitRepo.internal.image }}
     container_name: {{ $.dory.gitRepo.type }}
     volumes:
       - ./{{ $.dory.gitRepo.type }}/config:/etc/gitlab
@@ -44,22 +45,25 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: "nginx['client_max_body_size'] = '0'; gitlab_rails['lfs_enabled'] = true; prometheus_monitoring['enable'] = false;"
     ports:
-      - {{ $.dory.gitRepo.port }}:80
+      - {{ $.dory.gitRepo.internal.port }}:80
     restart: always
   {{- end }}
+  {{- end }}
 
+  {{- if $.dory.artifactRepo.internal.image }}
   {{- if eq $.dory.artifactRepo.type "nexus" }}
   {{ $.dory.artifactRepo.type }}:
-    image: {{ $.dory.artifactRepo.image }}
+    image: {{ $.dory.artifactRepo.internal.image }}
     container_name: {{ $.dory.artifactRepo.type }}
     volumes:
       - ./{{ $.dory.artifactRepo.type }}:/nexus-data
     ports:
-      - {{ $.dory.artifactRepo.port }}:8081
-      - {{ $.dory.artifactRepo.portHub }}:1443
-      - {{ $.dory.artifactRepo.portGcr }}:1444
-      - {{ $.dory.artifactRepo.portQuay }}:1445
+      - {{ $.dory.artifactRepo.internal.port }}:8081
+      - {{ $.dory.artifactRepo.internal.portHub }}:1443
+      - {{ $.dory.artifactRepo.internal.portGcr }}:1444
+      - {{ $.dory.artifactRepo.internal.portQuay }}:1445
     restart: always
+  {{- end }}
   {{- end }}
 
   openldap:
@@ -114,7 +118,7 @@ services:
     hostname: {{ $.dory.docker.dockerName }}-{{ $idx }}.{{ $.dory.docker.dockerName }}
     volumes:
       - ./{{ $.dory.docker.dockerName }}/certs:/certs
-      - /etc/docker/certs.d/{{ $.imageRepo.domainName }}/:/etc/docker/certs.d/{{ $.imageRepo.domainName }}
+      - /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}/:/etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
       - ./{{ $.dory.docker.dockerName }}/daemon.json:/etc/docker/daemon.json
       - ./{{ $.dory.docker.dockerName }}/config.json:/root/.docker/config.json
       - ./dory-core/dory-data:/dory-core/dory-data
@@ -122,7 +126,11 @@ services:
       DOCKER_TLS_CERTDIR: ""
     command: "--host=tcp://0.0.0.0:2376 --tlsverify --tlscacert=/certs/ca.crt --tlscert=/certs/tls.crt --tlskey=/certs/tls.key"
     extra_hosts:
-      - "{{ $.imageRepo.domainName }}:{{ $.hostIP }}"
+      {{- if $.imageRepo.internal.domainName }}
+      - "{{ $.imageRepo.internal.domainName }}:{{ $.hostIP }}"
+      {{- else }}
+      - "{{ $.imageRepo.external.url }}:{{ $.imageRepo.external.ip }}"
+      {{- end }}
     privileged: true
     restart: always
   {{- end }}
@@ -139,7 +147,11 @@ services:
     working_dir: /dory-core
     user: "1000:1000"
     extra_hosts:
-      - "{{ $.imageRepo.domainName }}:{{ $.hostIP}}"
+      {{- if $.imageRepo.internal.domainName }}
+      - "{{ $.imageRepo.internal.domainName }}:{{ $.hostIP }}"
+      {{- else }}
+      - "{{ $.imageRepo.external.url }}:{{ $.imageRepo.external.ip }}"
+      {{- end }}
     restart: always
     depends_on:
       - redis-core-dory

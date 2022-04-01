@@ -1,5 +1,5 @@
-export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepo.domainName }}
-export HARBOR_CONFIG_CERT_PATH={{ $.imageRepo.certsDir }}
+export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepo.internal.domainName }}
+export HARBOR_CONFIG_CERT_PATH={{ $.imageRepo.internal.certsDir }}
 
 rm -rf ${HARBOR_CONFIG_CERT_PATH}/
 mkdir -p ${HARBOR_CONFIG_CERT_PATH}/

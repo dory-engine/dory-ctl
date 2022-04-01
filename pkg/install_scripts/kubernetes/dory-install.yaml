@@ -1,12 +1,13 @@
 namespace: {{ $.dory.namespace }}
 deploys:
+  {{- if $.dory.gitRepo.internal.image }}
   {{- if eq $.dory.gitRepo.type "gitea" }}
     {{ $giteaDbPwd := randAlphaNum 16 }}
   - deployName: {{ $.dory.gitRepo.type }}
-    deployImage: {{ $.dory.gitRepo.image }}
+    deployImage: {{ $.dory.gitRepo.internal.image }}
     deployNodePort:
       - port: 3000
-        nodePort: {{ $.dory.gitRepo.port }}
+        nodePort: {{ $.dory.gitRepo.internal.port }}
     deployReplicas: 1
     {{- if $.dory.nodeSelector }}
     nodeSelector:
@@ -76,10 +77,10 @@ deploys:
 
   {{- else if eq $.dory.gitRepo.type "gitlab" }}
   - deployName: {{ $.dory.gitRepo.type }}
-    deployImage: {{ $.dory.gitRepo.image }}
+    deployImage: {{ $.dory.gitRepo.internal.image }}
     deployNodePort:
       - port: 80
-        nodePort: {{ $.dory.gitRepo.port }}
+        nodePort: {{ $.dory.gitRepo.internal.port }}
     deployReplicas: 1
     {{- if $.dory.nodeSelector }}
     nodeSelector:
@@ -104,20 +105,21 @@ deploys:
       livenessDelaySeconds: 300
       livenessPeriodSeconds: 30
   {{- end }}
+  {{- end }}
 
-
+  {{- if $.dory.artifactRepo.internal.image }}
   {{- if eq $.dory.artifactRepo.type "nexus" }}
   - deployName: {{ $.dory.artifactRepo.type }}
-    deployImage: {{ $.dory.artifactRepo.image }}
+    deployImage: {{ $.dory.artifactRepo.internal.image }}
     deployNodePort:
       - port: 8081
-        nodePort: {{ $.dory.artifactRepo.port }}
+        nodePort: {{ $.dory.artifactRepo.internal.port }}
       - port: 1443
-        nodePort: {{ $.dory.artifactRepo.portHub }}
+        nodePort: {{ $.dory.artifactRepo.internal.portHub }}
       - port: 1444
-        nodePort: {{ $.dory.artifactRepo.portGcr }}
+        nodePort: {{ $.dory.artifactRepo.internal.portGcr }}
       - port: 1445
-        nodePort: {{ $.dory.artifactRepo.portQuay }}
+        nodePort: {{ $.dory.artifactRepo.internal.portQuay }}
     deployReplicas: 1
     {{- if $.dory.nodeSelector }}
     nodeSelector:
@@ -134,6 +136,7 @@ deploys:
       readinessPeriodSeconds: 5
       livenessDelaySeconds: 300
       livenessPeriodSeconds: 30
+  {{- end }}
   {{- end }}
 
   - deployName: openldap
@@ -285,8 +288,8 @@ deploys:
         subPath: {{ $.dory.docker.dockerName }}/daemon.json
       - mountPath: /dory-core/dory-data
         subPath: dory-core/dory-data
-      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.domainName }}
-        subPath: {{ $.dory.docker.dockerName }}/{{ $.imageRepo.domainName }}
+      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
+        subPath: {{ $.dory.docker.dockerName }}/{{ $.imageRepo.internal.domainName }}
     deployHealthCheck:
       checkPort: 2376
       readinessDelaySeconds: 15
@@ -297,9 +300,15 @@ deploys:
     securityContext:
       privileged: true
     hostAliases:
+      {{- if $.imageRepo.internal.domainName }}
       - hostnames:
-          - {{ $.imageRepo.domainName }}
+          - {{ $.imageRepo.internal.domainName }}
         ip: {{ $.hostIP }}
+      {{- else }}
+      - hostnames:
+          - {{ $.imageRepo.external.url }}
+        ip: {{ $.imageRepo.external.ip }}
+      {{- end }}
 
   - deployName: dory-core
     deployImage: doryengine/dory-core:{{ $.versionDoryCore }}-alpine3.15.0
@@ -334,9 +343,15 @@ deploys:
       runAsGroup: 1000
       runAsUser: 1000
     hostAliases:
-      - ip: {{ $.hostIP}}
-        hostnames:
-          - {{ $.imageRepo.domainName }}
+      {{- if $.imageRepo.internal.domainName }}
+      - hostnames:
+          - {{ $.imageRepo.internal.domainName }}
+        ip: {{ $.hostIP }}
+      {{- else }}
+      - hostnames:
+          - {{ $.imageRepo.external.url }}
+        ip: {{ $.imageRepo.external.ip }}
+      {{- end }}
     dependServices:
       - dependName: mongo-core-dory
         dependPort: 27017

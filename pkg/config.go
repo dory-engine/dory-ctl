@@ -52,17 +52,39 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 		return err
 	}
 
-	fieldName = "dory.gitRepo.imageDB"
-	fieldValue = ic.Dory.GitRepo.ImageDB
-	if ic.Dory.GitRepo.Type == "gitea" && ic.Dory.GitRepo.ImageDB == "" {
-		err = fmt.Errorf("%s: %s %s format error: gitea imageDB can not be empty", errInfo, fieldName, fieldValue)
+	if ic.Dory.GitRepo.Internal.Image == "" && ic.Dory.GitRepo.External.ViewUrl == "" {
+		err = fmt.Errorf("%s: dory.gitRepo.internal and dory.gitRepo.external both empty", errInfo)
 		return err
+	}
+
+	if ic.Dory.GitRepo.Internal.Image != "" && ic.Dory.GitRepo.External.ViewUrl != "" {
+		err = fmt.Errorf("%s: dory.gitRepo.internal and dory.gitRepo.external can not set at the same time", errInfo)
+		return err
+	}
+
+	if ic.Dory.GitRepo.Internal.Image != "" {
+		fieldName = "dory.gitRepo.internal.imageDB"
+		fieldValue = ic.Dory.GitRepo.Internal.ImageDB
+		if ic.Dory.GitRepo.Type == "gitea" && ic.Dory.GitRepo.Internal.ImageDB == "" {
+			err = fmt.Errorf("%s: %s %s format error: gitea imageDB can not be empty", errInfo, fieldName, fieldValue)
+			return err
+		}
 	}
 
 	fieldName = "dory.artifactRepo.type"
 	fieldValue = ic.Dory.ArtifactRepo.Type
 	if ic.Dory.ArtifactRepo.Type != "nexus" {
 		err = fmt.Errorf("%s: %s %s format error: must be nexus", errInfo, fieldName, fieldValue)
+		return err
+	}
+
+	if ic.Dory.ArtifactRepo.Internal.Image == "" && ic.Dory.ArtifactRepo.External.ViewUrl == "" {
+		err = fmt.Errorf("%s: dory.artifactRepo.internal and dory.artifactRepo.external both empty", errInfo)
+		return err
+	}
+
+	if ic.Dory.ArtifactRepo.Internal.Image != "" && ic.Dory.ArtifactRepo.External.ViewUrl != "" {
+		err = fmt.Errorf("%s: dory.artifactRepo.internal and dory.artifactRepo.external can not set at the same time", errInfo)
 		return err
 	}
 
@@ -73,42 +95,66 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 		return err
 	}
 
-	fieldName = "imageRepo.namespace"
-	fieldValue = ic.ImageRepo.Namespace
-	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
-		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+	if ic.ImageRepo.Internal.DomainName == "" && ic.ImageRepo.External.ViewUrl == "" {
+		err = fmt.Errorf("%s: imageRepo.internal and imageRepo.external both empty", errInfo)
 		return err
 	}
 
-	fieldName = "imageRepo.Namespace"
-	fieldValue = ic.ImageRepo.Namespace
-	if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
-		err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+	if ic.ImageRepo.Internal.DomainName != "" && ic.ImageRepo.External.ViewUrl != "" {
+		err = fmt.Errorf("%s: imageRepo.internal and imageRepo.external can not set at the same time", errInfo)
 		return err
 	}
 
-	if ic.InstallMode == "docker" {
-		fieldName = "imageRepo.certsDir"
-		fieldValue = ic.ImageRepo.CertsDir
-		if fieldValue == "" {
-			err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.certsDir can not be empty", errInfo, fieldName, fieldValue)
-			return err
-		}
+	if ic.ImageRepo.Internal.DomainName != "" {
+		fieldName = "imageRepo.internal.namespace"
+		fieldValue = ic.ImageRepo.Internal.Namespace
 		if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
 			err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
 			return err
 		}
 
-		fieldName = "imageRepo.dataDir"
-		fieldValue = ic.ImageRepo.DataDir
-		if fieldValue == "" {
-			err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.dataDir can not be empty", errInfo, fieldName, fieldValue)
+		if ic.InstallMode == "docker" {
+			fieldName = "imageRepo.internal.certsDir"
+			fieldValue = ic.ImageRepo.Internal.CertsDir
+			if fieldValue == "" {
+				err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.internal.certsDir can not be empty", errInfo, fieldName, fieldValue)
+				return err
+			}
+			if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
+				err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+				return err
+			}
+
+			fieldName = "imageRepo.internal.dataDir"
+			fieldValue = ic.ImageRepo.Internal.DataDir
+			if fieldValue == "" {
+				err = fmt.Errorf("%s: %s %s format error: installMode is docker, imageRepo.internal.dataDir can not be empty", errInfo, fieldName, fieldValue)
+				return err
+			}
+			if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
+				err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
+				return err
+			}
+		}
+
+		arr := strings.Split(ic.ImageRepo.Internal.Version, ".")
+		if len(arr) != 3 {
+			fieldName = "imageRepo.internal.version"
+			fieldValue = ic.ImageRepo.Internal.Version
+			err = fmt.Errorf("%s: %s %s format error: should like v2.4.0", errInfo, fieldName, fieldValue)
 			return err
 		}
-		if strings.HasPrefix(fieldValue, "/") || strings.HasSuffix(fieldValue, "/") {
-			err = fmt.Errorf("%s: %s %s format error: can not start or end with /", errInfo, fieldName, fieldValue)
-			return err
+		arr[2] = "0"
+		ic.ImageRepo.Internal.VersionBig = strings.Join(arr, ".")
+
+		if ic.ImageRepo.Internal.Password == "" {
+			ic.ImageRepo.Internal.Password = RandomString(16, false, "=")
 		}
+		if ic.ImageRepo.Internal.RegistryPassword == "" {
+			ic.ImageRepo.Internal.RegistryPassword = RandomString(16, false, "")
+		}
+		bs, _ := bcrypt.GenerateFromPassword([]byte(ic.ImageRepo.Internal.RegistryPassword), 10)
+		ic.ImageRepo.Internal.RegistryHtpasswd = string(bs)
 	}
 
 	fieldName = "hostIP"
@@ -190,16 +236,6 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 		}
 	}
 
-	arr := strings.Split(ic.ImageRepo.Version, ".")
-	if len(arr) != 3 {
-		fieldName = "imageRepo.version"
-		fieldValue = ic.ImageRepo.Version
-		err = fmt.Errorf("%s: %s %s format error: should like v2.4.0", errInfo, fieldName, fieldValue)
-		return err
-	}
-	arr[2] = "0"
-	ic.ImageRepo.VersionBig = strings.Join(arr, ".")
-
 	if ic.Dory.Openldap.Password == "" {
 		ic.Dory.Openldap.Password = RandomString(16, false, "=")
 	}
@@ -209,14 +245,6 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 	if ic.Dory.Mongo.Password == "" {
 		ic.Dory.Mongo.Password = RandomString(16, false, "=")
 	}
-	if ic.ImageRepo.Password == "" {
-		ic.ImageRepo.Password = RandomString(16, false, "=")
-	}
-	if ic.ImageRepo.RegistryPassword == "" {
-		ic.ImageRepo.RegistryPassword = RandomString(16, false, "")
-	}
-	bs, _ := bcrypt.GenerateFromPassword([]byte(ic.ImageRepo.RegistryPassword), 10)
-	ic.ImageRepo.RegistryHtpasswd = string(bs)
 
 	return err
 }
@@ -233,7 +261,16 @@ func (ic *InstallConfig) HarborQuery(url, method string, param map[string]interf
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	url = fmt.Sprintf("https://%s%s", ic.ImageRepo.DomainName, url)
+	domainName := ic.ImageRepo.Internal.DomainName
+	username := "admin"
+	password := ic.ImageRepo.Internal.Password
+	if ic.ImageRepo.Internal.DomainName == "" {
+		domainName = ic.ImageRepo.External.Url
+		username = ic.ImageRepo.External.Username
+		password = ic.ImageRepo.External.Password
+	}
+
+	url = fmt.Sprintf("https://%s%s", domainName, url)
 
 	if len(param) > 0 {
 		bs, err = json.Marshal(param)
@@ -252,7 +289,7 @@ func (ic *InstallConfig) HarborQuery(url, method string, param map[string]interf
 		}
 	}
 
-	req.SetBasicAuth("admin", ic.ImageRepo.Password)
+	req.SetBasicAuth(username, password)
 	resp, err = client.Do(req)
 	if err != nil {
 		return strJson, statusCode, err

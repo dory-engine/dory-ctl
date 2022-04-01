@@ -173,8 +173,9 @@ gitRepoConfigs:
   - kind: {{ $.dory.gitRepo.type }}
     # 代码仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.dory.gitRepo.type }}-dory
+    {{- if $.dory.gitRepo.internal.image }}
     # 代码仓库浏览器查看url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.gitRepo.internal.port }}
     # 代码仓库的地址，dory访问该仓库的地址
     {{- if eq $.dory.gitRepo.type "gitea" }}
     url: http://gitea:3000
@@ -191,6 +192,22 @@ gitRepoConfigs:
     password: "PLEASE_INPUT_BY_MANUAL"
     # 代码仓库管理员token
     token: "PLEASE_INPUT_BY_MANUAL"
+    {{- else }}
+    # 代码仓库浏览器查看url
+    viewUrl: {{ $.dory.gitRepo.external.viewUrl }}
+    # 代码仓库的地址，dory访问该仓库的地址
+    url: {{ $.dory.gitRepo.external.url }}
+    # 代码仓库管理员账号
+    username: {{ $.dory.gitRepo.external.username | quote }}
+    # 代码仓库管理员显示名
+    name: {{ $.dory.gitRepo.external.name | quote }}
+    # 代码仓库管理员显示mail
+    mail: {{ $.dory.gitRepo.external.mail | quote }}
+    # 代码仓库管理员密码
+    password: {{ $.dory.gitRepo.external.password | quote }}
+    # 代码仓库管理员token
+    token: {{ $.dory.gitRepo.external.token | quote }}
+    {{- end }}
     # 默认tag名字
     tagDefault: "v0.1.0"
 # 镜像仓库配置，支持harbor
@@ -199,26 +216,40 @@ imageRepoConfigs:
   - kind: {{ $.imageRepo.type }}
     # 镜像仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
+    {{- if $.imageRepo.internal.domainName }}
     # 镜像仓库浏览器查看url
-    viewUrl: https://{{ $.imageRepo.domainName }}
+    viewUrl: https://{{ $.imageRepo.internal.domainName }}
     # 镜像仓库地址，使用https
-    url: {{ $.imageRepo.domainName | quote }}
+    url: {{ $.imageRepo.internal.domainName | quote }}
     # 镜像仓库管理员账号
     username: admin
     # 镜像仓库管理员密码
-    password: {{ $.imageRepo.password | quote }}
+    password: {{ $.imageRepo.internal.password | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
-    apiUrl: https://{{ $.imageRepo.domainName }}
+    apiUrl: https://{{ $.imageRepo.internal.domainName }}
+    {{- else }}
+    # 镜像仓库浏览器查看url
+    viewUrl: {{ $.imageRepo.external.viewUrl }}
+    # 镜像仓库地址，使用https
+    url: {{ $.imageRepo.external.url }}
+    # 镜像仓库管理员账号
+    username: {{ $.imageRepo.external.username }}
+    # 镜像仓库管理员密码
+    password: {{ $.imageRepo.external.password | quote }}
+    # 镜像仓库 api访问地址，dory访问该仓库的地址
+    apiUrl: {{ $.imageRepo.external.apiUrl }}
+    {{- end }}
 # 制品仓库配置，支持nexus
 artifactRepoConfigs:
     # 制品仓库类型，选项: nexus
   - kind: {{ $.dory.artifactRepo.type }}
     # 制品仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
+    {{- if $.dory.artifactRepo.internal.image }}
     # 制品仓库浏览器查看url
-    viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.port }}
+    viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
     # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
-    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
+    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
     # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址(建议使用外部ip)
     host: {{ $.hostIP | quote }}
     # 制品仓库管理员账号
@@ -227,14 +258,32 @@ artifactRepoConfigs:
     password: "Nexus_Pwd_321"
     # 制品仓库public role名称
     publicRole: public-role
-    # 制品仓库拉取dockerhub的主机地址端口，kubernetes环境拉取镜像的时候访问该仓库的地址(建议使用外部ip+端口)
-    dockerHubUrl: {{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}
     # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址(建议使用外部ip+端口)
-    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.port }}
+    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
     # 拉取第三方开源依赖的公用账号名称
     publicUser: public-user
     # 拉取第三方开源依赖的公用账号密码
     publicPassword: public-user
+    {{- else }}
+    # 制品仓库浏览器查看url
+    viewUrl: {{ $.dory.artifactRepo.external.viewUrl }}
+    # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
+    url: {{ $.dory.artifactRepo.external.url }}
+    # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址(建议使用外部ip)
+    host: {{ $.dory.artifactRepo.external.host | quote }}
+    # 制品仓库管理员账号
+    username: {{ $.dory.artifactRepo.external.username | quote }}
+    # 制品仓库管理员密码
+    password: {{ $.dory.artifactRepo.external.password | quote }}
+    # 制品仓库public role名称
+    publicRole: public-role
+    # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址(建议使用外部ip+端口)
+    publicAccountUrl: {{ $.dory.artifactRepo.external.publicAccountUrl }}
+    # 拉取第三方开源依赖的公用账号名称
+    publicUser: {{ $.dory.artifactRepo.external.publicUser | quote }}
+    # 拉取第三方开源依赖的公用账号密码
+    publicPassword: {{ $.dory.artifactRepo.external.publicPassword | quote }}
+    {{- end }}
     # maven第三方开源依赖的仓库相对路径
     maven: repository/maven-group-public/
     # npm第三方开源依赖的仓库相对路径
@@ -265,11 +314,11 @@ defaultPipeline:
 
 # 演示项目打包镜像设置
 demoProjectImageSettings:
-  springDemoImage: "hub/openjdk:14-jdk-alpine3.10"
-  nodeDemoImage: "hub/node:13.14-alpine3.11"
-  pythonDemoImage: "public/python:3.9.9-alpine3.15-dory"
-  goDemoImage: "public/alpine:3.15.0-dory"
-  ginDemoImage: "public/alpine:3.15.0-dory"
+  springDemoImage: "hub/openjdk:11.0.14.1-jdk"
+  nodeDemoImage: "hub/node:15.14.0-alpine3.13"
+  pythonDemoImage: "public/python:3.9.12-alpine3.15-dory"
+  goDemoImage: "public/alpine:3.15.3-dory"
+  ginDemoImage: "public/alpine:3.15.3-dory"
 
 # 编译环境设置，对应的环境与docker镜像设置
 buildDockerEnvs:
@@ -328,15 +377,13 @@ buildDockerEnvs:
           # 构建环境名称
         - buildEnvName: maven-jdk17
           # 构建环境容器镜像所在的镜像仓库相对路径
-          image: "public/maven:3.8.3-openjdk-17-dory"
-        - buildEnvName: maven-jdk14
-          image: "public/maven:3.6.3-jdk-14-dory"
+          image: "public/maven:3.8.4-openjdk-17-dory"
         - buildEnvName: maven-jdk11
           image: "public/maven:3.8.4-jdk-11-dory"
         - buildEnvName: maven-jdk8
           image: "public/maven:3.8.4-jdk-8-dory"
         - buildEnvName: maven
-          image: "public/maven:3.8.3-openjdk-17-dory"
+          image: "public/maven:3.8.4-openjdk-17-dory"
     - name: npm
       mountHomeDir: false
       enableProxy: false
@@ -345,13 +392,11 @@ buildDockerEnvs:
       commandsAfterCheck: ["rm -rf node_modules"]
       buildEnvs:
         - buildEnvName: npm-node17
-          image: "hub/node:17.0.1-alpine3.14"
+          image: "hub/node:17.8.0-alpine3.15"
         - buildEnvName: npm-node15
           image: "hub/node:15.14.0-alpine3.13"
-        - buildEnvName: npm-node13
-          image: "hub/node:13.14-alpine3.11"
         - buildEnvName: npm
-          image: "hub/node:17.0.1-alpine3.14"
+          image: "hub/node:17.8.0-alpine3.15"
     - name: go
       mountHomeDir: false
       enableProxy: false
@@ -360,11 +405,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: go-1.17
-          image: "public/golang:1.17.3-alpine3.15-dory"
+          image: "public/golang:1.17.8-alpine3.15-dory"
         - buildEnvName: go-1.14
           image: "public/golang:1.14.15-alpine3.13-dory"
         - buildEnvName: go
-          image: "public/golang:1.17.3-alpine3.15-dory"
+          image: "public/golang:1.17.8-alpine3.15-dory"
     - name: python
       mountHomeDir: false
       enableProxy: false
@@ -373,11 +418,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: python-3.10
-          image: "public/python:3.10.0-alpine3.15-dory"
+          image: "public/python:3.10.4-alpine3.15-dory"
         - buildEnvName: python-3.9
-          image: "public/python:3.9.9-alpine3.15-dory"
+          image: "public/python:3.9.12-alpine3.15-dory"
         - buildEnvName: python
-          image: "public/python:3.10.0-alpine3.15-dory"
+          image: "public/python:3.10.4-alpine3.15-dory"
     - name: gradle
       mountHomeDir: true
       enableProxy: false
@@ -386,15 +431,13 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: gradle-jdk17
-          image: "public/gradle:7.3.0-jdk17-dory"
-        - buildEnvName: gradle-jdk14
-          image: "public/gradle:6.7.0-jdk14-dory"
+          image: "public/gradle:7.4.1-jdk17-dory"
         - buildEnvName: gradle-jdk11
-          image: "public/gradle:7.3.0-jdk11-dory"
+          image: "public/gradle:7.4.1-jdk11-dory"
         - buildEnvName: gradle-jdk8
-          image: "public/gradle:7.3.0-jdk8-dory"
+          image: "public/gradle:7.4.1-jdk8-dory"
         - buildEnvName: gradle
-          image: "public/gradle:7.3.0-jdk17-dory"
+          image: "public/gradle:7.4.1-jdk17-dory"
     - name: alpine
       mountHomeDir: false
       enableProxy: false
@@ -403,11 +446,11 @@ buildDockerEnvs:
       commandsAfterCheck: []
       buildEnvs:
         - buildEnvName: alpine-3.15
-          image: "public/alpine:3.15.0-dory"
+          image: "public/alpine:3.15.3-dory"
         - buildEnvName: alpine-3.14
-          image: "public/alpine:3.14.3-dory"
+          image: "public/alpine:3.14.5-dory"
         - buildEnvName: alpine
-          image: "public/alpine:3.15.0-dory"
+          image: "public/alpine:3.15.3-dory"
 
 # 调试容器docker镜像设置
 componentDebugEnvs:

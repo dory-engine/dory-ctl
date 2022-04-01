@@ -14,23 +14,31 @@ mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
 
-## install {{ $.imageRepo.type }} with docker-compose
+{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborUserName := "admin" }}
+{{- $harborPassword := $.imageRepo.internal.password }}
+{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
+{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
+{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+
+## {{ $.imageRepo.type }} installation and configuration
 
 ```shell script
+{{- if $.imageRepo.internal.domainName }}
 # create {{ $.imageRepo.type }} certificates
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
+cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 sh harbor_certs.sh
 ls -alh
 
 # install {{ $.imageRepo.type }}
-cd {{ $.rootDir }}/{{ $.imageRepo.namespace }}
+cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 chmod a+x common.sh install.sh prepare
 sh install.sh
 ls -alh
 
 # stop and update {{ $.imageRepo.type }} docker-compose.yml
 sleep 5 && docker-compose stop && docker-compose rm -f
-export HARBOR_CONFIG_ROOT_PATH=$(echo "{{ $.rootDir }}/{{ $.imageRepo.namespace }}" | sed 's#\/#\\\/#g')
+export HARBOR_CONFIG_ROOT_PATH=$(echo "{{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}" | sed 's#\/#\\\/#g')
 sed -i "s/${HARBOR_CONFIG_ROOT_PATH}/./g" docker-compose.yml
 cat docker-compose.yml
 
@@ -40,27 +48,35 @@ sleep 10
 
 # check {{ $.imageRepo.type }} status
 docker-compose ps
+{{- else }}
+# copy harbor server ({{ $.imageRepo.external.ip }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepo.external.url }} directory
+# certificates are: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+{{- end }}
 
 # on current host and all kubernetes nodes add {{ $.imageRepo.type }} domain name in /etc/hosts
 vi /etc/hosts
-{{ $.hostIP }}  {{ $.imageRepo.domainName }}
+{{- if $.imageRepo.internal.domainName }}
+{{ $.hostIP }}  {{ $harborDomainName }}
+{{- else }}
+{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
+{{- end }}
 
 # docker login to {{ $.imageRepo.type }}
-docker login --username admin --password {{ $.imageRepo.password }} {{ $.imageRepo.domainName }}
+docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
 
 # create public, hub, gcr, quay projects in {{ $.imageRepo.type }}
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://admin:{{ $.imageRepo.password }}@{{ $.imageRepo.domainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
 
 # push docker images to {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
-docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $.imageRepo.domainName }}/{{ $image.target }}
+docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $harborDomainName }}/{{ $image.target }}
 {{- end }}
 
 {{- range $_, $image := $.dockerImages }}
-docker push {{ $.imageRepo.domainName }}/{{ $image.target }}
+docker push {{ $harborDomainName }}/{{ $image.target }}
 {{- end }}
 ```
 
@@ -72,14 +88,16 @@ cd {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 sh docker_certs.sh
 ls -alh
 
+{{- if $.dory.artifactRepo.internal.image }}
 # create nexus init data, nexus init data is in a docker image
 cd {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init || true
-docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.0 cat
+docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.3 cat
 docker cp nexus-data-init:/nexus-data/nexus .
 docker rm -f nexus-data-init
 chown -R 200:200 nexus
 ls -alh nexus
+{{- end }}
 
 # create dory services directory and chown
 cd {{ $.rootDir }}/{{ $.dory.namespace }}

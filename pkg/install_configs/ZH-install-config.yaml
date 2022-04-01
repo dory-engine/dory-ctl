@@ -38,33 +38,74 @@ dory:
   # 代码仓库设置
   gitRepo:
     # 代码仓库类型，选项: gitea, gitlab
+    # gitea 支持 arm64架构
+    # gitlab 不支持 arm64架构
     type: gitea
-    # 镜像名
-    image: gitea/gitea:1.15.6
-    # 数据库镜像名，gitea情况下必须填写(选填)
-    imageDB: mysql:8.0.20
-    # 暴露的服务端口
-    port: 30001
-  # 制品依赖仓库设置
+    # 自动部署代码仓库（internal、external只能选一种部署方式）
+    internal:
+      # 镜像名
+      image: gitea/gitea:1.16.5
+      # 数据库镜像名，gitea情况下必须填写(选填)
+      imageDB: mysql:8.0.20
+      # 暴露的服务端口
+      port: 30001
+    # # 使用外部部署代码仓库，不自动部署代码仓库（internal、external只能选一种部署方式）
+    # external:
+    #   # 代码仓库浏览器查看url
+    #   viewUrl: http://192.168.0.1:30001
+    #   # 代码仓库的地址，dory访问该仓库的地址
+    #   url: http://192.168.0.1:30001
+    #   # 代码仓库管理员账号
+    #   username: "PLEASE_INPUT_BY_MANUAL"
+    #   # 代码仓库管理员显示名
+    #   name: "PLEASE_INPUT_BY_MANUAL"
+    #   # 代码仓库管理员显示mail
+    #   mail: "PLEASE_INPUT_BY_MANUAL"
+    #   # 代码仓库管理员密码
+    #   password: "PLEASE_INPUT_BY_MANUAL"
+    #   # 代码仓库管理员token
+    #   token: "PLEASE_INPUT_BY_MANUAL"
+  # 制品依赖仓库设置，不支持arm64架构
   artifactRepo:
     # 制品依赖仓库类型，选项: nexus
     type: nexus
-    # 镜像名
-    image: sonatype/nexus3:3.37.0
-    # web服务暴露的服务端口
-    port: 30003
-    # dockerhub镜像代理暴露的服务端口
-    portHub: 30004
-    # gcr镜像代理暴露的服务端口
-    portGcr: 30005
-    # quay镜像代理暴露的服务端口
-    portQuay: 30006
+    # 自动部署制品依赖仓库（internal、external只能选一种部署方式）
+    internal:
+      # 镜像名
+      image: sonatype/nexus3:3.38.1
+      # web服务暴露的服务端口
+      port: 30003
+      # dockerhub镜像代理暴露的服务端口
+      portHub: 30004
+      # gcr镜像代理暴露的服务端口
+      portGcr: 30005
+      # quay镜像代理暴露的服务端口
+      portQuay: 30006
+    # # 使用外部部署制品依赖仓库，不自动部署制品依赖仓库（internal、external只能选一种部署方式）
+    # # 请使用docker镜像 doryengine/nexus-data-init:alpine-3.15.3 /nexus-data/nexus 目录的数据为nexus的基础数据
+    # external:
+    #   # 制品仓库浏览器查看url
+    #   viewUrl: http://192.168.0.1:30003
+    #   # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
+    #   url: http://192.168.0.1:30003
+    #   # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址(建议使用外部ip)
+    #   host: 192.168.0.1
+    #   # 制品仓库管理员账号
+    #   username: admin
+    #   # 制品仓库管理员密码
+    #   password: "Nexus_Pwd_321"
+    #   # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址(建议使用外部ip+端口)
+    #   publicAccountUrl: http://public-user:public-user@192.168.0.1:30003
+    #   # 拉取第三方开源依赖的公用账号名称
+    #   publicUser: public-user
+    #   # 拉取第三方开源依赖的公用账号密码
+    #   publicPassword: public-user
   # openldap账号中心设置，dory-core使用openldap存储用户账号
   openldap:
     # 镜像名
     image: osixia/openldap:develop-dev
     # ldapadmin镜像名
-    imageAdmin: osixia/phpldapadmin:stable-amd64
+    imageAdmin: osixia/phpldapadmin:stable
     # 管理界面暴露的服务端口
     port: 30007
     # 管理员密码，为空表示自动随机生成
@@ -86,39 +127,55 @@ dory:
   # mongo数据库设置
   mongo:
     # 镜像名
-    image: mongo:4.4.10-focal
+    image: mongo:5.0.6-focal
     # 访问密码，为空表示自动随机生成
     password: ""
   # docker executor部署设置
   docker:
     # 镜像名
-    image: docker:20.10.11-dind
+    image: docker:20.10.14-dind
     # docker executor在docker-compose或者kubernetes中部署的服务名
     dockerName: docker
     # 启动多少个docker executor实例
     dockerNumber: 2
-# 镜像仓库设置
+# 镜像仓库设置，不支持arm64架构
 imageRepo:
-  # 镜像仓库组件所在的名字空间
-  # 假如安装模式为kubernetes，表示镜像仓库组件所安装的名字空间
-  # 假如安装模式为docker，表示镜像仓库组件存放的子目录
-  namespace: harbor
   # 镜像仓库类型，选项: harbor
   type: harbor
-  # 镜像仓库的访问域名，用于创建harbor的自签名tls证书
-  domainName: harbor.dory.local
-  # 镜像仓库版本，harbor版本，支持v2.2.x - v2.4.x
-  version: v2.4.0
-  # 镜像仓库的管理员密码，为空表示自动随机生成
-  password: ""
-  {{- if eq $.mode "docker" }}
-  # 镜像仓库的tls自签名证书存放的相对路径
-  # 安装模式为docker情况下必须填写
-  certsDir: certs
-  # 镜像仓库的数据存放的相对路径
-  # 安装模式为docker情况下必须填写
-  dataDir: data
-  {{- end }}
+  # 自动部署镜像依赖仓库（internal、external只能选一种部署方式）
+  internal:
+    # 镜像仓库的访问域名，用于创建harbor的自签名tls证书
+    domainName: harbor.dory.local
+    # 镜像仓库组件所在的名字空间
+    # 假如安装模式为kubernetes，表示镜像仓库组件所安装的名字空间
+    # 假如安装模式为docker，表示镜像仓库组件存放的子目录
+    namespace: harbor
+    # 镜像仓库版本，harbor版本，支持v2.2.x - v2.4.x
+    version: v2.4.2
+    # 镜像仓库的管理员密码，为空表示自动随机生成
+    password: ""
+    {{- if eq $.mode "docker" }}
+    # 镜像仓库的tls自签名证书存放的相对路径
+    # 安装模式为docker情况下必须填写
+    certsDir: certs
+    # 镜像仓库的数据存放的相对路径
+    # 安装模式为docker情况下必须填写
+    dataDir: data
+    {{- end }}
+  # # 使用外部部署镜像仓库，不自动部署镜像仓库（internal、external只能选一种部署方式）
+  # external:
+  #   # 镜像仓库ip地址
+  #   ip: 192.168.0.1
+  #   # 镜像仓库浏览器查看url
+  #   viewUrl: https://harbor.dory.local
+  #   # 镜像仓库地址，使用https
+  #   url: harbor.dory.local
+  #   # 镜像仓库管理员账号
+  #   username: admin
+  #   # 镜像仓库管理员密码
+  #   password: "PLEASE_INPUT_BY_MANUAL"
+  #   # 镜像仓库 api访问地址，dory访问该仓库的地址
+  #   apiUrl: https://harbor.dory.local
 # dorycore应用设置
 dorycore:
   # 默认管理员设置，自动在ldap中开通账号

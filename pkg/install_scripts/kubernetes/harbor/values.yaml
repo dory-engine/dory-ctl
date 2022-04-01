@@ -35,8 +35,8 @@ expose:
       notarySecretName: ""
   ingress:
     hosts:
-      core: {{ $.imageRepo.domainName }}
-      notary: notary.{{ $.imageRepo.domainName }}
+      core: {{ $.imageRepo.internal.domainName }}
+      notary: notary.{{ $.imageRepo.internal.domainName }}
     # set to the type of ingress controller if it has specific requirements.
     # leave as `default` for most ingress controllers.
     # set to `gce` if using the GCE ingress controller
@@ -120,7 +120,7 @@ expose:
 # the IP address of k8s node
 #
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
-externalURL: https://{{ $.imageRepo.domainName }}
+externalURL: https://{{ $.imageRepo.internal.domainName }}
 
 # The internal TLS used for harbor components secure communicating. In order to enable https
 # in each components tls cert files need to provided in advance.
@@ -201,7 +201,7 @@ persistence:
     registry:
       # Use the existing PVC which must be created manually before bound,
       # and specify the "subPath" if the PVC is shared with other components
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       # Specify the "storageClass" used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to "-" to disable dynamic provisioning
@@ -210,13 +210,13 @@ persistence:
       accessMode: ReadWriteMany
       size: 5Gi
     chartmuseum:
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       storageClass: "-"
       subPath: "chartmuseum"
       accessMode: ReadWriteMany
       size: 5Gi
     jobservice:
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       storageClass: "-"
       subPath: "jobservice"
       accessMode: ReadWriteMany
@@ -224,7 +224,7 @@ persistence:
     # If external database is used, the following settings for database will
     # be ignored
     database:
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       storageClass: "-"
       subPath: "database"
       accessMode: ReadWriteMany
@@ -232,13 +232,13 @@ persistence:
     # If external Redis is used, the following settings for Redis will
     # be ignored
     redis:
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       storageClass: "-"
       subPath: "redis"
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
-      existingClaim: "{{ $.imageRepo.namespace }}-pvc"
+      existingClaim: "{{ $.imageRepo.internal.namespace }}-pvc"
       storageClass: "-"
       subPath: "trivy"
       accessMode: ReadWriteOnce
@@ -345,7 +345,7 @@ updateStrategy:
 logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: {{ $.imageRepo.password | quote }}
+harborAdminPassword: {{ $.imageRepo.internal.password | quote }}
 
 # The name of the secret which contains key named "ca.crt". Setting this enables the
 # download link on portal to download the certificate of CA when the certificate isn't
@@ -382,7 +382,7 @@ proxy:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -403,7 +403,7 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -424,7 +424,7 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -462,7 +462,7 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   replicas: 1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
@@ -499,7 +499,7 @@ registry:
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -507,7 +507,7 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
 
     # resources:
     #  requests:
@@ -531,10 +531,10 @@ registry:
   relativeurls: false
   credentials:
     username: "harbor_registry_user"
-    password: {{ $.imageRepo.registryPassword | quote }}
+    password: {{ $.imageRepo.internal.registryPassword | quote }}
     # If you update the username or password of registry, make sure use cli tool htpasswd to generate the bcrypt hash
     # e.g. "htpasswd -nbBC10 $username $password"
-    htpasswd: "harbor_registry_user:{{ $.imageRepo.registryHtpasswd }}"
+    htpasswd: "harbor_registry_user:{{ $.imageRepo.internal.registryHtpasswd }}"
 
   middleware:
     enabled: false
@@ -558,7 +558,7 @@ chartmuseum:
   absoluteUrl: false
   image:
     repository: goharbor/chartmuseum-photon
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   replicas: 1
   # resources:
   #  requests:
@@ -579,7 +579,7 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: {{ $.imageRepo.version }}
+    tag: {{ $.imageRepo.internal.version }}
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # mount the service account token
@@ -642,7 +642,7 @@ notary:
     automountServiceAccountToken: false
     image:
       repository: goharbor/notary-server-photon
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     replicas: 1
     # resources:
     #  requests:
@@ -662,7 +662,7 @@ notary:
     automountServiceAccountToken: false
     image:
       repository: goharbor/notary-signer-photon
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     replicas: 1
     # resources:
     #  requests:
@@ -694,7 +694,7 @@ database:
     automountServiceAccountToken: false
     image:
       repository: goharbor/harbor-db
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     # The initial superuser password for internal database
     password: {{ randAlphaNum 16 | quote }}
     # The size limit for Shared memory, pgSQL use it for shared_buffer
@@ -758,7 +758,7 @@ redis:
     automountServiceAccountToken: false
     image:
       repository: goharbor/redis-photon
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -798,7 +798,7 @@ exporter:
     automountServiceAccountToken: false
     image:
       repository: goharbor/harbor-exporter
-      tag: {{ $.imageRepo.version }}
+      tag: {{ $.imageRepo.internal.version }}
     nodeSelector: {}
     tolerations: []
     affinity: {}

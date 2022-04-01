@@ -404,74 +404,76 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	readmeDockerResetName := "README-docker-reset.md"
 	defer o.DoryCreateReadme(installConfig, outputDir, readmeDockerResetName)
 
-	// create harbor certificates
-	harborDir := fmt.Sprintf("%s/%s", outputDir, installConfig.ImageRepo.Namespace)
-	_ = os.RemoveAll(harborDir)
-	_ = os.MkdirAll(harborDir, 0700)
-	harborScriptDir := "harbor"
-	harborScriptName := "harbor_certs.sh"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor certificates error: %s", err.Error())
-		return err
-	}
+	if installConfig.ImageRepo.Internal.DomainName != "" {
+		// create harbor certificates
+		harborDir := fmt.Sprintf("%s/%s", outputDir, installConfig.ImageRepo.Internal.Namespace)
+		_ = os.RemoveAll(harborDir)
+		_ = os.MkdirAll(harborDir, 0700)
+		harborScriptDir := "harbor"
+		harborScriptName := "harbor_certs.sh"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborScriptDir, harborScriptName))
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+		strHarborCertScript, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborScriptName), []byte(strHarborCertScript), 0600)
+		if err != nil {
+			err = fmt.Errorf("create harbor certificates error: %s", err.Error())
+			return err
+		}
 
-	// extract harbor install files
-	err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
-	if err != nil {
-		err = fmt.Errorf("extract harbor install files error: %s", err.Error())
-		return err
-	}
+		// extract harbor install files
+		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/harbor/harbor", pkg.DirInstallScripts), harborDir)
+		if err != nil {
+			err = fmt.Errorf("extract harbor install files error: %s", err.Error())
+			return err
+		}
 
-	harborInstallerDir := "harbor/harbor"
-	harborYamlName := "harbor.yml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
-	strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor.yml error: %s", err.Error())
-		return err
-	}
+		harborInstallerDir := "harbor/harbor"
+		harborYamlName := "harbor.yml"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborYamlName))
+		if err != nil {
+			err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+			return err
+		}
+		strHarborYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborYamlName), []byte(strHarborYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("create harbor.yml error: %s", err.Error())
+			return err
+		}
 
-	harborPrepareName := "prepare"
-	_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
-	strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
-	if err != nil {
-		err = fmt.Errorf("create prepare error: %s", err.Error())
-		return err
-	}
+		harborPrepareName := "prepare"
+		_ = os.Rename(fmt.Sprintf("%s/harbor", installConfig.RootDir), harborDir)
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborPrepareName))
+		if err != nil {
+			err = fmt.Errorf("create prepare error: %s", err.Error())
+			return err
+		}
+		strHarborPrepare, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create prepare error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborDir, harborPrepareName), []byte(strHarborPrepare), 0700)
+		if err != nil {
+			err = fmt.Errorf("create prepare error: %s", err.Error())
+			return err
+		}
 
-	_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
-	_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
-	_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/common.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/install.sh", harborDir), 0700)
+		_ = os.Chmod(fmt.Sprintf("%s/prepare", harborDir), 0700)
+	}
 
 	////////////////////////////////////////////////////
 
@@ -559,71 +561,73 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	readmeKubernetesResetName := "README-kubernetes-reset.md"
 	defer o.DoryCreateReadme(installConfig, outputDir, readmeKubernetesResetName)
 
-	harborInstallerDir := "kubernetes/harbor"
-	harborInstallYamlDir := fmt.Sprintf("%s/harbor", outputDir)
-	_ = os.RemoveAll(harborInstallYamlDir)
-	_ = os.MkdirAll(harborInstallYamlDir, 0700)
+	if installConfig.ImageRepo.Internal.DomainName != "" {
+		harborInstallerDir := "kubernetes/harbor"
+		harborInstallYamlDir := fmt.Sprintf("%s/harbor", outputDir)
+		_ = os.RemoveAll(harborInstallYamlDir)
+		_ = os.MkdirAll(harborInstallYamlDir, 0700)
 
-	// extract harbor helm files
-	err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/%s", pkg.DirInstallScripts, harborInstallerDir), harborInstallYamlDir)
-	if err != nil {
-		err = fmt.Errorf("extract harbor helm files error: %s", err.Error())
-		return err
-	}
+		// extract harbor helm files
+		err = pkg.ExtractEmbedFile(pkg.FsInstallScripts, fmt.Sprintf("%s/%s", pkg.DirInstallScripts, harborInstallerDir), harborInstallYamlDir)
+		if err != nil {
+			err = fmt.Errorf("extract harbor helm files error: %s", err.Error())
+			return err
+		}
 
-	harborValuesYamlName := "values.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborValuesYamlName))
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
-	strHarborValuesYaml, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallYamlDir, harborValuesYamlName), []byte(strHarborValuesYaml), 0600)
-	if err != nil {
-		err = fmt.Errorf("create values.yaml error: %s", err.Error())
-		return err
-	}
+		harborValuesYamlName := "values.yaml"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s/%s", pkg.DirInstallScripts, harborInstallerDir, harborValuesYamlName))
+		if err != nil {
+			err = fmt.Errorf("create values.yaml error: %s", err.Error())
+			return err
+		}
+		strHarborValuesYaml, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create values.yaml error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallYamlDir, harborValuesYamlName), []byte(strHarborValuesYaml), 0600)
+		if err != nil {
+			err = fmt.Errorf("create values.yaml error: %s", err.Error())
+			return err
+		}
 
-	// create harbor namespace and pv pvc
-	harborInstallDir := fmt.Sprintf("%s/%s", outputDir, installConfig.ImageRepo.Namespace)
-	_ = os.MkdirAll(harborInstallDir, 0700)
-	vals["currentNamespace"] = installConfig.ImageRepo.Namespace
-	step01NamespacePvName := "step01-namespace-pv.yaml"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
-	if err != nil {
-		err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
-		return err
-	}
+		// create harbor namespace and pv pvc
+		harborInstallDir := fmt.Sprintf("%s/%s", outputDir, installConfig.ImageRepo.Internal.Namespace)
+		_ = os.MkdirAll(harborInstallDir, 0700)
+		vals["currentNamespace"] = installConfig.ImageRepo.Internal.Namespace
+		step01NamespacePvName := "step01-namespace-pv.yaml"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
+		if err != nil {
+			err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+			return err
+		}
+		strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, step01NamespacePvName), []byte(strStep01NamespacePv), 0600)
+		if err != nil {
+			err = fmt.Errorf("create harbor namespace and pv pvc error: %s", err.Error())
+			return err
+		}
 
-	harborUpdateCertsName := "harbor_update_docker_certs.sh"
-	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, harborUpdateCertsName))
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-	strHarborUpdateCerts, err := pkg.ParseTplFromVals(vals, string(bs))
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
-	if err != nil {
-		err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
-		return err
+		harborUpdateCertsName := "harbor_update_docker_certs.sh"
+		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, harborUpdateCertsName))
+		if err != nil {
+			err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+			return err
+		}
+		strHarborUpdateCerts, err := pkg.ParseTplFromVals(vals, string(bs))
+		if err != nil {
+			err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+			return err
+		}
+		err = os.WriteFile(fmt.Sprintf("%s/%s", harborInstallDir, harborUpdateCertsName), []byte(strHarborUpdateCerts), 0600)
+		if err != nil {
+			err = fmt.Errorf("update docker harbor certificates error: %s", err.Error())
+			return err
+		}
 	}
 
 	//////////////////////////////////////////////////
@@ -632,13 +636,13 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	doryInstallDir := fmt.Sprintf("%s/%s", outputDir, installConfig.Dory.Namespace)
 	_ = os.MkdirAll(doryInstallDir, 0700)
 	vals["currentNamespace"] = installConfig.Dory.Namespace
-	step01NamespacePvName = "step01-namespace-pv.yaml"
+	step01NamespacePvName := "step01-namespace-pv.yaml"
 	bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/kubernetes/%s", pkg.DirInstallScripts, step01NamespacePvName))
 	if err != nil {
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err
 	}
-	strStep01NamespacePv, err = pkg.ParseTplFromVals(vals, string(bs))
+	strStep01NamespacePv, err := pkg.ParseTplFromVals(vals, string(bs))
 	if err != nil {
 		err = fmt.Errorf("create dory namespace and pv pvc error: %s", err.Error())
 		return err

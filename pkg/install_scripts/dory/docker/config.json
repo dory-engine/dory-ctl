@@ -1,15 +1,15 @@
 {
   "auths": {
-    "{{ $.imageRepo.domainName }}": {
-      "auth": {{ printf "admin:%s" $.imageRepo.password | b64enc | quote }}
+    "{{ $.imageRepo.internal.domainName }}": {
+      "auth": {{ printf "admin:%s" $.imageRepo.internal.password | b64enc | quote }}
     },
-    "{{ $.hostIP }}:{{ $.dory.artifactRepo.portHub }}": {
+    "{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portHub }}": {
       "auth":  {{ "public-user:public-user" | b64enc | quote }}
     },
-    "{{ $.hostIP }}:{{ $.dory.artifactRepo.portGcr }}": {
+    "{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portGcr }}": {
       "auth": {{ "public-user:public-user" | b64enc | quote }}
     },
-    "{{ $.hostIP }}:{{ $.dory.artifactRepo.portQuay }}": {
+    "{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portQuay }}": {
       "auth": {{ "public-user:public-user" | b64enc | quote }}
     }
   }

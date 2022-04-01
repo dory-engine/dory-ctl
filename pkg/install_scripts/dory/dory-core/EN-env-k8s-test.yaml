@@ -20,7 +20,7 @@ projectDataPod:
 # harbor settings, for kubernetes cluster pull docker images
 harborConfig:
   # harbor domain name
-  hostname: {{ $.imageRepo.domainName | quote }}
+  hostname: {{ $.imageRepo.internal.domainName | quote }}
   # ip address
   ip: {{ $.hostIP | quote }}
   # port
@@ -28,7 +28,7 @@ harborConfig:
   # admin user name
   username: admin
   # admin password
-  password: {{ $.imageRepo.password | quote }}
+  password: {{ $.imageRepo.internal.password | quote }}
   # admin mail
   email: admin@example.com
 
@@ -40,13 +40,13 @@ nexusConfig:
   # ip address
   ip: {{ $.hostIP | quote }}
   # port
-  port: {{ $.dory.artifactRepo.port }}
+  port: {{ $.dory.artifactRepo.internal.port }}
   # docker.io image pull proxy port
-  portDocker: {{ $.dory.artifactRepo.portHub }}
+  portDocker: {{ $.dory.artifactRepo.internal.portHub }}
   # gcr.io image pull proxy port
-  portGcr: {{ $.dory.artifactRepo.portGcr }}
+  portGcr: {{ $.dory.artifactRepo.internal.portGcr }}
   # quay.io image pull proxy port
-  portQuay: {{ $.dory.artifactRepo.portQuay }}
+  portQuay: {{ $.dory.artifactRepo.internal.portQuay }}
   # public user name
   username: public-user
   # public user password

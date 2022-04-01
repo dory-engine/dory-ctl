@@ -39,33 +39,74 @@ dory:
   # git repository settings
   gitRepo:
     # git repository type, options: gitea, gitlab
+    # gitea support arm64 cpu architecture
+    # gitlab not support arm64 cpu architecture
     type: gitea
-    # git repository image name
-    image: gitea/gitea:1.15.6
-    # git repository database image name, if type is gitea this setting required
-    imageDB: mysql:8.0.20
-    # expose service port (kubernetes node port)
-    port: 30001
-  # artifact and dependency repository settings
+    # deploy git repository automatically (internal or external only accept one deploy way)
+    internal:
+      # git repository image name
+      image: gitea/gitea:1.16.5
+      # git repository database image name, if type is gitea this setting required
+      imageDB: mysql:8.0.20
+      # expose service port (kubernetes node port)
+      port: 30001
+    # use external git repository, do not deploy git repository automatically (internal or external only accept one deploy way)
+    external:
+      # git repository browser access url
+      viewUrl: http://192.168.0.1:30001
+      # git repository internal access url by dory
+      url: http://192.168.0.1:30001
+      # git repository admin user name
+      username: "PLEASE_INPUT_BY_MANUAL"
+      # git repository admin user display name
+      name: "PLEASE_INPUT_BY_MANUAL"
+      # git repository admin user mail
+      mail: "PLEASE_INPUT_BY_MANUAL"
+      # git repository admin user password
+      password: "PLEASE_INPUT_BY_MANUAL"
+      # git repository admin user token
+      token: "PLEASE_INPUT_BY_MANUAL"
+  # artifact and dependency repository settings, not support arm64 cpu architecture
   artifactRepo:
     # artifact and dependency repository type, options: nexus
     type: nexus
-    # artifact and dependency repository image name
-    image: sonatype/nexus3:3.37.0
-    # artifact and dependency repository expose service port (kubernetes node port)
-    port: 30003
-    # docker.io image proxy expose service port (kubernetes node port)
-    portHub: 30004
-    # gcr.io image proxy expose service port (kubernetes node port)
-    portGcr: 30005
-    # quay.io image proxy expose service port (kubernetes node port)
-    portQuay: 30006
+    # deploy artifact and dependency repository automatically (internal or external only accept one deploy way)
+    internal:
+      # artifact and dependency repository image name
+      image: sonatype/nexus3:3.38.1
+      # artifact and dependency repository expose service port (kubernetes node port)
+      port: 30003
+      # docker.io image proxy expose service port (kubernetes node port)
+      portHub: 30004
+      # gcr.io image proxy expose service port (kubernetes node port)
+      portGcr: 30005
+      # quay.io image proxy expose service port (kubernetes node port)
+      portQuay: 30006
+    # use external artifact and dependency repository, do not deploy artifact and dependency repository automatically (internal or external only accept one deploy way)
+    # please use docker image: doryengine/nexus-data-init:alpine-3.15.3 directory /nexus-data/nexus data as basic nexus data
+    external:
+      # artifact and dependency repository browser access url
+      viewUrl: http://192.168.0.1:30003
+      # artifact and dependency repository access url by docker executors
+      url: http://192.168.0.1:30003
+      # artifact and dependency repository access ip address, docker executors can connect this repository
+      host: 192.168.0.1
+      # artifact and dependency repository admin user name
+      username: admin
+      # artifact and dependency repository admin user password
+      password: "Nexus_Pwd_321"
+      # artifact and dependency repository proxy url with public user authorization
+      publicAccountUrl: http://public-user:public-user@192.168.0.1:30003
+      # public user name which can fetch public dependencies
+      publicUser: public-user
+      # public user password which can fetch public dependencies
+      publicPassword: public-user
   # openldap account center settings, dory-core use openldap to store user accounts
   openldap:
     # openldap image name
     image: osixia/openldap:develop-dev
     # ldapadmin image name, used for manage openldap
-    imageAdmin: osixia/phpldapadmin:stable-amd64
+    imageAdmin: osixia/phpldapadmin:stable
     # ldapadmin expose service port (kubernetes node port)
     port: 30007
     # openldap admin password, leave it empty to random create one
@@ -87,39 +128,55 @@ dory:
   # mongodb settings
   mongo:
     # mongodb image name
-    image: mongo:4.4.10-focal
+    image: mongo:4.4.13-focal
     # mongodb password, leave it empty to random create one
     password: ""
   # docker executors deploy settings
   docker:
     # docker executor image name
-    image: docker:20.10.11-dind
+    image: docker:20.10.14-dind
     # service name of docker executor (in docker-compose or kubernetes)
     dockerName: docker
     # how many docker executors will deploy in docker-compose or with kubernetes
     dockerNumber: 2
-# image repository settings
+# image repository settings, not support arm64 cpu architecture
 imageRepo:
-  # which namespace will image repository deploy in
-  # if install mode is docker: it means which subdirectory image repository's data store in
-  # if install mode is kubernetes: it means which namespace image repository will deploy in
-  namespace: harbor
   # image repository type, options: harbor
   type: harbor
-  # image repository domain name, used for create image repository self signed certificates
-  domainName: harbor.dory.local
-  # image repository (harbor) version, support v2.2.x - v2.4.x
-  version: v2.4.0
-  # image repository admin user password, leave it empty to random create one
-  password: ""
-  {{- if eq $.mode "docker" }}
-  # which subdirectory image repository self signed certificates store in
-  # if install mode is docker: required
-  certsDir: certs
-  # which subdirectory image repository data store in
-  # if install mode is docker: required
-  dataDir: data
-  {{- end }}
+  # deploy image repository automatically (internal or external only accept one deploy way)
+  internal:
+    # image repository domain name, used for create image repository self signed certificates
+    domainName: harbor.dory.local
+    # which namespace will image repository deploy in
+    # if install mode is docker: it means which subdirectory image repository's data store in
+    # if install mode is kubernetes: it means which namespace image repository will deploy in
+    namespace: harbor
+    # image repository (harbor) version, support v2.2.x - v2.4.x
+    version: v2.4.2
+    # image repository admin user password, leave it empty to random create one
+    password: ""
+    {{- if eq $.mode "docker" }}
+    # which subdirectory image repository self signed certificates store in
+    # if install mode is docker: required
+    certsDir: certs
+    # which subdirectory image repository data store in
+    # if install mode is docker: required
+    dataDir: data
+    {{- end }}
+  # use external image repository, do not deploy image repository automatically (internal or external only accept one deploy way)
+  external:
+    # image repository ip address
+    ip: 192.168.0.1
+    # image repository browser access url
+    viewUrl: https://harbor.dory.local
+    # image repository domain name
+    url: harbor.dory.local
+    # image repository admin user name
+    username: admin
+    # image repository admin user password
+    password: "PLEASE_INPUT_BY_MANUAL"
+    # image repository api access url by dory
+    apiUrl: https://harbor.dory.local
 # dorycore application settings
 dorycore:
   # admin user settings

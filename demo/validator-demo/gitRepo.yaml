@@ -1,0 +1,13 @@
+type: gitea
+internal:
+  image: gitea/gitea:1.16.5
+#  imageDB: mysql:8.0.20
+  port: 30001
+external:
+  viewUrl: http://192.168.0.1:30001
+  url: http://192.168.0.1:30001
+  username: "PLEASE_INPUT_BY_MANUAL"
+  name: "PLEASE_INPUT_BY_MANUAL"
+  mail: "PLEASE_INPUT_BY_MANUAL"
+  password: "PLEASE_INPUT_BY_MANUAL"
+  token: "PLEASE_INPUT_BY_MANUAL"

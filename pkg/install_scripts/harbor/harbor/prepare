@@ -57,7 +57,7 @@ docker run --rm -v $input_dir:/input \
                     -v $config_dir:/config \
                     -v /:/hostfs \
                     --privileged \
-                    goharbor/prepare:{{ $.imageRepo.version }} prepare $@
+                    goharbor/prepare:{{ $.imageRepo.internal.version }} prepare $@
 
 echo "Clean up the input dir"
 # Clean up input dir
