@@ -82,7 +82,7 @@ dory:
       # quay镜像代理暴露的服务端口
       portQuay: 30006
     # # 使用外部部署制品依赖仓库，不自动部署制品依赖仓库（internal、external只能选一种部署方式）
-    # # 请使用docker镜像 doryengine/nexus-data-init:alpine-3.15.3 /nexus-data/nexus 目录的数据为nexus的基础数据
+    # # 请使用docker镜像 doryengine/nexus-data-init:alpine-3.15.3 /nexus-data/nexus 目录的数据作为nexus的基础数据
     # external:
     #   # 制品仓库浏览器查看url
     #   viewUrl: http://192.168.0.1:30003
