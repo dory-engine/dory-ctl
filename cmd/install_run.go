@@ -210,7 +210,6 @@ func (o *OptionsInstallRun) HarborGetDockerImages() (pkg.InstallDockerImages, er
 
 func (o *OptionsInstallRun) HarborLoginDocker(installConfig pkg.InstallConfig) error {
 	var err error
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Internal.Namespace)
 
 	// update /etc/hosts
 	ip := installConfig.HostIP
@@ -223,10 +222,10 @@ func (o *OptionsInstallRun) HarborLoginDocker(installConfig pkg.InstallConfig) e
 		username = installConfig.ImageRepo.External.Username
 		password = installConfig.ImageRepo.External.Password
 	}
-	_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", domainName), harborDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("cat /etc/hosts | grep %s", domainName), ".")
 	if err != nil {
 		// harbor domain name not exists
-		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", ip, domainName), harborDir)
+		_, _, err = pkg.CommandExec(fmt.Sprintf("sudo echo '%s  %s' >> /etc/hosts", ip, domainName), ".")
 		if err != nil {
 			err = fmt.Errorf("install harbor error: %s", err.Error())
 			return err
@@ -234,18 +233,17 @@ func (o *OptionsInstallRun) HarborLoginDocker(installConfig pkg.InstallConfig) e
 		log.Info("add harbor domain name to /etc/hosts")
 	}
 	log.Info("docker login to harbor")
-	_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username %s --password %s %s", username, password, domainName), harborDir)
+	_, _, err = pkg.CommandExec(fmt.Sprintf("docker login --username %s --password %s %s", username, password, domainName), ".")
 	if err != nil {
 		err = fmt.Errorf("install harbor error: %s", err.Error())
 		return err
 	}
-	log.Success(fmt.Sprintf("install harbor at %s success", harborDir))
+	log.Success(fmt.Sprintf("install harbor success"))
 	return err
 }
 
 func (o *OptionsInstallRun) HarborCreateProject(installConfig pkg.InstallConfig) error {
 	var err error
-	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Internal.Namespace)
 
 	log.Info("create harbor project public, hub, gcr, quay begin")
 	projs := []string{
@@ -268,7 +266,7 @@ func (o *OptionsInstallRun) HarborCreateProject(installConfig pkg.InstallConfig)
 		}
 		log.Info(fmt.Sprintf("create harbor project %s success", proj))
 	}
-	log.Success(fmt.Sprintf("install harbor at %s success", harborDir))
+	log.Success(fmt.Sprintf("install harbor success"))
 
 	return err
 }
