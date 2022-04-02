@@ -248,19 +248,25 @@ func (o *OptionsInstallRun) HarborCreateProject(installConfig pkg.InstallConfig)
 	harborDir := fmt.Sprintf("%s/%s", installConfig.RootDir, installConfig.ImageRepo.Internal.Namespace)
 
 	log.Info("create harbor project public, hub, gcr, quay begin")
-	projectNames := []string{
+	projs := []string{
 		"public",
 		"hub",
 		"gcr",
 		"quay",
 	}
-	for _, projectName := range projectNames {
-		err = installConfig.HarborProjectAdd(projectName)
+	for _, proj := range projs {
+		err = installConfig.HarborProjectAdd(proj)
 		if err != nil {
-			err = fmt.Errorf("create harbor project %s error: %s", projectName, err.Error())
-			return err
+			if installConfig.ImageRepo.Internal.DomainName != "" {
+				err = fmt.Errorf("create harbor project %s error: %s", proj, err.Error())
+				return err
+			} else {
+				err = fmt.Errorf("create harbor project %s error: %s", proj, err.Error())
+				log.Error(err.Error())
+				err = nil
+			}
 		}
-		log.Info(fmt.Sprintf("create harbor project %s success", projectName))
+		log.Info(fmt.Sprintf("create harbor project %s success", proj))
 	}
 	log.Success(fmt.Sprintf("install harbor at %s success", harborDir))
 
