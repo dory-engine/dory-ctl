@@ -280,8 +280,12 @@ func (o *OptionsInstallRun) HarborPushDockerImages(installConfig pkg.InstallConf
 			pushDockerImages = append(pushDockerImages, idi)
 		}
 	}
+	domainName := installConfig.ImageRepo.Internal.DomainName
+	if installConfig.ImageRepo.Internal.DomainName == "" {
+		domainName = installConfig.ImageRepo.External.Url
+	}
 	for i, idi := range pushDockerImages {
-		targetImage := fmt.Sprintf("%s/%s", installConfig.ImageRepo.Internal.DomainName, idi.Target)
+		targetImage := fmt.Sprintf("%s/%s", domainName, idi.Target)
 		source := idi.Source
 		if idi.DockerFile != "" {
 			source = idi.Target
@@ -291,7 +295,7 @@ func (o *OptionsInstallRun) HarborPushDockerImages(installConfig pkg.InstallConf
 			err = fmt.Errorf("docker images %s push to harbor error: %s", source, err.Error())
 			return err
 		}
-		log.Info(fmt.Sprintf("# %s/%s pushed # progress: [%d/%d]", installConfig.ImageRepo.Internal.DomainName, idi.Target, i+1, len(pushDockerImages)))
+		log.Info(fmt.Sprintf("# %s/%s pushed # progress: [%d/%d]", domainName, idi.Target, i+1, len(pushDockerImages)))
 	}
 	log.Success(fmt.Sprintf("docker images push to harbor success"))
 	return err
