@@ -10,9 +10,9 @@ installMode: kubernetes
 # 如果安装模式为docker，为本机的绝对路径。
 # 如果安装模式为kubernetes，并且kubernetes集群存在多个节点，请保证本机挂装了共享存储(例如nfs、cephfs)，并且目录在共享存储的挂装目录下
 {{- if eq $.mode "docker" }}
-rootDir: "/data/docker-vols/dory-ce"
+rootDir: "/data/docker-vols/dory"
 {{- else if eq $.mode "kubernetes" }}
-rootDir: "/mnt/nfs/k8s-vols/dory-ce"
+rootDir: "/mnt/nfs/k8s-vols/dory"
 {{- end }}
 # 主机ip地址，通过本ip地址可以访问到部署的镜像仓库和制品依赖仓库。
 # 如果安装模式为docker，表示本机的ip地址，请勿使用127.0.0.1这种loopback地址。
@@ -221,25 +221,31 @@ kubernetes:
   # kubernetes环境的 apiserver 管理权限token
   token: "xxx"
 
-  # # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置
+  # # 假如kubernetes集群的持久化存储使用本地存储情况下请设置，否则请删除以下配置
   # pvConfigLocal:
   #   # 本地存储路径（绝对路径）
+  {{- if eq $.mode "kubernetes" }}
   #   # 注意，与前边的`rootDir`设置一致
-  #   localPath: "/data/k8s-vols/dory-ce"
+  {{- end }}
+  #   localPath: "/data/k8s-vols/dory"
 
-  # 假如持久化存储使用nfs情况下请设置，否则请删除以下配置
+  # 假如kubernetes集群的持久化存储使用nfs情况下请设置，否则请删除以下配置
   pvConfigNfs:
     # nfs存储路径（绝对路径）
+    {{- if eq $.mode "kubernetes" }}
     # 注意，这里是nfs服务器上的nfs目录，对应前边的`rootDir`设置，非本机挂装目录
-    nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
+    {{- end }}
+    nfsPath: "/data/nfs-vols/k8s-vols/dory"
     # nfs服务器地址
     nfsServer: "10.2.0.10"
 
-  # # 假如持久化存储使用cephfs情况下请设置，否则请删除以下配置
+  # # 假如kubernetes集群的持久化存储使用cephfs情况下请设置，否则请删除以下配置
   # pvConfigCephfs:
   #   # ceph存储路径（绝对路径）
+  {{- if eq $.mode "kubernetes" }}
   #   # 注意，这里是cephfs服务器上的cephfs目录，对应前边的`rootDir`设置，非本机挂装目录
-  #   cephPath: "/k8s-vols/dory-ce"
+  {{- end }}
+  #   cephPath: "/k8s-vols/dory"
   #   # ceph账号
   #   cephUser: admin
   #   # ceph秘钥

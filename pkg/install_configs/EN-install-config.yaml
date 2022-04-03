@@ -10,9 +10,9 @@ installMode: kubernetes
 # if install mode is docker: use this host local path
 # if install mode is kubernetes: if kubernetes cluster with multiple nodes, please use shared storage (nfs or cephfs), make sure shared storage is mounted in this host path
 {{- if eq $.mode "docker" }}
-rootDir: "/data/docker-vols/dory-ce"
+rootDir: "/data/docker-vols/dory"
 {{- else if eq $.mode "kubernetes" }}
-rootDir: "/mnt/nfs/k8s-vols/dory-ce"
+rootDir: "/mnt/nfs/k8s-vols/dory"
 {{- end }}
 # this host ip address, dory use this ip address to connect container image repository and build dependency repository
 # if install mode is docker: please use this host ip address, don't use loopback ip address like 127.0.0.1
@@ -222,25 +222,31 @@ kubernetes:
   # kubernetes api server admin token
   token: "xxx"
 
-  # # if persistent volume use local storage, please set it, otherwise remove it
+  # # if kubernetes cluster persistent volume use local storage, please set it, otherwise remove it
   # pvConfigLocal:
   #   # local path (absolute path)
+  {{- if eq $.mode "kubernetes" }}
   #   # the same as `rootDir` settings
-  #   localPath: "/data/k8s-vols/dory-ce"
+  {{- end }}
+  #   localPath: "/data/k8s-vols/dory"
 
-  # if persistent volume use nfs shared storage, please set it, otherwise remove it
+  # if kubernetes cluster persistent volume use nfs shared storage, please set it, otherwise remove it
   pvConfigNfs:
     # nfs storage path (absolute path)
+    {{- if eq $.mode "kubernetes" }}
     # this path is the nfs server path, not nfs mount path, relative to `rootDir` settings
-    nfsPath: "/data/nfs-vols/k8s-vols/dory-ce"
+    {{- end }}
+    nfsPath: "/data/nfs-vols/k8s-vols/dory"
     # nfs server ip address
     nfsServer: "10.2.0.10"
 
-  # # if persistent volume use cephfs shared storage, please set it, otherwise remove it
+  # # if kubernetes cluster persistent volume use cephfs shared storage, please set it, otherwise remove it
   # pvConfigCephfs:
   #   # cephfs storage path (absolute path)
+  {{- if eq $.mode "kubernetes" }}
   #   # this path is the cephfs server path, not cephfs mount path, relative to `rootDir` settings
-  #   cephPath: "/k8s-vols/dory-ce"
+  {{- end }}
+  #   cephPath: "/k8s-vols/dory"
   #   # ceph connect account
   #   cephUser: admin
   #   # ceph connect secret
