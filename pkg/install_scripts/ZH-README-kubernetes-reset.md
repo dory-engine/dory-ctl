@@ -13,11 +13,12 @@ helm -n {{ $.imageRepo.internal.namespace }} uninstall {{ $.imageRepo.internal.n
 ### 停止并清除所有 dory 服务
 
 ```shell script
-# cd to readme directory
 kubectl delete namespace {{ $.dory.namespace }}
-kubectl delete namespace {{ $.imageRepo.internal.namespace }}
 kubectl delete pv {{ $.dory.namespace }}-pv
+{{- if $.imageRepoInternal }}
+kubectl delete namespace {{ $.imageRepo.internal.namespace }}
 kubectl delete pv {{ $.imageRepo.internal.namespace }}-pv
+{{- end }}
 kubectl delete pv project-data-pv
 ```
 
