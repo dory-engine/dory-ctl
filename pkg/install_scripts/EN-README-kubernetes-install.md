@@ -61,7 +61,7 @@ kubectl -n {{ $.imageRepo.internal.namespace }} get pods -o wide
 sh {{ $.imageRepo.internal.namespace }}/harbor_update_docker_certs.sh
 ls -alh /etc/docker/certs.d/{{ $.imageRepoDomainName }}
 {{- else }}
-# copy harbor server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# copy {{ $.imageRepo.type }} server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
 # certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 

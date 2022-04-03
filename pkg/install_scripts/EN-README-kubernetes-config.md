@@ -55,11 +55,12 @@ vi /etc/hosts
 - 2. copy {{ $.imageRepo.type }} certificates to all kubernetes nodes
 
 ```shell script
-{{- if $.imageRepoInternal }}
+# copy certificates to all kubernetes nodes
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
-{{- else }}
-# copy harbor server ({{ $.imageRepoIp }}) certificates to all kubernetes nodes /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
-# certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
+
+{{- if not $.imageRepoInternal }}
+# copy {{ $.imageRepo.type }} certificates to docker executor directory
+cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 {{- end }}
 ```
 

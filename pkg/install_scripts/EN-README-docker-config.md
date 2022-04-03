@@ -88,7 +88,7 @@ vi /etc/hosts
 {{- if $.imageRepoInternal }}
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 {{- else }}
-# copy harbor server ({{ $.imageRepoIp }}) certificates to all kubernetes nodes /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# copy {{ $.imageRepo.type }} server ({{ $.imageRepoIp }}) certificates to all kubernetes nodes /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
 # certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 ```

@@ -55,11 +55,12 @@ vi /etc/hosts
 - 2. 复制 {{ $.imageRepo.type }} 证书到所有kubernetes节点
 
 ```shell script
-{{- if $.imageRepoInternal }}
+# 复制证书到所有kubernetes节点
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
-{{- else }}
-# 把harbor服务器({{ $.imageRepoIp }})上的证书复制到所有kubernetes节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
-# 证书文件包括: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
+
+{{- if not $.imageRepoInternal }}
+# 复制 {{ $.imageRepo.type }} 证书到docker executor配置目录
+cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 {{- end }}
 ```
 

@@ -60,7 +60,7 @@ kubectl -n {{ $.imageRepo.internal.namespace }} get pods -o wide
 sh {{ $.imageRepo.internal.namespace }}/harbor_update_docker_certs.sh
 ls -alh /etc/docker/certs.d/{{ $.imageRepoDomainName }}
 {{- else }}
-# 把harbor服务器({{ $.imageRepoIp }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
+# 把{{ $.imageRepo.type }}服务器({{ $.imageRepoIp }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
 # 证书文件包括: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 

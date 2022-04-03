@@ -49,7 +49,7 @@ sleep 10
 # check {{ $.imageRepo.type }} status
 docker-compose ps
 {{- else }}
-# copy harbor server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# copy {{ $.imageRepo.type }} server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
 # certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 
