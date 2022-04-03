@@ -40,7 +40,7 @@ nexusConfig:
   # ip address
   ip: {{ $.artifactRepoIp | quote }}
   # port
-  port: {{ $.dory.artifactRepo.internal.port }}
+  port: {{ $.artifactRepoPort }}
   # docker.io image pull proxy port
   portDocker: {{ $.artifactRepoPortHub }}
   # gcr.io image pull proxy port

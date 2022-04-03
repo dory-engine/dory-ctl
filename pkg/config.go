@@ -283,6 +283,7 @@ func (ic *InstallConfig) UnmarshalMapValues() (map[string]interface{}, error) {
 	vals["imageRepoIp"] = imageRepoIp
 
 	artifactRepoInternal := true
+	artifactRepoPort := ic.Dory.ArtifactRepo.Internal.Port
 	artifactRepoPortHub := ic.Dory.ArtifactRepo.Internal.PortHub
 	artifactRepoPortGcr := ic.Dory.ArtifactRepo.Internal.PortGcr
 	artifactRepoPortQuay := ic.Dory.ArtifactRepo.Internal.PortQuay
@@ -294,6 +295,7 @@ func (ic *InstallConfig) UnmarshalMapValues() (map[string]interface{}, error) {
 	artifactRepoIp := ic.HostIP
 	if ic.Dory.ArtifactRepo.Internal.Image == "" {
 		artifactRepoInternal = false
+		artifactRepoPort = ic.Dory.ArtifactRepo.External.Port
 		artifactRepoPortHub = ic.Dory.ArtifactRepo.External.PortHub
 		artifactRepoPortGcr = ic.Dory.ArtifactRepo.External.PortGcr
 		artifactRepoPortQuay = ic.Dory.ArtifactRepo.External.PortQuay
@@ -305,6 +307,7 @@ func (ic *InstallConfig) UnmarshalMapValues() (map[string]interface{}, error) {
 		artifactRepoIp = ic.Dory.ArtifactRepo.External.Host
 	}
 	vals["artifactRepoInternal"] = artifactRepoInternal
+	vals["artifactRepoPort"] = artifactRepoPort
 	vals["artifactRepoPortHub"] = artifactRepoPortHub
 	vals["artifactRepoPortGcr"] = artifactRepoPortGcr
 	vals["artifactRepoPortQuay"] = artifactRepoPortQuay

@@ -103,6 +103,8 @@ dory:
     #   publicPassword: public-user
     #   # public user email which can fetch public dependencies
     #   publicEmail: public-user@139.com
+    #   # artifact and dependency repository expose service port (kubernetes node port)
+    #   port: 30003
     #   # docker.io image proxy expose service port (kubernetes node port)
     #   portHub: 30004
     #   # gcr.io image proxy expose service port (kubernetes node port)

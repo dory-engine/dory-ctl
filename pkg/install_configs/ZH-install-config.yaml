@@ -102,6 +102,8 @@ dory:
     #   publicPassword: public-user
     #   # 拉取第三方开源依赖的公用账号邮箱
     #   publicEmail: public-user@139.com
+    #   # web服务暴露的服务端口
+    #   port: 30003
     #   # dockerhub镜像代理暴露的服务端口
     #   portHub: 30004
     #   # gcr镜像代理暴露的服务端口

@@ -40,7 +40,7 @@ nexusConfig:
   # ip地址
   ip: {{ $.artifactRepoIp | quote }}
   # 端口
-  port: {{ $.dory.artifactRepo.internal.port }}
+  port: {{ $.artifactRepoPort }}
   # docker.io镜像仓库代理端口
   portDocker: {{ $.artifactRepoPortHub }}
   # gcr.io镜像仓库代理端口
