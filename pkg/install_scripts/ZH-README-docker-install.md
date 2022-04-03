@@ -14,13 +14,6 @@ mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
 
-{{- $harborDomainName := $.imageRepoDomainName }}
-{{- $harborUserName := "admin" }}
-{{- $harborPassword := $.imageRepoPassword }}
-{{- if not $.imageRepoInternal }}{{ $harborDomainName = $.imageRepoDomainName }}{{ end }}
-{{- if not $.imageRepoInternal }}{{ $harborUserName = $.imageRepoUsername }}{{ end }}
-{{- if $.imageRepoPassword }}{{ $harborPassword = $.imageRepoPassword }}{{ end }}
-
 ## {{ $.imageRepo.type }} 安装配置
 
 ```shell script
@@ -55,24 +48,24 @@ docker-compose ps
 
 # 在当前主机以及所有kubernetes节点主机上，把 {{ $.imageRepo.type }} 的域名记录添加到 /etc/hosts
 vi /etc/hosts
-{{ $.imageRepoIp }}  {{ $harborDomainName }}
+{{ $.imageRepoIp }}  {{ $.imageRepoDomainName }}
 
 # 设置docker客户端登录到 {{ $.imageRepo.type }}
-docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
+docker login --username {{ $.imageRepoUsername }} --password {{ $.imageRepoPassword }} {{ $.imageRepoDomainName }}
 
 # 在 {{ $.imageRepo.type }} 中创建 public, hub, gcr, quay 四个项目
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
-curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://{{ $harborUserName }}:{{ $harborPassword }}@{{ $harborDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "public", "public": true}' 'https://{{ $.imageRepoUsername }}:{{ $.imageRepoPassword }}@{{ $.imageRepoDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "hub", "public": true}' 'https://{{ $.imageRepoUsername }}:{{ $.imageRepoPassword }}@{{ $.imageRepoDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "gcr", "public": true}' 'https://{{ $.imageRepoUsername }}:{{ $.imageRepoPassword }}@{{ $.imageRepoDomainName }}/api/v2.0/projects'
+curl -k -X POST -H 'Content-Type: application/json' -d '{"project_name": "quay", "public": true}' 'https://{{ $.imageRepoUsername }}:{{ $.imageRepoPassword }}@{{ $.imageRepoDomainName }}/api/v2.0/projects'
 
 # 把之前拉取的docker镜像推送到 {{ $.imageRepo.type }}
 {{- range $_, $image := $.dockerImages }}
-docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $harborDomainName }}/{{ $image.target }}
+docker tag {{ if $image.dockerFile }}{{ $image.target }}{{ else }}{{ $image.source }}{{ end }} {{ $.imageRepoDomainName }}/{{ $image.target }}
 {{- end }}
 
 {{- range $_, $image := $.dockerImages }}
-docker push {{ $harborDomainName }}/{{ $image.target }}
+docker push {{ $.imageRepoDomainName }}/{{ $image.target }}
 {{- end }}
 ```
 

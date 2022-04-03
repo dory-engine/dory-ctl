@@ -60,7 +60,7 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 
 {{- if not $.imageRepoInternal }}
 # 复制 {{ $.imageRepo.type }} 证书到docker executor配置目录
-cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
+cp -rp /etc/docker/certs.d/{{ $.imageRepoDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 {{- end }}
 ```
 

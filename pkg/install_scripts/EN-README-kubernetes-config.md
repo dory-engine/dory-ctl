@@ -60,7 +60,7 @@ scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 
 {{- if not $.imageRepoInternal }}
 # copy {{ $.imageRepo.type }} certificates to docker executor directory
-cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
+cp -rp /etc/docker/certs.d/{{ $.imageRepoDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 {{- end }}
 ```
 
