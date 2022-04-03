@@ -27,7 +27,7 @@
     - gitRepoConfigs.token
 {{- end }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 ### update {{ $.dory.artifactRepo.type }} admin password and update dory config.yaml
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
@@ -49,21 +49,17 @@
 
 ```shell script
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $.imageRepo.internal.domainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $.imageRepo.external.url }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $.imageRepoDomainName }}
 ```
 
 - 2. copy {{ $.imageRepo.type }} certificates to all kubernetes nodes
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 {{- else }}
-# copy harbor server ({{ $.imageRepo.external.ip }}) certificates to all kubernetes nodes /etc/docker/certs.d/{{ $.imageRepo.external.url }} directory
-# certificates are: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# copy harbor server ({{ $.imageRepoIp }}) certificates to all kubernetes nodes /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 ```
 
@@ -94,21 +90,21 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 {{- end }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 ### {{ $.dory.artifactRepo.type }} artifact and dependency repository
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
-- public user: public-user / public-user
-- docker.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portHub }}
-- gcr.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portGcr }}
-- quay.io image proxy: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portQuay }}
+- public user: {{ $.artifactRepoPublicUser }} / {{ $.artifactRepoPublicPassword }}
+- docker.io image proxy: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortHub }}
+- gcr.io image proxy: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortGcr }}
+- quay.io image proxy: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortQuay }}
 {{- end }}
 
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 ### {{ $.imageRepo.type }} image repository
 
-- url: https://{{ $.imageRepo.internal.domainName }}
-- user: admin / {{ $.imageRepo.internal.password }} (admin user)
+- url: https://{{ $.imageRepoDomainName }}
+- user: admin / {{ $.imageRepoPassword }} (admin user)
 - data located at: `{{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}`
 {{- end }}
 

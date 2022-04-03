@@ -14,17 +14,17 @@ mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
 
-{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborDomainName := $.imageRepoDomainName }}
 {{- $harborUserName := "admin" }}
-{{- $harborPassword := $.imageRepo.internal.password }}
-{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
-{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
-{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+{{- $harborPassword := $.imageRepoPassword }}
+{{- if not $.imageRepoInternal }}{{ $harborDomainName = $.imageRepoDomainName }}{{ end }}
+{{- if not $.imageRepoInternal }}{{ $harborUserName = $.imageRepoUsername }}{{ end }}
+{{- if $.imageRepoPassword }}{{ $harborPassword = $.imageRepoPassword }}{{ end }}
 
 ## {{ $.imageRepo.type }} 安装配置
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # 创建 {{ $.imageRepo.type }} 自签名证书
 cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 sh harbor_certs.sh
@@ -49,17 +49,13 @@ sleep 10
 # 检查 {{ $.imageRepo.type }} 状态
 docker-compose ps
 {{- else }}
-# 把harbor服务器({{ $.imageRepo.external.ip }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepo.external.url }} 目录
-# 证书文件包括: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# 把harbor服务器({{ $.imageRepoIp }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
+# 证书文件包括: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 
 # 在当前主机以及所有kubernetes节点主机上，把 {{ $.imageRepo.type }} 的域名记录添加到 /etc/hosts
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $harborDomainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $harborDomainName }}
 
 # 设置docker客户端登录到 {{ $.imageRepo.type }}
 docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
@@ -88,7 +84,7 @@ cd {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 sh docker_certs.sh
 ls -alh
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 # 从docker镜像中复制nexus初始化数据
 cd {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init || true

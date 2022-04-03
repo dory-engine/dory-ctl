@@ -216,26 +216,26 @@ imageRepoConfigs:
   - kind: {{ $.imageRepo.type }}
     # 镜像仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
-    {{- if $.imageRepo.internal.domainName }}
+    {{- if $.imageRepoInternal }}
     # 镜像仓库浏览器查看url
-    viewUrl: https://{{ $.imageRepo.internal.domainName }}
+    viewUrl: https://{{ $.imageRepoDomainName }}
     # 镜像仓库地址，使用https
-    url: {{ $.imageRepo.internal.domainName | quote }}
+    url: {{ $.imageRepoDomainName | quote }}
     # 镜像仓库管理员账号
     username: admin
     # 镜像仓库管理员密码
-    password: {{ $.imageRepo.internal.password | quote }}
+    password: {{ $.imageRepoPassword | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
-    apiUrl: https://{{ $.imageRepo.internal.domainName }}
+    apiUrl: https://{{ $.imageRepoDomainName }}
     {{- else }}
     # 镜像仓库浏览器查看url
     viewUrl: {{ $.imageRepo.external.viewUrl }}
     # 镜像仓库地址，使用https
-    url: {{ $.imageRepo.external.url }}
+    url: {{ $.imageRepoDomainName }}
     # 镜像仓库管理员账号
-    username: {{ $.imageRepo.external.username }}
+    username: {{ $.imageRepoUsername }}
     # 镜像仓库管理员密码
-    password: {{ $.imageRepo.external.password | quote }}
+    password: {{ $.imageRepoPassword | quote }}
     # 镜像仓库 api访问地址，dory访问该仓库的地址
     apiUrl: {{ $.imageRepo.external.apiUrl }}
     {{- end }}
@@ -245,44 +245,44 @@ artifactRepoConfigs:
   - kind: {{ $.dory.artifactRepo.type }}
     # 制品仓库名字标识，用于项目配置关联对应代码仓库名字，格式例如: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
-    {{- if $.dory.artifactRepo.internal.image }}
+    {{- if $.artifactRepoInternal }}
     # 制品仓库浏览器查看url
     viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
     # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
-    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
+    url: http://{{ $.artifactRepoIp }}:{{ $.dory.artifactRepo.internal.port }}
     # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址(建议使用外部ip)
-    host: {{ $.hostIP | quote }}
+    host: {{ $.artifactRepoIp | quote }}
     # 制品仓库管理员账号
-    username: admin
+    username: {{ $.artifactRepoUsername | quote }}
     # 制品仓库管理员密码
-    password: "Nexus_Pwd_321"
+    password: {{ $.artifactRepoPassword | quote }}
     # 制品仓库public role名称
     publicRole: public-role
     # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址(建议使用外部ip+端口)
-    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
+    publicAccountUrl: http://public-user:public-user@{{ $.artifactRepoIp }}:{{ $.dory.artifactRepo.internal.port }}
     # 拉取第三方开源依赖的公用账号名称
-    publicUser: public-user
+    publicUser: {{ $.artifactRepoPublicUser | quote }}
     # 拉取第三方开源依赖的公用账号密码
-    publicPassword: public-user
+    publicPassword: {{ $.artifactRepoPublicPassword | quote }}
     {{- else }}
     # 制品仓库浏览器查看url
     viewUrl: {{ $.dory.artifactRepo.external.viewUrl }}
     # 制品仓库地址，docker executor访问该仓库的地址(建议使用外部ip+端口)
     url: {{ $.dory.artifactRepo.external.url }}
     # 制品仓库的IP地址或者服务名，docker executor访问该仓库的地址(建议使用外部ip)
-    host: {{ $.dory.artifactRepo.external.host | quote }}
+    host: {{ $.artifactRepoIp | quote }}
     # 制品仓库管理员账号
-    username: {{ $.dory.artifactRepo.external.username | quote }}
+    username: {{ $.artifactRepoUsername | quote }}
     # 制品仓库管理员密码
-    password: {{ $.dory.artifactRepo.external.password | quote }}
+    password: {{ $.artifactRepoPassword | quote }}
     # 制品仓库public role名称
     publicRole: public-role
     # 拉取第三方开源依赖的包含公用账号密码的url，docker executor访问该仓库的地址(建议使用外部ip+端口)
     publicAccountUrl: {{ $.dory.artifactRepo.external.publicAccountUrl }}
     # 拉取第三方开源依赖的公用账号名称
-    publicUser: {{ $.dory.artifactRepo.external.publicUser | quote }}
+    publicUser: {{ $.artifactRepoPublicUser | quote }}
     # 拉取第三方开源依赖的公用账号密码
-    publicPassword: {{ $.dory.artifactRepo.external.publicPassword | quote }}
+    publicPassword: {{ $.artifactRepoPublicPassword | quote }}
     {{- end }}
     # maven第三方开源依赖的仓库相对路径
     maven: repository/maven-group-public/

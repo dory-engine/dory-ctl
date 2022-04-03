@@ -107,7 +107,7 @@ deploys:
   {{- end }}
   {{- end }}
 
-  {{- if $.dory.artifactRepo.internal.image }}
+  {{- if $.artifactRepoInternal }}
   {{- if eq $.dory.artifactRepo.type "nexus" }}
   - deployName: {{ $.dory.artifactRepo.type }}
     deployImage: {{ $.dory.artifactRepo.internal.image }}
@@ -115,11 +115,11 @@ deploys:
       - port: 8081
         nodePort: {{ $.dory.artifactRepo.internal.port }}
       - port: 1443
-        nodePort: {{ $.dory.artifactRepo.internal.portHub }}
+        nodePort: {{ $.artifactRepoPortHub }}
       - port: 1444
-        nodePort: {{ $.dory.artifactRepo.internal.portGcr }}
+        nodePort: {{ $.artifactRepoPortGcr }}
       - port: 1445
-        nodePort: {{ $.dory.artifactRepo.internal.portQuay }}
+        nodePort: {{ $.artifactRepoPortQuay }}
     deployReplicas: 1
     {{- if $.dory.nodeSelector }}
     nodeSelector:
@@ -288,8 +288,8 @@ deploys:
         subPath: {{ $.dory.docker.dockerName }}/daemon.json
       - mountPath: /dory-core/dory-data
         subPath: dory-core/dory-data
-      - mountPath: /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
-        subPath: {{ $.dory.docker.dockerName }}/{{ $.imageRepo.internal.domainName }}
+      - mountPath: /etc/docker/certs.d/{{ $.imageRepoDomainName }}
+        subPath: {{ $.dory.docker.dockerName }}/{{ $.imageRepoDomainName }}
     deployHealthCheck:
       checkPort: 2376
       readinessDelaySeconds: 15
@@ -300,15 +300,9 @@ deploys:
     securityContext:
       privileged: true
     hostAliases:
-      {{- if $.imageRepo.internal.domainName }}
       - hostnames:
-          - {{ $.imageRepo.internal.domainName }}
-        ip: {{ $.hostIP }}
-      {{- else }}
-      - hostnames:
-          - {{ $.imageRepo.external.url }}
-        ip: {{ $.imageRepo.external.ip }}
-      {{- end }}
+          - {{ $.imageRepoDomainName }}
+        ip: {{ $.imageRepoIp }}
 
   - deployName: dory-core
     deployImage: doryengine/dory-core:{{ $.versionDoryCore }}-alpine3.15.0
@@ -343,15 +337,9 @@ deploys:
       runAsGroup: 1000
       runAsUser: 1000
     hostAliases:
-      {{- if $.imageRepo.internal.domainName }}
       - hostnames:
-          - {{ $.imageRepo.internal.domainName }}
-        ip: {{ $.hostIP }}
-      {{- else }}
-      - hostnames:
-          - {{ $.imageRepo.external.url }}
-        ip: {{ $.imageRepo.external.ip }}
-      {{- end }}
+          - {{ $.imageRepoDomainName }}
+        ip: {{ $.imageRepoIp }}
     dependServices:
       - dependName: mongo-core-dory
         dependPort: 27017

@@ -8,15 +8,15 @@
 
 ## create install root directories
 
-{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborDomainName := $.imageRepoDomainName }}
 {{- $harborUserName := "admin" }}
-{{- $harborPassword := $.imageRepo.internal.password }}
-{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
-{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
-{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+{{- $harborPassword := $.imageRepoPassword }}
+{{- if not $.imageRepoInternal }}{{ $harborDomainName = $.imageRepoDomainName }}{{ end }}
+{{- if not $.imageRepoInternal }}{{ $harborUserName = $.imageRepoUsername }}{{ end }}
+{{- if $.imageRepoPassword }}{{ $harborPassword = $.imageRepoPassword }}{{ end }}
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # create {{ $.imageRepo.type }} root directory
 mkdir -p {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/database
 mkdir -p {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/jobservice
@@ -44,7 +44,7 @@ ls -alh {{ $.rootDir }}/{{ $.dory.namespace }}
 ## {{ $.imageRepo.type }} installation and configuration
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # create {{ $.imageRepo.type }} namespace and pv
 kubectl delete ns {{ $.imageRepo.internal.namespace }}
 kubectl delete pv {{ $.imageRepo.internal.namespace }}-pv
@@ -59,19 +59,15 @@ kubectl -n {{ $.imageRepo.internal.namespace }} get pods -o wide
 
 # create {{ $.imageRepo.type }} self signed certificates and copy to /etc/docker/certs.d
 sh {{ $.imageRepo.internal.namespace }}/harbor_update_docker_certs.sh
-ls -alh /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
+ls -alh /etc/docker/certs.d/{{ $.imageRepoDomainName }}
 {{- else }}
-# copy harbor server ({{ $.imageRepo.external.ip }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepo.external.url }} directory
-# certificates are: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# copy harbor server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 
 # on current host and all kubernetes nodes add {{ $.imageRepo.type }} domain name in /etc/hosts
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $harborDomainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $harborDomainName }}
 
 # docker login to {{ $.imageRepo.type }}
 docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
@@ -109,7 +105,7 @@ rm -rf certs
 # copy harbor certificates in docker directory
 cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 # create nexus init data, nexus init data is in a docker image
 docker rm -f nexus-data-init || true
 docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.3 cat

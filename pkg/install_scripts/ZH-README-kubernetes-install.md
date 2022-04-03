@@ -8,15 +8,15 @@
 
 ## 创建相关根目录
 
-{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborDomainName := $.imageRepoDomainName }}
 {{- $harborUserName := "admin" }}
-{{- $harborPassword := $.imageRepo.internal.password }}
-{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
-{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
-{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+{{- $harborPassword := $.imageRepoPassword }}
+{{- if not $.imageRepoInternal }}{{ $harborDomainName = $.imageRepoDomainName }}{{ end }}
+{{- if not $.imageRepoInternal }}{{ $harborUserName = $.imageRepoUsername }}{{ end }}
+{{- if $.imageRepoPassword }}{{ $harborPassword = $.imageRepoPassword }}{{ end }}
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # 创建 {{ $.imageRepo.type }} 相关目录并设置目录权限
 mkdir -p {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/database
 mkdir -p {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/jobservice
@@ -43,7 +43,7 @@ ls -alh {{ $.rootDir }}/{{ $.dory.namespace }}
 ## {{ $.imageRepo.type }} 安装配置
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # 创建 {{ $.imageRepo.type }} 名字空间与pv
 kubectl delete ns {{ $.imageRepo.internal.namespace }}
 kubectl delete pv {{ $.imageRepo.internal.namespace }}-pv
@@ -58,19 +58,15 @@ kubectl -n {{ $.imageRepo.internal.namespace }} get pods -o wide
 
 # 创建 {{ $.imageRepo.type }} 自签名证书并复制到 /etc/docker/certs.d
 sh {{ $.imageRepo.internal.namespace }}/harbor_update_docker_certs.sh
-ls -alh /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
+ls -alh /etc/docker/certs.d/{{ $.imageRepoDomainName }}
 {{- else }}
-# 把harbor服务器({{ $.imageRepo.external.ip }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepo.external.url }} 目录
-# 证书文件包括: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# 把harbor服务器({{ $.imageRepoIp }})上的证书复制到本节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
+# 证书文件包括: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 
 # 在当前主机以及所有kubernetes节点主机上，把 {{ $.imageRepo.type }} 的域名记录添加到 /etc/hosts
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $harborDomainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $harborDomainName }}
 
 # 设置docker客户端登录到 {{ $.imageRepo.type }}
 docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
@@ -108,7 +104,7 @@ rm -rf certs
 # 复制 {{ $.imageRepo.type }} 证书到docker配置目录
 cp -rp /etc/docker/certs.d/{{ $harborDomainName }} {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 # 从docker镜像中复制nexus初始化数据
 docker rm -f nexus-data-init || true
 docker run -d -t --name nexus-data-init doryengine/nexus-data-init:alpine-3.15.3 cat

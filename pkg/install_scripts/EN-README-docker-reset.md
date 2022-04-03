@@ -2,7 +2,7 @@
 
 ## remove all dory service when install failure
 
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 ### stop and remove {{ $.imageRepo.type }} services
 
 ```shell script

@@ -50,7 +50,7 @@ services:
   {{- end }}
   {{- end }}
 
-  {{- if $.dory.artifactRepo.internal.image }}
+  {{- if $.artifactRepoInternal }}
   {{- if eq $.dory.artifactRepo.type "nexus" }}
   {{ $.dory.artifactRepo.type }}:
     image: {{ $.dory.artifactRepo.internal.image }}
@@ -59,9 +59,9 @@ services:
       - ./{{ $.dory.artifactRepo.type }}:/nexus-data
     ports:
       - {{ $.dory.artifactRepo.internal.port }}:8081
-      - {{ $.dory.artifactRepo.internal.portHub }}:1443
-      - {{ $.dory.artifactRepo.internal.portGcr }}:1444
-      - {{ $.dory.artifactRepo.internal.portQuay }}:1445
+      - {{ $.artifactRepoPortHub }}:1443
+      - {{ $.artifactRepoPortGcr }}:1444
+      - {{ $.artifactRepoPortQuay }}:1445
     restart: always
   {{- end }}
   {{- end }}
@@ -118,7 +118,7 @@ services:
     hostname: {{ $.dory.docker.dockerName }}-{{ $idx }}.{{ $.dory.docker.dockerName }}
     volumes:
       - ./{{ $.dory.docker.dockerName }}/certs:/certs
-      - /etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}/:/etc/docker/certs.d/{{ $.imageRepo.internal.domainName }}
+      - /etc/docker/certs.d/{{ $.imageRepoDomainName }}/:/etc/docker/certs.d/{{ $.imageRepoDomainName }}
       - ./{{ $.dory.docker.dockerName }}/daemon.json:/etc/docker/daemon.json
       - ./{{ $.dory.docker.dockerName }}/config.json:/root/.docker/config.json
       - ./dory-core/dory-data:/dory-core/dory-data
@@ -126,11 +126,7 @@ services:
       DOCKER_TLS_CERTDIR: ""
     command: "--host=tcp://0.0.0.0:2376 --tlsverify --tlscacert=/certs/ca.crt --tlscert=/certs/tls.crt --tlskey=/certs/tls.key"
     extra_hosts:
-      {{- if $.imageRepo.internal.domainName }}
-      - "{{ $.imageRepo.internal.domainName }}:{{ $.hostIP }}"
-      {{- else }}
-      - "{{ $.imageRepo.external.url }}:{{ $.imageRepo.external.ip }}"
-      {{- end }}
+      - "{{ $.imageRepoDomainName }}:{{ $.imageRepoIp }}"
     privileged: true
     restart: always
   {{- end }}
@@ -147,11 +143,7 @@ services:
     working_dir: /dory-core
     user: "1000:1000"
     extra_hosts:
-      {{- if $.imageRepo.internal.domainName }}
-      - "{{ $.imageRepo.internal.domainName }}:{{ $.hostIP }}"
-      {{- else }}
-      - "{{ $.imageRepo.external.url }}:{{ $.imageRepo.external.ip }}"
-      {{- end }}
+      - "{{ $.imageRepoDomainName }}:{{ $.imageRepoIp }}"
     restart: always
     depends_on:
       - redis-core-dory

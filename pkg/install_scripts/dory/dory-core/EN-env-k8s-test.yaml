@@ -20,39 +20,39 @@ projectDataPod:
 # harbor settings, for kubernetes cluster pull docker images
 harborConfig:
   # harbor domain name
-  hostname: {{ $.imageRepo.internal.domainName | quote }}
+  hostname: {{ $.imageRepoDomainName | quote }}
   # ip address
-  ip: {{ $.hostIP | quote }}
+  ip: {{ $.imageRepoIp | quote }}
   # port
   port: 443
   # admin user name
-  username: admin
+  username: {{ $.imageRepoUsername }}
   # admin password
-  password: {{ $.imageRepo.internal.password | quote }}
+  password: {{ $.imageRepoPassword | quote }}
   # admin mail
-  email: admin@example.com
+  email: {{ $.imageRepoEmail }}
 
 # nexus settings, for kubernetes cluster pull docker image and fetch build dependency from nexus proxy
 # caution: kubernetes cluster all nodes must set insecure-registry in docker config
 nexusConfig:
   # hostname or ip address
-  hostname: {{ $.hostIP | quote }}
+  hostname: {{ $.artifactRepoIp | quote }}
   # ip address
-  ip: {{ $.hostIP | quote }}
+  ip: {{ $.artifactRepoIp | quote }}
   # port
   port: {{ $.dory.artifactRepo.internal.port }}
   # docker.io image pull proxy port
-  portDocker: {{ $.dory.artifactRepo.internal.portHub }}
+  portDocker: {{ $.artifactRepoPortHub }}
   # gcr.io image pull proxy port
-  portGcr: {{ $.dory.artifactRepo.internal.portGcr }}
+  portGcr: {{ $.artifactRepoPortGcr }}
   # quay.io image pull proxy port
-  portQuay: {{ $.dory.artifactRepo.internal.portQuay }}
+  portQuay: {{ $.artifactRepoPortQuay }}
   # public user name
-  username: public-user
+  username: {{ $.artifactRepoPublicUser }}
   # public user password
-  password: public-user
+  password: {{ $.artifactRepoPublicPassword }}
   # public user mail
-  email: public-user@139.com
+  email: {{ $.artifactRepoPublicEmail }}
 
 {{- if $.kubernetes.pvConfigLocal.localPath }}
 # if persistent volume use local storage, please set it, otherwise remove it

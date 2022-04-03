@@ -35,8 +35,8 @@ expose:
       notarySecretName: ""
   ingress:
     hosts:
-      core: {{ $.imageRepo.internal.domainName }}
-      notary: notary.{{ $.imageRepo.internal.domainName }}
+      core: {{ $.imageRepoDomainName }}
+      notary: notary.{{ $.imageRepoDomainName }}
     # set to the type of ingress controller if it has specific requirements.
     # leave as `default` for most ingress controllers.
     # set to `gce` if using the GCE ingress controller
@@ -120,7 +120,7 @@ expose:
 # the IP address of k8s node
 #
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
-externalURL: https://{{ $.imageRepo.internal.domainName }}
+externalURL: https://{{ $.imageRepoDomainName }}
 
 # The internal TLS used for harbor components secure communicating. In order to enable https
 # in each components tls cert files need to provided in advance.
@@ -345,7 +345,7 @@ updateStrategy:
 logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: {{ $.imageRepo.internal.password | quote }}
+harborAdminPassword: {{ $.imageRepoPassword | quote }}
 
 # The name of the secret which contains key named "ca.crt". Setting this enables the
 # download link on portal to download the certificate of CA when the certificate isn't

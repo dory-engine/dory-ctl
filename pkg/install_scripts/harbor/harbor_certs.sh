@@ -1,4 +1,4 @@
-export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepo.internal.domainName }}
+export HARBOR_CONFIG_DOMAIN_NAME={{ $.imageRepoDomainName }}
 export HARBOR_CONFIG_CERT_PATH={{ $.imageRepo.internal.certsDir }}
 
 rm -rf ${HARBOR_CONFIG_CERT_PATH}/

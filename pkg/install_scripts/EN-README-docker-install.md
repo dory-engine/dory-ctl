@@ -14,17 +14,17 @@ mkdir -p {{ $.rootDir }}
 cp -rp * {{ $.rootDir }}
 ```
 
-{{- $harborDomainName := $.imageRepo.internal.domainName }}
+{{- $harborDomainName := $.imageRepoDomainName }}
 {{- $harborUserName := "admin" }}
-{{- $harborPassword := $.imageRepo.internal.password }}
-{{- if $.imageRepo.external.url }}{{ $harborDomainName = $.imageRepo.external.url }}{{ end }}
-{{- if $.imageRepo.external.username }}{{ $harborUserName = $.imageRepo.external.username }}{{ end }}
-{{- if $.imageRepo.external.password }}{{ $harborPassword = $.imageRepo.external.password }}{{ end }}
+{{- $harborPassword := $.imageRepoPassword }}
+{{- if not $.imageRepoInternal }}{{ $harborDomainName = $.imageRepoDomainName }}{{ end }}
+{{- if not $.imageRepoInternal }}{{ $harborUserName = $.imageRepoUsername }}{{ end }}
+{{- if $.imageRepoPassword }}{{ $harborPassword = $.imageRepoPassword }}{{ end }}
 
 ## {{ $.imageRepo.type }} installation and configuration
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 # create {{ $.imageRepo.type }} certificates
 cd {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}
 sh harbor_certs.sh
@@ -49,17 +49,13 @@ sleep 10
 # check {{ $.imageRepo.type }} status
 docker-compose ps
 {{- else }}
-# copy harbor server ({{ $.imageRepo.external.ip }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepo.external.url }} directory
-# certificates are: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# copy harbor server ({{ $.imageRepoIp }}) certificates to this node /etc/docker/certs.d/{{ $.imageRepoDomainName }} directory
+# certificates are: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 
 # on current host and all kubernetes nodes add {{ $.imageRepo.type }} domain name in /etc/hosts
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $harborDomainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $harborDomainName }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $harborDomainName }}
 
 # docker login to {{ $.imageRepo.type }}
 docker login --username {{ $harborUserName }} --password {{ $harborPassword }} {{ $harborDomainName }}
@@ -88,7 +84,7 @@ cd {{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.docker.dockerName }}
 sh docker_certs.sh
 ls -alh
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 # create nexus init data, nexus init data is in a docker image
 cd {{ $.rootDir }}/{{ $.dory.namespace }}
 docker rm -f nexus-data-init || true

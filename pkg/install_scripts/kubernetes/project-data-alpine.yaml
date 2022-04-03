@@ -7,16 +7,52 @@ metadata:
     ns: {{ $.dory.namespace }}
 
 ---
-{{- $harborDockerConfigJson := cat "{ \"auths\": { " ($.imageRepo.internal.domainName | quote) ": { \"username\": \"admin\", \"password\": " ($.imageRepo.internal.password | quote) ", \"email\": \"admin@example.com\", \"auth\": " (cat "admin:" $.imageRepo.internal.password | nospace | b64enc | quote) " } } }" }}
+{{- $harborDockerConfigJson := printf `{"auths": {"%s": {"username": "%s", "password": "%s", "email": "%s", "auth": "%s"}}}` $.imageRepoDomainName $.imageRepoUsername $.imageRepoPassword $.imageRepoEmail (printf "%s:%s" $.imageRepoUsername $.imageRepoPassword | b64enc) }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $.imageRepo.internal.domainName }}
+  name: {{ $.imageRepoDomainName }}
   namespace: {{ $.dory.namespace }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: |
     {{ $harborDockerConfigJson | b64enc | nindent 4 }}
+
+---
+{{- $nexusDockerhubConfigJson := printf `{"auths": {"%s:%d": {"username": "%s", "password": "%s", "email": "%s", "auth": "%s"}}}` $.artifactRepoIp $.artifactRepoPortHub $.artifactRepoPublicUser $.artifactRepoPublicPassword $.artifactRepoPublicEmail (printf "%s:%s" $.artifactRepoPublicUser $.artifactRepoPublicPassword | b64enc) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-hub
+  namespace: {{ $.dory.namespace }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    {{ $nexusDockerhubConfigJson | b64enc | nindent 4 }}
+
+---
+{{- $nexusGcrConfigJson := printf `{"auths": {"%s:%d": {"username": "%s", "password": "%s", "email": "%s", "auth": "%s"}}}` $.artifactRepoIp $.artifactRepoPortGcr $.artifactRepoPublicUser $.artifactRepoPublicPassword $.artifactRepoPublicEmail (printf "%s:%s" $.artifactRepoPublicUser $.artifactRepoPublicPassword | b64enc) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-gcr
+  namespace: {{ $.dory.namespace }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    {{ $nexusGcrConfigJson | b64enc | nindent 4 }}
+
+---
+{{- $nexusQuayConfigJson := printf `{"auths": {"%s:%d": {"username": "%s", "password": "%s", "email": "%s", "auth": "%s"}}}` $.artifactRepoIp $.artifactRepoPortQuay $.artifactRepoPublicUser $.artifactRepoPublicPassword $.artifactRepoPublicEmail (printf "%s:%s" $.artifactRepoPublicUser $.artifactRepoPublicPassword | b64enc) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-quay
+  namespace: {{ $.dory.namespace }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    {{ $nexusQuayConfigJson | b64enc | nindent 4 }}
 
 ---
 kind: PersistentVolume
@@ -120,7 +156,7 @@ spec:
               name: project-data-pvc
               subPath: .
       imagePullSecrets:
-        - name: {{ $.imageRepo.internal.domainName }}
+        - name: {{ $.imageRepoDomainName }}
       volumes:
         - hostPath:
             path: /etc/timezone

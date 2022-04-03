@@ -138,15 +138,12 @@ func (o *OptionsInstallRun) Run(args []string) error {
 		return err
 	}
 
-	if installConfig.ImageRepo.Internal.DomainName == "" {
-		bs, _ = pkg.YamlIndent(installConfig)
-		vals := map[string]interface{}{}
-		err = yaml.Unmarshal(bs, &vals)
-		if err != nil {
-			err = fmt.Errorf("install run error: %s", err.Error())
-			return err
-		}
+	vals, err := installConfig.UnmarshalMapValues()
+	if err != nil {
+		return err
+	}
 
+	if installConfig.ImageRepo.Internal.DomainName == "" {
 		readmeName := "README-harbor-prepare.md"
 
 		bs, err = pkg.FsInstallScripts.ReadFile(fmt.Sprintf("%s/%s-%s", pkg.DirInstallScripts, o.Language, readmeName))
@@ -305,11 +302,8 @@ func (o *OptionsInstallRun) DoryCreateConfig(installConfig pkg.InstallConfig) er
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -364,11 +358,8 @@ func (o *OptionsInstallRun) DoryCreateDockerCertsConfig(installConfig pkg.Instal
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -491,11 +482,8 @@ func (o *OptionsInstallRun) DoryCreateKubernetesDataPod(installConfig pkg.Instal
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -586,11 +574,8 @@ func (o *OptionsInstallRun) DoryCreateConfigReadme(installConfig pkg.InstallConf
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -622,11 +607,8 @@ func (o *OptionsInstallRun) DoryCreateResetReadme(installConfig pkg.InstallConfi
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -658,11 +640,8 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 	var err error
 	bs := []byte{}
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 	vals["versionDoryCore"] = pkg.VersionDoryCore
@@ -898,11 +877,8 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 	var err error
 	bs := []byte{}
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 	vals["versionDoryCore"] = pkg.VersionDoryCore

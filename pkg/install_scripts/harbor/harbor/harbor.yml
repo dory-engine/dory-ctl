@@ -2,7 +2,7 @@
 
 # The IP address or hostname to access admin UI and registry service.
 # DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
-hostname: {{ $.imageRepo.internal.domainName }}
+hostname: {{ $.imageRepoDomainName }}
 
 # http related config
 http:
@@ -14,8 +14,8 @@ https:
   # https port for harbor, default is 443
   port: 443
   # The path of cert and key files for nginx
-  certificate: {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/{{ $.imageRepo.internal.certsDir }}/{{ $.imageRepo.internal.domainName }}.crt
-  private_key: {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/{{ $.imageRepo.internal.certsDir }}/{{ $.imageRepo.internal.domainName }}.key
+  certificate: {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/{{ $.imageRepo.internal.certsDir }}/{{ $.imageRepoDomainName }}.crt
+  private_key: {{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}/{{ $.imageRepo.internal.certsDir }}/{{ $.imageRepoDomainName }}.key
 
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
@@ -31,7 +31,7 @@ https:
 # The initial password of Harbor admin
 # It only works in first time to install harbor
 # Remember Change the admin password from UI after launching Harbor.
-harbor_admin_password: {{ $.imageRepo.internal.password }}
+harbor_admin_password: {{ $.imageRepoPassword }}
 
 # Harbor DB configuration
 database:

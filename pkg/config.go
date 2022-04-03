@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -247,6 +248,74 @@ func (ic *InstallConfig) VerifyInstallConfig() error {
 	}
 
 	return err
+}
+
+func (ic *InstallConfig) UnmarshalMapValues() (map[string]interface{}, error) {
+	var err error
+	errInfo := fmt.Sprintf("unmarshal install config to map error")
+
+	bs, _ := yaml.Marshal(ic)
+	vals := map[string]interface{}{}
+	err = yaml.Unmarshal(bs, &vals)
+	if err != nil {
+		err = fmt.Errorf("%s: %s", errInfo, err.Error())
+		return vals, err
+	}
+	imageRepoInternal := true
+	imageRepoDomainName := ic.ImageRepo.Internal.DomainName
+	imageRepoUsername := "admin"
+	imageRepoPassword := ic.ImageRepo.Internal.Password
+	imageRepoEmail := "admin@example.com"
+	imageRepoIp := ic.HostIP
+	if ic.ImageRepo.Internal.DomainName == "" {
+		imageRepoInternal = false
+		imageRepoDomainName = ic.ImageRepo.External.Url
+		imageRepoUsername = ic.ImageRepo.External.Username
+		imageRepoPassword = ic.ImageRepo.External.Password
+		imageRepoEmail = ic.ImageRepo.External.Email
+		imageRepoIp = ic.ImageRepo.External.Ip
+	}
+	vals["imageRepoInternal"] = imageRepoInternal
+	vals["imageRepoDomainName"] = imageRepoDomainName
+	vals["imageRepoUsername"] = imageRepoUsername
+	vals["imageRepoPassword"] = imageRepoPassword
+	vals["imageRepoEmail"] = imageRepoEmail
+	vals["imageRepoIp"] = imageRepoIp
+
+	artifactRepoInternal := true
+	artifactRepoPortHub := ic.Dory.ArtifactRepo.Internal.PortHub
+	artifactRepoPortGcr := ic.Dory.ArtifactRepo.Internal.PortGcr
+	artifactRepoPortQuay := ic.Dory.ArtifactRepo.Internal.PortQuay
+	artifactRepoUsername := "admin"
+	artifactRepoPassword := "Nexus_Pwd_321"
+	artifactRepoPublicUser := "public-user"
+	artifactRepoPublicPassword := "public-user"
+	artifactRepoPublicEmail := "public-user@139.com"
+	artifactRepoIp := ic.HostIP
+	if ic.Dory.ArtifactRepo.Internal.Image == "" {
+		artifactRepoInternal = false
+		artifactRepoPortHub = ic.Dory.ArtifactRepo.External.PortHub
+		artifactRepoPortGcr = ic.Dory.ArtifactRepo.External.PortGcr
+		artifactRepoPortQuay = ic.Dory.ArtifactRepo.External.PortQuay
+		artifactRepoUsername = ic.Dory.ArtifactRepo.External.Username
+		artifactRepoPassword = ic.Dory.ArtifactRepo.External.Password
+		artifactRepoPublicUser = ic.Dory.ArtifactRepo.External.PublicUser
+		artifactRepoPublicPassword = ic.Dory.ArtifactRepo.External.PublicPassword
+		artifactRepoPublicEmail = ic.Dory.ArtifactRepo.External.PublicEmail
+		artifactRepoIp = ic.Dory.ArtifactRepo.External.Host
+	}
+	vals["artifactRepoInternal"] = artifactRepoInternal
+	vals["artifactRepoPortHub"] = artifactRepoPortHub
+	vals["artifactRepoPortGcr"] = artifactRepoPortGcr
+	vals["artifactRepoPortQuay"] = artifactRepoPortQuay
+	vals["artifactRepoUsername"] = artifactRepoUsername
+	vals["artifactRepoPassword"] = artifactRepoPassword
+	vals["artifactRepoPublicUser"] = artifactRepoPublicUser
+	vals["artifactRepoPublicPassword"] = artifactRepoPublicPassword
+	vals["artifactRepoPublicEmail"] = artifactRepoPublicEmail
+	vals["artifactRepoIp"] = artifactRepoIp
+
+	return vals, err
 }
 
 func (ic *InstallConfig) HarborQuery(url, method string, param map[string]interface{}) (string, int, error) {

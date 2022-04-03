@@ -100,6 +100,14 @@ dory:
     #   publicUser: public-user
     #   # 拉取第三方开源依赖的公用账号密码
     #   publicPassword: public-user
+    #   # 拉取第三方开源依赖的公用账号邮箱
+    #   publicEmail: public-user@139.com
+    #   # dockerhub镜像代理暴露的服务端口
+    #   portHub: 30004
+    #   # gcr镜像代理暴露的服务端口
+    #   portGcr: 30005
+    #   # quay镜像代理暴露的服务端口
+    #   portQuay: 30006
   # openldap账号中心设置，dory-core使用openldap存储用户账号
   openldap:
     # 镜像名
@@ -174,6 +182,8 @@ imageRepo:
   #   username: admin
   #   # 镜像仓库管理员密码
   #   password: "PLEASE_INPUT_BY_MANUAL"
+  #   # 镜像仓库管理员邮箱
+  #   email: "admin@example.com"
   #   # 镜像仓库 api访问地址，dory访问该仓库的地址
   #   apiUrl: https://harbor.dory.local
 # dorycore应用设置

@@ -55,14 +55,18 @@ type InstallConfig struct {
 				PortQuay int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required_with=Image Port PortHub PortGcr PortQuay"`
 			} `yaml:"internal" json:"internal" bson:"internal" validate:""`
 			External struct {
-				ViewUrl          string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				Url              string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				Host             string `yaml:"host" json:"host" bson:"host" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				Username         string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				Password         string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				PublicAccountUrl string `yaml:"publicAccountUrl" json:"publicAccountUrl" bson:"publicAccountUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				PublicUser       string `yaml:"publicUser" json:"publicUser" bson:"publicUser" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
-				PublicPassword   string `yaml:"publicPassword" json:"publicPassword" bson:"publicPassword" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword"`
+				ViewUrl          string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				Url              string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				Host             string `yaml:"host" json:"host" bson:"host" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				Username         string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				Password         string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PublicAccountUrl string `yaml:"publicAccountUrl" json:"publicAccountUrl" bson:"publicAccountUrl" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PublicUser       string `yaml:"publicUser" json:"publicUser" bson:"publicUser" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PublicPassword   string `yaml:"publicPassword" json:"publicPassword" bson:"publicPassword" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PublicEmail      string `yaml:"publicEmail" json:"publicEmail" bson:"publicEmail" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PortHub          int    `yaml:"portHub" json:"portHub" bson:"portHub" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PortGcr          int    `yaml:"portGcr" json:"portGcr" bson:"portGcr" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
+				PortQuay         int    `yaml:"portQuay" json:"portQuay" bson:"portQuay" validate:"required_with=ViewUrl Url Host Username Password PublicAccountUrl PublicUser PublicPassword PublicEmail PortHub PortGcr PortQuay"`
 			} `yaml:"external" json:"external" bson:"external" validate:""`
 		} `yaml:"artifactRepo" json:"artifactRepo" bson:"artifactRepo" validate:"required"`
 		Openldap struct {
@@ -104,12 +108,13 @@ type InstallConfig struct {
 			VersionBig       string `yaml:"versionBig" json:"versionBig" bson:"versionBig" validate:""`
 		} `yaml:"internal" json:"internal" bson:"internal" validate:""`
 		External struct {
-			Ip       string `yaml:"ip" json:"ip" bson:"ip" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
-			ViewUrl  string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
-			Url      string `yaml:"url" json:"url" bson:"url" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
-			Username string `yaml:"username" json:"username" bson:"username" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
-			Password string `yaml:"password" json:"password" bson:"password" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
-			ApiUrl   string `yaml:"apiUrl" json:"apiUrl" bson:"apiUrl" validate:"required_with=Ip ViewUrl Url Username Password ApiUrl"`
+			Ip       string `yaml:"ip" json:"ip" bson:"ip" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			ViewUrl  string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			Url      string `yaml:"url" json:"url" bson:"url" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			Username string `yaml:"username" json:"username" bson:"username" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			Password string `yaml:"password" json:"password" bson:"password" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			Email    string `yaml:"email" json:"email" bson:"email" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
+			ApiUrl   string `yaml:"apiUrl" json:"apiUrl" bson:"apiUrl" validate:"required_with=Ip ViewUrl Url Username Password Email ApiUrl"`
 		} `yaml:"external" json:"external" bson:"external" validate:""`
 	} `yaml:"imageRepo" json:"imageRepo" bson:"imageRepo" validate:"required"`
 	Dorycore struct {

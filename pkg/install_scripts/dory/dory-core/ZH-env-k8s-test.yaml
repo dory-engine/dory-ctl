@@ -20,39 +20,39 @@ projectDataPod:
 # harbor配置，用于kubernetes集群拉取harbor镜像
 harborConfig:
   # harbor域名
-  hostname: {{ $.imageRepo.internal.domainName | quote }}
+  hostname: {{ $.imageRepoDomainName | quote }}
   # ip地址
-  ip: {{ $.hostIP | quote }}
+  ip: {{ $.imageRepoIp | quote }}
   # 端口
   port: 443
   # 管理员用户名
-  username: admin
+  username: {{ $.imageRepoUsername }}
   # 管理员密码
-  password: {{ $.imageRepo.internal.password | quote }}
+  password: {{ $.imageRepoPassword | quote }}
   # 管理员邮箱
-  email: admin@example.com
+  email: {{ $.imageRepoEmail }}
 
 # nexus配置，用于kubernetes集群拉取编译构建依赖和以及拉取容器镜像
 # 注意，需要设置kubernetes集群的insecure-registry
 nexusConfig:
   # 访问的主机名或者ip地址
-  hostname: {{ $.hostIP | quote }}
+  hostname: {{ $.artifactRepoIp | quote }}
   # ip地址
-  ip: {{ $.hostIP | quote }}
+  ip: {{ $.artifactRepoIp | quote }}
   # 端口
   port: {{ $.dory.artifactRepo.internal.port }}
   # docker.io镜像仓库代理端口
-  portDocker: {{ $.dory.artifactRepo.internal.portHub }}
+  portDocker: {{ $.artifactRepoPortHub }}
   # gcr.io镜像仓库代理端口
-  portGcr: {{ $.dory.artifactRepo.internal.portGcr }}
+  portGcr: {{ $.artifactRepoPortGcr }}
   # quay.io镜像仓库代理端口
-  portQuay: {{ $.dory.artifactRepo.internal.portQuay }}
+  portQuay: {{ $.artifactRepoPortQuay }}
   # 共用账号用户名
-  username: public-user
+  username: {{ $.artifactRepoPublicUser }}
   # 共用账号密码
-  password: public-user
+  password: {{ $.artifactRepoPublicPassword }}
   # 共用账号邮箱
-  email: public-user@139.com
+  email: {{ $.artifactRepoPublicEmail }}
 
 {{- if $.kubernetes.pvConfigLocal.localPath }}
 # 假如持久化存储使用本地存储情况下请设置，否则请删除以下配置

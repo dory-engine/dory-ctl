@@ -217,26 +217,26 @@ imageRepoConfigs:
   - kind: {{ $.imageRepo.type }}
     # image repository id name, format like: xxx-xxx
     repoName: {{ $.imageRepo.type }}-dory
-    {{- if $.imageRepo.internal.domainName }}
+    {{- if $.imageRepoInternal }}
     # image repository browser access url
-    viewUrl: https://{{ $.imageRepo.internal.domainName }}
+    viewUrl: https://{{ $.imageRepoDomainName }}
     # image repository domain name
-    url: {{ $.imageRepo.internal.domainName | quote }}
+    url: {{ $.imageRepoDomainName | quote }}
     # image repository admin user name
-    username: admin
+    username: {{ $.imageRepoUsername }}
     # image repository admin user password
-    password: {{ $.imageRepo.internal.password | quote }}
+    password: {{ $.imageRepoPassword | quote }}
     # image repository api access url by dory
-    apiUrl: https://{{ $.imageRepo.internal.domainName }}
+    apiUrl: https://{{ $.imageRepoDomainName }}
     {{- else }}
     # image repository browser access url
     viewUrl: {{ $.imageRepo.external.viewUrl }}
     # image repository domain name
-    url: {{ $.imageRepo.external.url }}
+    url: {{ $.imageRepoDomainName }}
     # image repository admin user name
-    username: {{ $.imageRepo.external.username }}
+    username: {{ $.imageRepoUsername }}
     # image repository admin user password
-    password: {{ $.imageRepo.external.password | quote }}
+    password: {{ $.imageRepoPassword | quote }}
     # image repository api access url by dory
     apiUrl: {{ $.imageRepo.external.apiUrl }}
     {{- end }}
@@ -246,44 +246,44 @@ artifactRepoConfigs:
   - kind: {{ $.dory.artifactRepo.type }}
     # artifact and dependency repository id name, format like: xxx-xxx
     repoName: {{ $.dory.artifactRepo.type }}-dory
-    {{- if $.dory.artifactRepo.internal.image }}
+    {{- if $.artifactRepoInternal }}
     # artifact and dependency repository browser access url
     viewUrl: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
     # artifact and dependency repository access url by docker executors
-    url: http://{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
+    url: http://{{ $.artifactRepoIp }}:{{ $.dory.artifactRepo.internal.port }}
     # artifact and dependency repository access ip address, docker executors can connect this repository
-    host: {{ $.hostIP | quote }}
+    host: {{ $.artifactRepoIp | quote }}
     # artifact and dependency repository admin user name
-    username: admin
+    username: {{ $.artifactRepoUsername | quote }}
     # artifact and dependency repository admin user password
-    password: "Nexus_Pwd_321"
+    password: {{ $.artifactRepoPassword | quote }}
     # artifact and dependency repository public user role name
     publicRole: public-role
     # artifact and dependency repository proxy url with public user authorization
-    publicAccountUrl: http://public-user:public-user@{{ $.hostIP }}:{{ $.dory.artifactRepo.internal.port }}
+    publicAccountUrl: http://public-user:public-user@{{ $.artifactRepoIp }}:{{ $.dory.artifactRepo.internal.port }}
     # public user name which can fetch public dependencies
-    publicUser: public-user
+    publicUser: {{ $.artifactRepoPublicUser | quote }}
     # public user password which can fetch public dependencies
-    publicPassword: public-user
+    publicPassword: {{ $.artifactRepoPublicPassword | quote }}
     {{- else }}
     # artifact and dependency repository browser access url
     viewUrl: {{ $.dory.artifactRepo.external.viewUrl }}
     # artifact and dependency repository access url by docker executors
     url: {{ $.dory.artifactRepo.external.url }}
     # artifact and dependency repository access ip address, docker executors can connect this repository
-    host: {{ $.dory.artifactRepo.external.host | quote }}
+    host: {{ $.artifactRepoIp | quote }}
     # artifact and dependency repository admin user name
-    username: {{ $.dory.artifactRepo.external.username | quote }}
+    username: {{ $.artifactRepoUsername | quote }}
     # artifact and dependency repository admin user password
-    password: {{ $.dory.artifactRepo.external.password | quote }}
+    password: {{ $.artifactRepoPassword | quote }}
     # artifact and dependency repository public user role name
     publicRole: public-role
     # artifact and dependency repository proxy url with public user authorization
     publicAccountUrl: {{ $.dory.artifactRepo.external.publicAccountUrl }}
     # public user name which can fetch public dependencies
-    publicUser: {{ $.dory.artifactRepo.external.publicUser | quote }}
+    publicUser: {{ $.artifactRepoPublicUser | quote }}
     # public user password which can fetch public dependencies
-    publicPassword: {{ $.dory.artifactRepo.external.publicPassword | quote }}
+    publicPassword: {{ $.artifactRepoPublicPassword | quote }}
     {{- end }}
     # maven repository proxy path
     maven: repository/maven-group-public/

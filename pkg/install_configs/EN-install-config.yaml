@@ -50,22 +50,22 @@ dory:
       imageDB: mysql:8.0.20
       # expose service port (kubernetes node port)
       port: 30001
-    # use external git repository, do not deploy git repository automatically (internal or external only accept one deploy way)
-    external:
-      # git repository browser access url
-      viewUrl: http://192.168.0.1:30001
-      # git repository internal access url by dory
-      url: http://192.168.0.1:30001
-      # git repository admin user name
-      username: "PLEASE_INPUT_BY_MANUAL"
-      # git repository admin user display name
-      name: "PLEASE_INPUT_BY_MANUAL"
-      # git repository admin user mail
-      mail: "PLEASE_INPUT_BY_MANUAL"
-      # git repository admin user password
-      password: "PLEASE_INPUT_BY_MANUAL"
-      # git repository admin user token
-      token: "PLEASE_INPUT_BY_MANUAL"
+    # # use external git repository, do not deploy git repository automatically (internal or external only accept one deploy way)
+    # external:
+    #   # git repository browser access url
+    #   viewUrl: http://192.168.0.1:30001
+    #   # git repository internal access url by dory
+    #   url: http://192.168.0.1:30001
+    #   # git repository admin user name
+    #   username: "PLEASE_INPUT_BY_MANUAL"
+    #   # git repository admin user display name
+    #   name: "PLEASE_INPUT_BY_MANUAL"
+    #   # git repository admin user mail
+    #   mail: "PLEASE_INPUT_BY_MANUAL"
+    #   # git repository admin user password
+    #   password: "PLEASE_INPUT_BY_MANUAL"
+    #   # git repository admin user token
+    #   token: "PLEASE_INPUT_BY_MANUAL"
   # artifact and dependency repository settings, not support arm64 cpu architecture
   artifactRepo:
     # artifact and dependency repository type, options: nexus
@@ -82,25 +82,33 @@ dory:
       portGcr: 30005
       # quay.io image proxy expose service port (kubernetes node port)
       portQuay: 30006
-    # use external artifact and dependency repository, do not deploy artifact and dependency repository automatically (internal or external only accept one deploy way)
-    # please use docker image: doryengine/nexus-data-init:alpine-3.15.3 directory /nexus-data/nexus data as basic nexus data
-    external:
-      # artifact and dependency repository browser access url
-      viewUrl: http://192.168.0.1:30003
-      # artifact and dependency repository access url by docker executors
-      url: http://192.168.0.1:30003
-      # artifact and dependency repository access ip address, docker executors can connect this repository
-      host: 192.168.0.1
-      # artifact and dependency repository admin user name
-      username: admin
-      # artifact and dependency repository admin user password
-      password: "Nexus_Pwd_321"
-      # artifact and dependency repository proxy url with public user authorization
-      publicAccountUrl: http://public-user:public-user@192.168.0.1:30003
-      # public user name which can fetch public dependencies
-      publicUser: public-user
-      # public user password which can fetch public dependencies
-      publicPassword: public-user
+    # # use external artifact and dependency repository, do not deploy artifact and dependency repository automatically (internal or external only accept one deploy way)
+    # # please use docker image: doryengine/nexus-data-init:alpine-3.15.3 directory /nexus-data/nexus data as basic nexus data
+    # external:
+    #   # artifact and dependency repository browser access url
+    #   viewUrl: http://192.168.0.1:30003
+    #   # artifact and dependency repository access url by docker executors
+    #   url: http://192.168.0.1:30003
+    #   # artifact and dependency repository access ip address, docker executors can connect this repository
+    #   host: 192.168.0.1
+    #   # artifact and dependency repository admin user name
+    #   username: admin
+    #   # artifact and dependency repository admin user password
+    #   password: "Nexus_Pwd_321"
+    #   # artifact and dependency repository proxy url with public user authorization
+    #   publicAccountUrl: http://public-user:public-user@192.168.0.1:30003
+    #   # public user name which can fetch public dependencies
+    #   publicUser: public-user
+    #   # public user password which can fetch public dependencies
+    #   publicPassword: public-user
+    #   # public user email which can fetch public dependencies
+    #   publicEmail: public-user@139.com
+    #   # docker.io image proxy expose service port (kubernetes node port)
+    #   portHub: 30004
+    #   # gcr.io image proxy expose service port (kubernetes node port)
+    #   portGcr: 30005
+    #   # quay.io image proxy expose service port (kubernetes node port)
+    #   portQuay: 30006
   # openldap account center settings, dory-core use openldap to store user accounts
   openldap:
     # openldap image name
@@ -163,20 +171,22 @@ imageRepo:
     # if install mode is docker: required
     dataDir: data
     {{- end }}
-  # use external image repository, do not deploy image repository automatically (internal or external only accept one deploy way)
-  external:
-    # image repository ip address
-    ip: 192.168.0.1
-    # image repository browser access url
-    viewUrl: https://harbor.dory.local
-    # image repository domain name
-    url: harbor.dory.local
-    # image repository admin user name
-    username: admin
-    # image repository admin user password
-    password: "PLEASE_INPUT_BY_MANUAL"
-    # image repository api access url by dory
-    apiUrl: https://harbor.dory.local
+  # # use external image repository, do not deploy image repository automatically (internal or external only accept one deploy way)
+  # external:
+  #   # image repository ip address
+  #   ip: 192.168.0.1
+  #   # image repository browser access url
+  #   viewUrl: https://harbor.dory.local
+  #   # image repository domain name
+  #   url: harbor.dory.local
+  #   # image repository admin user name
+  #   username: admin
+  #   # image repository admin user password
+  #   password: "PLEASE_INPUT_BY_MANUAL"
+  #   # image repository admin user email
+  #   email: "admin@example.com"
+  #   # image repository api access url by dory
+  #   apiUrl: https://harbor.dory.local
 # dorycore application settings
 dorycore:
   # admin user settings

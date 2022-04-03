@@ -186,11 +186,8 @@ func (o *OptionsInstallScript) DoryCreateConfig(installConfig pkg.InstallConfig,
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -242,11 +239,8 @@ func (o *OptionsInstallScript) DoryCreateDockerCertsConfig(installConfig pkg.Ins
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -312,11 +306,8 @@ func (o *OptionsInstallScript) DoryCreateKubernetesDataPod(installConfig pkg.Ins
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 
@@ -345,11 +336,8 @@ func (o *OptionsInstallScript) DoryCreateReadme(installConfig pkg.InstallConfig,
 	var err error
 	var bs []byte
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install run error: %s", err.Error())
 		return err
 	}
 
@@ -388,11 +376,8 @@ func (o *OptionsInstallScript) ScriptWithDocker(installConfig pkg.InstallConfig)
 	var err error
 	bs := []byte{}
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 	vals["versionDoryCore"] = pkg.VersionDoryCore
@@ -545,11 +530,8 @@ func (o *OptionsInstallScript) ScriptWithKubernetes(installConfig pkg.InstallCon
 	var err error
 	bs := []byte{}
 
-	bs, _ = pkg.YamlIndent(installConfig)
-	vals := map[string]interface{}{}
-	err = yaml.Unmarshal(bs, &vals)
+	vals, err := installConfig.UnmarshalMapValues()
 	if err != nil {
-		err = fmt.Errorf("install script error: %s", err.Error())
 		return err
 	}
 	vals["versionDoryCore"] = pkg.VersionDoryCore

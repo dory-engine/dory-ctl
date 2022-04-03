@@ -27,7 +27,7 @@
     - gitRepoConfigs.token
 {{- end }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 ### 更新 {{ $.dory.artifactRepo.type }} 管理员密码，并更新dory的config.yaml配置文件
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
@@ -49,21 +49,17 @@
 
 ```shell script
 vi /etc/hosts
-{{- if $.imageRepo.internal.domainName }}
-{{ $.hostIP }}  {{ $.imageRepo.internal.domainName }}
-{{- else }}
-{{ $.imageRepo.external.ip }}  {{ $.imageRepo.external.url }}
-{{- end }}
+{{ $.imageRepoIp }}  {{ $.imageRepoDomainName }}
 ```
 
 - 2. 复制 {{ $.imageRepo.type }} 证书到所有kubernetes节点
 
 ```shell script
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 scp -r /etc/docker/certs.d root@${KUBERNETES_HOST}:/etc/docker/
 {{- else }}
-# 把harbor服务器({{ $.imageRepo.external.ip }})上的证书复制到所有kubernetes节点的 /etc/docker/certs.d/{{ $.imageRepo.external.url }} 目录
-# 证书文件包括: ca.crt, {{ $.imageRepo.external.url }}.cert, {{ $.imageRepo.external.url }}.key
+# 把harbor服务器({{ $.imageRepoIp }})上的证书复制到所有kubernetes节点的 /etc/docker/certs.d/{{ $.imageRepoDomainName }} 目录
+# 证书文件包括: ca.crt, {{ $.imageRepoDomainName }}.cert, {{ $.imageRepoDomainName }}.key
 {{- end }}
 ```
 
@@ -94,21 +90,21 @@ kubectl -n {{ $.dory.namespace }} get pods -o wide -w
 - 数据存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.gitRepo.type }}`
 {{- end }}
 
-{{- if $.dory.artifactRepo.internal.image }}
+{{- if $.artifactRepoInternal }}
 ### {{ $.dory.artifactRepo.type }} 依赖与制品仓库
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
-- 公共用户账号: public-user / public-user
-- docker.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portHub }}
-- gcr.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portGcr }}
-- quay.io镜像代理地址: {{ $.hostIP }}:{{ $.dory.artifactRepo.internal.portQuay }}
+- 公共用户账号: {{ $.artifactRepoPublicUser }} / {{ $.artifactRepoPublicPassword }}
+- docker.io镜像代理地址: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortHub }}
+- gcr.io镜像代理地址: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortGcr }}
+- quay.io镜像代理地址: {{ $.artifactRepoIp }}:{{ $.artifactRepoPortQuay }}
 {{- end }}
 
-{{- if $.imageRepo.internal.domainName }}
+{{- if $.imageRepoInternal }}
 ### {{ $.imageRepo.type }} 容器镜像仓库
 
-- url: https://{{ $.imageRepo.internal.domainName }}
-- user: admin / {{ $.imageRepo.internal.password }} (管理员用户)
+- url: https://{{ $.imageRepoDomainName }}
+- user: admin / {{ $.imageRepoPassword }} (管理员用户)
 - 数据存放在: `{{ $.rootDir }}/{{ $.imageRepo.internal.namespace }}`
 {{- end }}
 

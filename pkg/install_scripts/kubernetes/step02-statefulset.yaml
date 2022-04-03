@@ -85,7 +85,7 @@ spec:
           claimName: {{ $.dory.namespace }}-pvc
 
       imagePullSecrets:
-        - name: {{ $.imageRepo.internal.domainName }}
+        - name: {{ $.imageRepoDomainName }}
       {{- if $deploy.nodeSelector }}
       nodeSelector:
         {{- range $key, $val := $deploy.nodeSelector }}
