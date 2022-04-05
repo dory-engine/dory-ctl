@@ -65,6 +65,12 @@ dory:
     #   password: "PLEASE_INPUT_BY_MANUAL"
     #   # 代码仓库管理员token
     #   token: "PLEASE_INPUT_BY_MANUAL"
+    #   # git代码仓库的webhook调用dory的URL
+    {{- if eq $.mode "docker" }}
+    #   gitWebhookUrl: "http://10.2.0.10:30010"
+    {{- else if eq $.mode "kubernetes" }}
+    #   gitWebhookUrl: "http://10.1.0.2:30010"
+    {{- end }}
   # 制品依赖仓库设置，不支持arm64架构
   artifactRepo:
     # 制品依赖仓库类型，选项: nexus

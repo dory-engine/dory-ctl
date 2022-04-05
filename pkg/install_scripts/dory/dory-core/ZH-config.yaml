@@ -11,8 +11,8 @@ app:
   userID: 1000
   # 应用的restful服务端口
   apiPort: 9000
-  # dory服务名
-  serviceName: dory-core
+  # git代码仓库的webhook调用dory的URL
+  gitWebhookUrl: {{ $.gitWebhookUrl | quote }}
   # 应用的log level，可选: error, warning, info, debug
   logLevel: debug
   # 是否允许CORS(跨源资源共享)

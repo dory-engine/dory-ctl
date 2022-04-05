@@ -66,6 +66,12 @@ dory:
     #   password: "PLEASE_INPUT_BY_MANUAL"
     #   # git repository admin user token
     #   token: "PLEASE_INPUT_BY_MANUAL"
+    #   # dory URL callback by git repository webhook
+    {{- if eq $.mode "docker" }}
+    #   gitWebhookUrl: "http://10.2.0.10:30010"
+    {{- else if eq $.mode "kubernetes" }}
+    #   gitWebhookUrl: "http://10.1.0.2:30010"
+    {{- end }}
   # artifact and dependency repository settings, not support arm64 cpu architecture
   artifactRepo:
     # artifact and dependency repository type, options: nexus

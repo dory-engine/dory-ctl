@@ -11,8 +11,8 @@ app:
   userID: 1000
   # restful api service port
   apiPort: 9000
-  # dory service name
-  serviceName: dory-core
+  # dory URL callback by git repository webhook
+  gitWebhookUrl: {{ $.gitWebhookUrl | quote }}
   # log output level, options: error, warning, info, debug
   logLevel: debug
   # CORS(Cross-Origin Resource Sharing) enable

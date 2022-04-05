@@ -36,13 +36,14 @@ type InstallConfig struct {
 				Port    int    `yaml:"port" json:"port" bson:"port" validate:"required_with=Image Port"`
 			} `yaml:"internal" json:"internal" bson:"internal" validate:""`
 			External struct {
-				ViewUrl  string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Url      string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Username string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Name     string `yaml:"name" json:"name" bson:"name" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Mail     string `yaml:"mail" json:"mail" bson:"mail" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Password string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
-				Token    string `yaml:"token" json:"token" bson:"token" validate:"required_with=ViewUrl Url Username Name Mail Password Token"`
+				ViewUrl       string `yaml:"viewUrl" json:"viewUrl" bson:"viewUrl" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Url           string `yaml:"url" json:"url" bson:"url" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Username      string `yaml:"username" json:"username" bson:"username" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Name          string `yaml:"name" json:"name" bson:"name" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Mail          string `yaml:"mail" json:"mail" bson:"mail" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Password      string `yaml:"password" json:"password" bson:"password" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				Token         string `yaml:"token" json:"token" bson:"token" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
+				GitWebhookUrl string `yaml:"gitWebhookUrl" json:"gitWebhookUrl" bson:"gitWebhookUrl" validate:"required_with=ViewUrl Url Username Name Mail Password Token GitWebhookUrl"`
 			} `yaml:"external" json:"external" bson:"external" validate:""`
 		} `yaml:"gitRepo" json:"gitRepo" bson:"gitRepo" validate:"required"`
 		ArtifactRepo struct {
