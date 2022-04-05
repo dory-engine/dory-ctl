@@ -3,7 +3,7 @@ package pkg
 import "embed"
 
 const (
-	VersionDoryCtl       = "v0.8.0"
+	VersionDoryCtl       = "v0.8.1"
 	VersionDoryCore      = "v1.7.0"
 	VersionDoryDashboard = "v1.6.4"
 	BaseCmdName          = "doryctl"
@@ -18,7 +18,6 @@ const (
 	LogTypeInfo    = "INFO"
 	LogTypeWarning = "WARNING"
 	LogTypeError   = "ERROR"
-	LogTypeEnd     = "END"
 
 	StatusSuccess = "SUCCESS"
 	StatusFail    = "FAIL"
@@ -26,9 +25,7 @@ const (
 	InputValueAbort   = "ABORT"
 	InputValueConfirm = "CONFIRM"
 
-	LogStatusCreate = "CREATE" // special usage for websocket send notice directives
-	LogStatusStart  = "START"  // special usage for websocket send notice directives
-	LogStatusInput  = "INPUT"  // special usage for websocket send notice directives
+	LogStatusInput = "INPUT" // special usage for websocket send notice directives
 )
 
 var (
