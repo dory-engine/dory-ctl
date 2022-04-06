@@ -31,14 +31,14 @@
 ### update {{ $.dory.artifactRepo.type }} admin password and update dory config.yaml
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
-- user: admin / Nexus_Pwd_321 (admin user)
+- user: admin / {{ $.artifactRepoPassword }} (admin user)
 - data located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.artifactRepo.type }}`
 
 - 1. open {{ $.dory.artifactRepo.type }} url, login as admin user
 - 2. change admin password, open `{{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}/#user/account` and change password
 - 3. update dory-core config file:
   - config file located at: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/config/config.yaml`
-  - search `Nexus_Pwd_321` in config file
+  - search `{{ $.artifactRepoPassword }}` in config file
   - update following admin user password: 
     - artifactRepoConfigs.password
 {{- end }}

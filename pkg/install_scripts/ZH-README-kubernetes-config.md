@@ -31,14 +31,14 @@
 ### 更新 {{ $.dory.artifactRepo.type }} 管理员密码，并更新dory的config.yaml配置文件
 
 - url: {{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}
-- user: admin / Nexus_Pwd_321 (管理员用户)
+- user: admin / {{ $.artifactRepoPassword }} (管理员用户)
 - 数据存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/{{ $.dory.artifactRepo.type }}`
 
 - 1. 打开 {{ $.dory.artifactRepo.type }} 网址，使用admin的默认账号密码登录
 - 2. 修改管理员密码: `{{ $.viewURL }}:{{ $.dory.artifactRepo.internal.port }}/#user/account`
 - 3. 更新dory-core配置文件:
   - 配置文件存放在: `{{ $.rootDir }}/{{ $.dory.namespace }}/dory-core/config/config.yaml`
-  - 在配置文件中搜索 `Nexus_Pwd_321`
+  - 在配置文件中搜索 `{{ $.artifactRepoPassword }}`
   - 更新以下管理员密码配置: 
     - artifactRepoConfigs.password
 {{- end }}
