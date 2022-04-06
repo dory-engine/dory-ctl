@@ -24,3 +24,4 @@
     - ignore harbor project create error if deploy harbor external way
     - update readme files
     - add external git repository settings: dory URL callback by git repository webhook
+    - gitea webhook allow all hosts
