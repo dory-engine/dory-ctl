@@ -144,7 +144,7 @@ dory:
   # mongodb settings
   mongo:
     # mongodb image name
-    image: mongo:4.4.13-focal
+    image: mongo:5.0.6-focal
     # mongodb password, leave it empty to random create one
     password: ""
   # docker executors deploy settings
