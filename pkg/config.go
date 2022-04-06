@@ -318,7 +318,7 @@ func (ic *InstallConfig) UnmarshalMapValues() (map[string]interface{}, error) {
 	vals["artifactRepoPublicEmail"] = artifactRepoPublicEmail
 	vals["artifactRepoIp"] = artifactRepoIp
 
-	gitWebhookUrl := "http://dory-core.dory:9000"
+	gitWebhookUrl := "http://dory-core:9000"
 	if ic.Dory.GitRepo.Internal.Image == "" {
 		gitWebhookUrl = ic.Dory.GitRepo.External.GitWebhookUrl
 	}
