@@ -16,6 +16,7 @@ services:
       GITEA__database__NAME: {{ $.dory.gitRepo.type | quote }}
       GITEA__database__USER: {{ $.dory.gitRepo.type | quote }}
       GITEA__database__PASSWD: {{ $giteaDbPwd | quote }}
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
     ports:
       - {{ $.dory.gitRepo.internal.port }}:3000
     restart: always

@@ -30,6 +30,8 @@ deploys:
         value: {{ $.dory.gitRepo.type | quote }}
       - name: GITEA__database__PASSWD
         value: {{ $giteaDbPwd | quote }}
+      - name: GITEA__webhook__ALLOWED_HOST_LIST
+        value: "*"
     deployVolumes:
       - mountPath: /data
         subPath: {{ $.dory.gitRepo.type }}
