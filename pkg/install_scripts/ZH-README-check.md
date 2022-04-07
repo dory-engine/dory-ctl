@@ -50,7 +50,7 @@ kubectl -n kube-system get secret $(kubectl -n kube-system get sa admin-user -o 
 - 安装:
 ```shell script
 # 安装 kubernetes-dashboard
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml
 ```
 
 ## traefik (ingress controller)
@@ -70,7 +70,7 @@ deployment:
   kind: DaemonSet
 image:
   name: traefik
-  tag: v2.5.4
+  tag: v2.6.3
 pilot:
   enabled: true
 experimental:
@@ -105,11 +105,11 @@ kubectl -n traefik get services -o wide
 - install:
 ```shell script
 # 拉取镜像
-docker pull registry.aliyuncs.com/google_containers/metrics-server:v0.5.2
-docker tag registry.aliyuncs.com/google_containers/metrics-server:v0.5.2 k8s.gcr.io/metrics-server/metrics-server:v0.5.2
+docker pull registry.aliyuncs.com/google_containers/metrics-server:v0.6.1
+docker tag registry.aliyuncs.com/google_containers/metrics-server:v0.6.1 k8s.gcr.io/metrics-server/metrics-server:v0.6.1
 
 # 获取metrics-server安装yaml
-curl -O -L https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.2/components.yaml
+curl -O -L https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
 # 添加--kubelet-insecure-tls参数
 sed -i 's/- args:/- args:\n        - --kubelet-insecure-tls/g' components.yaml
 # 安装metrics-server
