@@ -13,7 +13,7 @@
 
 ## check /etc/timezone and /etc/localtime
 
-- please ensure that the local kubectl can manage the target kubernetes cluster
+- [CAUTION] please ensure that the local kubectl can manage the target kubernetes cluster
 
 - all kubernetes nodes should have /etc/timezone and /etc/localtime files
 
