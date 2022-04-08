@@ -18,7 +18,7 @@ services:
       GITEA__database__PASSWD: {{ $giteaDbPwd | quote }}
       GITEA__webhook__ALLOWED_HOST_LIST: "*"
     ports:
-      - {{ $.dory.gitRepo.internal.port }}:3000
+      - "{{ $.dory.gitRepo.internal.port }}:3000"
     restart: always
     depends_on:
       - {{ $.dory.gitRepo.type }}-mysql
@@ -46,7 +46,7 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: "nginx['client_max_body_size'] = '0'; gitlab_rails['lfs_enabled'] = true; prometheus_monitoring['enable'] = false;"
     ports:
-      - {{ $.dory.gitRepo.internal.port }}:80
+      - "{{ $.dory.gitRepo.internal.port }}:80"
     restart: always
   {{- end }}
   {{- end }}
@@ -59,10 +59,10 @@ services:
     volumes:
       - ./{{ $.dory.artifactRepo.type }}:/nexus-data
     ports:
-      - {{ $.dory.artifactRepo.internal.port }}:8081
-      - {{ $.artifactRepoPortHub }}:1443
-      - {{ $.artifactRepoPortGcr }}:1444
-      - {{ $.artifactRepoPortQuay }}:1445
+      - "{{ $.dory.artifactRepo.internal.port }}:8081"
+      - "{{ $.artifactRepoPortHub }}:1443"
+      - "{{ $.artifactRepoPortGcr }}:1444"
+      - "{{ $.artifactRepoPortQuay }}:1445"
     restart: always
   {{- end }}
   {{- end }}
@@ -87,7 +87,7 @@ services:
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: "openldap"
     ports:
-      - {{ $.dory.openldap.port }}:443
+      - "{{ $.dory.openldap.port }}:443"
     restart: always
     depends_on:
       - openldap
@@ -154,7 +154,7 @@ services:
     image: doryengine/dory-dashboard:{{ $.versionDoryDashboard }}
     container_name: dory-dashboard
     ports:
-      - {{ $.dory.dorycore.port }}:80
+      - "{{ $.dory.dorycore.port }}:80"
     restart: always
     depends_on:
       - dory-core
