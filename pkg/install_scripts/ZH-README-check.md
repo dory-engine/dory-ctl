@@ -13,6 +13,8 @@
 
 ## 检查 /etc/timezone 和 /etc/localtime 配置
 
+- 请保证本机的kubectl能够管理目标kubernetes集群
+
 - 所有kubernetes节点必须配置 /etc/timezone 和 /etc/localtime
 
 ```shell script
