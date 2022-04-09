@@ -21,6 +21,7 @@
     - support use external git repository, artifact repository, image repository
     - upgrade build environments docker images
     - upgrade dory services docker images
+    - upgrade kubernetes-dashboard traefik metrics-server version
     - ignore harbor project create error if deploy harbor external way
     - update readme files
     - add external git repository settings: dory URL callback by git repository webhook
