@@ -8,7 +8,9 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -652,6 +654,13 @@ func (o *OptionsInstallRun) InstallWithDocker(installConfig pkg.InstallConfig) e
 
 	readmeDockerResetName := "README-docker-reset.md"
 	defer o.DoryCreateResetReadme(installConfig, outputDir, readmeDockerResetName)
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		_ = o.DoryCreateResetReadme(installConfig, outputDir, readmeDockerResetName)
+		os.Exit(1)
+	}()
 
 	// get pull docker images
 	dockerImages, err := o.HarborGetDockerImages()
@@ -889,6 +898,13 @@ func (o *OptionsInstallRun) InstallWithKubernetes(installConfig pkg.InstallConfi
 
 	readmeKubernetesResetName := "README-kubernetes-reset.md"
 	defer o.DoryCreateResetReadme(installConfig, outputDir, readmeKubernetesResetName)
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		_ = o.DoryCreateResetReadme(installConfig, outputDir, readmeKubernetesResetName)
+		os.Exit(1)
+	}()
 
 	// get pull docker images
 	dockerImages, err := o.HarborGetDockerImages()
