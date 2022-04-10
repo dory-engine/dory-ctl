@@ -87,7 +87,7 @@ func (o *OptionsInstallPull) Run(args []string) error {
 		return err
 	}
 
-	dockerFileDir := fmt.Sprintf("docker-files")
+	dockerFileDir := fmt.Sprintf("dory-docker-files")
 	_ = os.RemoveAll(dockerFileDir)
 	_ = os.MkdirAll(dockerFileDir, 0700)
 	dockerFileTplDir := "docker-files"
