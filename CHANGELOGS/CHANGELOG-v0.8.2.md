@@ -1,4 +1,4 @@
-# doryctl changelog v0.8.1
+# doryctl changelog v0.8.2
 
 **new features:**
 
