@@ -307,7 +307,7 @@ deploys:
         ip: {{ $.imageRepoIp }}
 
   - deployName: dory-core
-    deployImage: doryengine/dory-core:{{ $.versionDoryCore }}-alpine3.15.0
+    deployImage: doryengine/dory-core:{{ $.versionDoryCore }}-alpine
     deployLocalPort:
       - port: 9000
     deployReplicas: 1
