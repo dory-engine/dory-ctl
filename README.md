@@ -18,6 +18,28 @@ For more detail please visit our official website: [https://doryengine.com](http
 
 - Developers can publish applications from source code to kubernetes cluster without writing complicated kubernetes yaml deployment files.
 
+## Demo videos
+
+> Dory-Engine - Make Cloud-Native extremely easy
+> 
+> ![](docs/images/demo-01.jpg)
+>
+> [https://www.bilibili.com/video/BV1H44y1j7zo/](https://www.bilibili.com/video/BV1H44y1j7zo/)
+
+> Dory-Engine Summary
+> 
+> ![](docs/images/demo-02.jpg)
+>
+> [https://www.bilibili.com/video/BV1qS4y1T7UT/](https://www.bilibili.com/video/BV1qS4y1T7UT/)
+
+> Use doryctl to deploy Dory-Engine in Kubernetes
+> 
+> ![](docs/images/demo-03.jpg)
+>
+> [https://www.bilibili.com/video/BV19T4y127To/](https://www.bilibili.com/video/BV19T4y127To/)
+
+- More demo videos check here: [https://space.bilibili.com/511582631/video](https://space.bilibili.com/511582631/video)
+
 ### `Dory-Engine` Architecture
 
 ![](docs/images/architecture.png)

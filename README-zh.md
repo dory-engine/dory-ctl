@@ -18,6 +18,28 @@
 
 - 应用开发者无需掌握复杂的DevOps和云原生知识，即可实现应用从源代码交付到云原生环境。
 
+## 演示视频
+
+> Dory-Engine 一个简单得非常吓人的应用上云引擎
+> 
+> ![](docs/images/demo-01.jpg)
+>
+> [https://www.bilibili.com/video/BV1H44y1j7zo/](https://www.bilibili.com/video/BV1H44y1j7zo/)
+
+> Dory-Engine 演示概览
+> 
+> ![](docs/images/demo-02.jpg)
+>
+> [https://www.bilibili.com/video/BV1qS4y1T7UT/](https://www.bilibili.com/video/BV1qS4y1T7UT/)
+
+> 使用doryctl部署Dory-Engine
+> 
+> ![](docs/images/demo-03.jpg)
+>
+> [https://www.bilibili.com/video/BV19T4y127To/](https://www.bilibili.com/video/BV19T4y127To/)
+
+- 更多演示视频参见: [https://space.bilibili.com/511582631/video](https://space.bilibili.com/511582631/video)
+
 ### `Dory-Engine`架构
 
 ![](docs/images/architecture.png)
